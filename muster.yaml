@@ -1,0 +1,76 @@
+apiVersion: moodle.netzlink.com/v1alpha1
+kind: Moodle
+metadata:
+  name: muster-moodle
+spec:
+  # Default values copied from <project_dir>/helm-charts/moodle/values.yaml
+  
+  allowEmptyPassword: "no"
+  image:
+    pullPolicy: IfNotPresent
+    registry: docker.io
+    repository: bitnami/moodle
+    tag: 3.8.2-debian-10-r12
+  livenessProbe:
+    enabled: true
+    failureThreshold: 6
+    initialDelaySeconds: 600
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 5
+  mariadb:
+    enabled: true
+    db:
+      user: bn_moodle
+      password: AbsolutelyNoMercy
+    rootUser:
+      password: AbsolutelyNoMercy
+    master:
+      persistence:
+        accessModes:
+        - ReadWriteOnce
+        enabled: true
+        size: 8Gi
+    replication:
+      enabled: false
+  metrics:
+    enabled: true
+    image:
+      pullPolicy: IfNotPresent
+      registry: docker.io
+      repository: bitnami/apache-exporter
+      tag: 0.7.0-debian-10-r59
+    podAnnotations:
+      prometheus.io/port: "9117"
+      prometheus.io/scrape: "true"
+  moodleEmail: admin@example.com
+  moodleSkipInstall: "no"
+  moodleUsername: admin
+  moodlePassword: AbsolutlyNoMercy
+  persistence:
+    accessMode: ReadWriteOnce
+    enabled: true
+    size: 8Gi
+  podAnnotations: {}
+  readinessProbe:
+    enabled: true
+    failureThreshold: 6
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 3
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+  service:
+    externalTrafficPolicy: Cluster
+    httpsPort: 443
+    nodePorts:
+      http: ""
+      https: ""
+    port: 80
+    type: ClusterIP
