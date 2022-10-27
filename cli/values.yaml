@@ -75,7 +75,7 @@ image:
   debug: false
 ## @param replicaCount Number of Moodle replicas (requires ReadWriteMany PVC support)
 ##
-replicaCount: 2
+replicaCount: 1
 ## @param moodleSkipInstall Skip Moodle&trade; installation wizard. Useful for migrations and restoring from SQL dump
 ## ref: https://github.com/bitnami/containers/tree/main/bitnami/moodle#configuration
 ##
@@ -83,20 +83,20 @@ moodleSkipInstall: false
 ## @param moodleSiteName: "moodle1"
 ## ref: https://github.com/bitnami/containers/tree/main/bitnami/moodle#configuration
 ##
-moodleSiteName: "moodle002"
+moodleSiteName: "moodle001"
 ## @param moodleUsername User of the application
 ## ref: https://github.com/bitnami/containers/tree/main/bitnami/moodle#configuration
 ##
-moodleUsername: user
+moodleUsername: admin
 ## @param moodlePassword Application password
 ## Defaults to a random 10-character alphanumeric string if not set
 ## ref: https://github.com/bitnami/containers/tree/main/bitnami/moodle#configuration
 ##
-moodlePassword: ""
+moodlePassword: "Vcc123**"
 ## @param moodleEmail Admin email
 ## ref: https://github.com/bitnami/containers/tree/main/bitnami/moodle#configuration
 ##
-moodleEmail: user@example.com
+moodleEmail: adminvccl@vccorp.vn
 ## @param allowEmptyPassword Allow DB blank passwords
 ## ref: https://github.com/bitnami/containers/tree/main/bitnami/moodle#environment-variables
 ##
@@ -550,7 +550,7 @@ mariadb:
   ## @param mariadb.enabled Whether to deploy a mariadb server to satisfy the applications database requirements
   ## To use an external database set this to false and configure the externalDatabase parameters
   ##
-  enabled: true
+  enabled: false
   ## @param mariadb.architecture MariaDB architecture (`standalone` or `replication`)
   ##
   architecture: standalone
@@ -606,22 +606,22 @@ mariadb:
 externalDatabase:
   ## @param externalDatabase.type Type of the existing database
   ##
-  type: ""
+  type: "mariadb"
   ## @param externalDatabase.host Host of the existing database
   ##
-  host: ""
+  host: "45.124.94.128"
   ## @param externalDatabase.port Port of the existing database
   ##
   port: 3306
   ## @param externalDatabase.user Existing username in the external db
   ##
-  user: bn_moodle
+  user: duy 
   ## @param externalDatabase.password Password for the above username
   ##
-  password: ""
+  password: "4Yk7741J2JVWPTQkT9eKkcbAaTUs5XzTvIFL"
   ## @param externalDatabase.database Name of the existing database
   ##
-  database: bitnami_moodle
+  database: moodle
   ## @param externalDatabase.existingSecret Name of an existing secret resource containing the DB password
   ##
   existingSecret: ""

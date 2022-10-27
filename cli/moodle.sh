@@ -173,9 +173,9 @@ main() {
 	echo -e "moodle version available is below:\n"
 	for i in {0..12}; do echo "$i: ${moodle_version_available[$i]}"; done;
 	read -p "choose moodle version you want: " _index
-	# moodle_version=${moodle_version_available[$_index]}
+	moodle_version=${moodle_version_available[$_index]}
+	# moodle_version='4.0.4-debian-11-r4'
 	sed -i "86s/moodleSiteName.*$/moodleSiteName: \"$sitename\"/g" ./values.yaml
-	moodle_version='4.0.4-debian-11-r4'
 	sed -i "58s/tag.*$/tag: \"$moodle_version\"/g" ./values.yaml
 
 	create_moodle $clustername
