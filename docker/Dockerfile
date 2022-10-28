@@ -17,8 +17,10 @@ RUN apt-get install -y apache2 php7.3 php7.3-bcmath php7.3-curl php7.3-gd \
 ADD ./000-default.conf /etc/apache2/sites-available/000-default.conf
 ADD ./php.ini /etc/php/7.3/apache2/php.ini
 ADD ./moodle /var/www/moodle
-ADD ./moodledata /var/www/moodledata
+ADD ./moodledata /var/www/moodledata_src
 RUN chown -R www-data:www-data /var/www/moodle
-RUN chown -R www-data:www-data /var/www/moodledata
+RUN chown -R www-data:www-data /var/www/moodledata_src
+# RUN chown -R www-data:www-data /var/www/moodledata
+# RUN usermod --password Vcc123** root
 EXPOSE 80
 CMD ["apache2ctl", "-D", "FOREGROUND"]
