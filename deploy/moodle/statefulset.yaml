@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: moodle
+  name: moodle
+spec:
+  replicas: 3
+  serviceName: moodle-service
+  selector:
+    matchLabels:
+      app: moodle
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: moodle
+    spec:
+      containers:
+        - env:
+            - name: MEM_LIMIT
+              value: 2048M
+            - name: PGID
+              value: "33"
+            - name: PUID
+              value: "33"
+          image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:custom
+          name: moodle
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /var/www/moodledata
+              name: moodle-pvc
+      restartPolicy: Always
+      volumes:
+        - name: moodle-pvc
+          persistentVolumeClaim:
+            claimName: moodle-pvc
