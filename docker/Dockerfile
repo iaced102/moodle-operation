@@ -19,7 +19,7 @@ ADD ./php.ini /etc/php/7.3/apache2/php.ini
 ADD ./moodle /var/www/moodle
 ADD ./moodledata /var/www/moodledata_src
 RUN chown -R www-data:www-data /var/www/moodle
-RUN chown -R www-data:www-data /var/www/moodledata_src
+# RUN chown -R www-data:www-data /var/www/moodledata_src
 # RUN chown -R www-data:www-data /var/www/moodledata
 # RUN usermod --password Vcc123** root
 EXPOSE 80

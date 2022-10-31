@@ -30,10 +30,8 @@ spec:
       initContainers:
         - name: moodle-hack
           image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:custom
-            # command: ["sh", "-c", "chown -R 33:33 /var/www/moodledata"]
-            # command: ["sh", "-c", "cp -rf  /var/www/moodledata_src/* /var/www/moodledata"]
-          command: ["sh", "-c"]
-          args: ["cp -rf  /var/www/moodledata_src/* /var/www/moodledata; chown -R 33:33 /var/www/moodledata"]
+          command: ["/bin/sh", "-c"]
+          args: ["rm -rf /var/www/moodledata/* && cp -rf  /var/www/moodledata_src/* /var/www/moodledata &&  chown -R 33:33 /var/www/moodledata"]
           volumeMounts:
           - name: moodle-pvc
             mountPath: /var/www/moodledata
