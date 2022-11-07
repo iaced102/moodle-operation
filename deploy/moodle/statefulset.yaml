@@ -5,7 +5,7 @@ metadata:
     app: moodle
   name: moodle
 spec:
-  replicas: 1
+  replicas: 2
   serviceName: moodle-service
   selector:
     matchLabels:
@@ -18,7 +18,15 @@ spec:
     spec:
       containers:
         - env:
-          image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:custom
+          - name: DB_HOST
+            value: 45.124.94.128
+          - name: DB_NAME
+            value: moodle
+          - name: DB_USER
+            value: duy
+          - name: DB_PASS
+            value: 4Yk7741J2JVWPTQkT9eKkcbAaTUs5XzTvIFL
+          image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:testenv
           name: moodle
           resources:
             limits:
@@ -33,7 +41,7 @@ spec:
               name: moodle-pvc
       initContainers:
         - name: moodle-hack
-          image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:custom
+          image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:testenv
           command: ["/bin/sh", "-c"]
           args: ["rm -rf /var/www/moodledata/* && cp -rf  /var/www/moodledata_src/* /var/www/moodledata &&  chown -R 33:33 /var/www/moodledata"]
           volumeMounts:
