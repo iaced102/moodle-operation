@@ -6,7 +6,8 @@ metadata:
     app: moodle-pvc
   name: moodle-pvc
 spec:
-  storageClassName: premium-ssd1
+  storageClassName: nfs-client
+  # storageClassName: premium-ssd1
   accessModes:
     - ReadWriteMany
   resources:
