@@ -1,11 +1,17 @@
 package main
 
 import (
-	cli "moodle/cli"
+	// "moodle/cli"
+
+	"moodle/restserver/server"
+
+	log "github.com/sirupsen/logrus"
 )
 
-func main() {
-	cli := cli.CLI{}
-	cli.Run()
-}
 
+func main() {
+	// k8scli := cli.NewK8sCli()
+	// k8scli.Run()
+	log.SetFormatter(&log.JSONFormatter{})
+	server.Start()
+}
