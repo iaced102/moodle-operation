@@ -7,8 +7,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
+	appv1 "k8s.io/api/apps/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -122,22 +125,24 @@ func (client *K8sClient) GetEnvVarsValues(clientset *kubernetes.Clientset, names
 
 
 // create namespace
-func (client *K8sClient) CreateNamespace(clientset *kubernetes.Clientset, namespace string) {
+func (client *K8sClient) CreateNamespace(clientset *kubernetes.Clientset, namespace string) (*v1.Namespace, error) {
 	fmt.Printf("Creating namespace %q\n", namespace)
-	_, err := clientset.CoreV1().Namespaces().Create(context.Background(), &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}, metav1.CreateOptions{})
+	result, err := clientset.CoreV1().Namespaces().Create(context.Background(), &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespace}}, metav1.CreateOptions{})
 	if err != nil {
 		panic(err.Error())
 	}
+	return result, err
 }
 
 
 // delete namespace
-func (client *K8sClient) DeleteNamespace(clientset *kubernetes.Clientset, namespace string) {
+func (client *K8sClient) DeleteNamespace(clientset *kubernetes.Clientset, namespace string) error {
 	fmt.Printf("Deleting namespace %q:\n", namespace)
 	err := clientset.CoreV1().Namespaces().Delete(context.Background(), namespace, metav1.DeleteOptions{})
 	if err != nil {
 		panic(err.Error())
 	}
+	return err
 }
 
 
@@ -154,7 +159,8 @@ func (client *K8sClient) GetServiceExternalIP(clientset *kubernetes.Clientset, n
 
 
 // apply pvc from filepath
-func (client *K8sClient) ApplyPVC(clientset *kubernetes.Clientset, namespace string, filepath string) {
+func (client *K8sClient) ApplyPVC(clientset *kubernetes.Clientset, namespace string) (*v1.PersistentVolumeClaim, error) {
+	filepath := os.Getenv("PVC_FILEPATH")
 	fmt.Printf("Deploying pvc from file %q in namespace %q:\n", filepath, namespace)
 	// read file
 	file, err := ioutil.ReadFile(filepath)
@@ -168,14 +174,16 @@ func (client *K8sClient) ApplyPVC(clientset *kubernetes.Clientset, namespace str
 		panic(err.Error())
 	}
 	// apply pvc
-	_, err = clientset.CoreV1().PersistentVolumeClaims(namespace).Apply(context.Background(), &pvc, metav1.ApplyOptions{FieldManager: "kubectl-client-side-apply"})
+	result, err := clientset.CoreV1().PersistentVolumeClaims(namespace).Apply(context.Background(), &pvc, metav1.ApplyOptions{FieldManager: "kubectl-client-side-apply"})
 	if err != nil {
 		panic(err.Error())
 	}
+	return result, err
 }
 
 // apply service from filepath
-func (client *K8sClient) ApplyService(clientset *kubernetes.Clientset, namespace string, filepath string) {
+func (client *K8sClient) ApplyService(clientset *kubernetes.Clientset, namespace string) (*v1.Service, error) {
+	filepath := os.Getenv("SERVICE_FILEPATH")
 	fmt.Printf("Applying service from file %q in namespace %q:\n", filepath, namespace)
 	// read file
 	file, err := ioutil.ReadFile(filepath)
@@ -189,15 +197,17 @@ func (client *K8sClient) ApplyService(clientset *kubernetes.Clientset, namespace
 		panic(err.Error())
 	}
 	// apply service
-	_, err = clientset.CoreV1().Services(namespace).Apply(context.Background(), &service, metav1.ApplyOptions{FieldManager: "kubectl-client-side-apply"})
+	result, err := clientset.CoreV1().Services(namespace).Apply(context.Background(), &service, metav1.ApplyOptions{FieldManager: "kubectl-client-side-apply"})
 	if err != nil {
 		panic(err.Error())
 	}
+	return result, err
 }
 
 
 //  apply statefulset from  filepath
-func (client *K8sClient) ApplyStatefulSet(clientset *kubernetes.Clientset, namespace string, filepath string) {
+func (client *K8sClient) ApplyStatefulSet(clientset *kubernetes.Clientset, namespace string, theme string) (appv1.StatefulSet, error) {
+	filepath := os.Getenv("STATEFULSET_FILEPATH") + "-" + theme + "/statefulset.yaml"
 	fmt.Printf("Applying statefulset from file %q in namespace %q:\n", filepath, namespace)
 	// read file
 	file, err := ioutil.ReadFile(filepath)
@@ -211,10 +221,11 @@ func (client *K8sClient) ApplyStatefulSet(clientset *kubernetes.Clientset, names
 		panic(err.Error())
 	}
 	// apply statefulset
-	_, err = clientset.AppsV1().StatefulSets(namespace).Apply(context.Background(), &statefulset, metav1.ApplyOptions{FieldManager: "kubectl-client-side-apply"})
+	result, err := clientset.AppsV1().StatefulSets(namespace).Apply(context.Background(), &statefulset, metav1.ApplyOptions{FieldManager: "kubectl-client-side-apply"})
 	if err != nil {
 		panic(err.Error())
 	}
+	return *result, err
 }
 
 
@@ -312,3 +323,24 @@ func (client *K8sClient) ListPVC(clientset *kubernetes.Clientset, namespace stri
 	}
 	return pvcSlice
 }
+
+
+// scale statefulset
+func (client *K8sClient) ScaleStatefulSet(clientset *kubernetes.Clientset, namespace string, replicas int32) error {
+	statefulset := "moodle"
+	fmt.Printf("Scaling statefulset %q in namespace %q to %d:\n", statefulset, namespace, replicas)
+	_, err := clientset.AppsV1().StatefulSets(namespace).UpdateScale(context.Background(), statefulset, &autoscalingv1.Scale{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      statefulset,
+			Namespace: namespace,
+		},
+		Spec: autoscalingv1.ScaleSpec{
+			Replicas: replicas,
+		},
+	}, metav1.UpdateOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+	return err
+}
+

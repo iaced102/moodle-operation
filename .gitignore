@@ -1,5 +1,5 @@
 __pycache__/
 venv/*
-docker/moodle/*
-docker/moodledata/*
+docker/moodle*/*
+docker/moodledata*/*
 client/__debug_bin

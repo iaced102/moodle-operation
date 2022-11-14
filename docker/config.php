@@ -4,12 +4,13 @@ unset($CFG);
 global $CFG;
 $CFG = new stdClass();
 
-$CFG->dbtype    = 'mysqli';
+$CFG->dbtype    = 'mariadb';
 $CFG->dblibrary = 'native';
 $CFG->dbhost    = getenv('DB_HOST');
 $CFG->dbname    = getenv('DB_NAME');
 $CFG->dbuser    = getenv('DB_USER');
 $CFG->dbpass    = getenv('DB_PASS');
+$CFG->theme		= getenv('THEME');
 $CFG->prefix    = 'mdl_';
 $CFG->dboptions = array (
   'dbpersist' => 0,

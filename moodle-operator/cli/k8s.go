@@ -14,7 +14,7 @@ func NewK8sCli() *K8sCli {
 
 func (cli *K8sCli) Run() {
 	// k8s 
-	k8s := client.NewK8S()
+	k8s := client.NewK8sClient()
 	clientset := k8s.NewClientSet()
 	switch os.Args[1] {
 	case "list-namespaces":
@@ -34,9 +34,9 @@ func (cli *K8sCli) Run() {
 	case "get-service":
 		fmt.Println(k8s.GetServiceExternalIP(clientset, os.Args[2], os.Args[3]))
 	case "apply-pvc":
-		k8s.ApplyPVC(clientset, os.Args[2], os.Args[3])
+		k8s.ApplyPVC(clientset, os.Args[2])
 	case "apply-service":
-		k8s.ApplyService(clientset, os.Args[2], os.Args[3])
+		k8s.ApplyService(clientset, os.Args[2])
 	case "apply-statefulset":
 		k8s.ApplyStatefulSet(clientset, os.Args[2], os.Args[3])
 	case "delete-pvc":
