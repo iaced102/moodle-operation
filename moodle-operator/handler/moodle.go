@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	k8sclient "moodle/client/k8sclient"
+	k8sclient "moodle/client/k8s"
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"

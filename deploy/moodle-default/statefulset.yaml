@@ -19,13 +19,13 @@ spec:
       containers:
         - env:
           - name: DB_HOST
-            value: 45.124.94.107
+            value: 45.124.94.128
           - name: DB_NAME
             value: moodle
           - name: DB_USER
-            value: root
+            value: duy
           - name: DB_PASS
-            value: 3suYhllg5vx9b9bW6pVqY4VewqbK4p0TPLVN
+            value: 4Yk7741J2JVWPTQkT9eKkcbAaTUs5XzTvIFL
           - name: THEME
             value: edumy
           - name: REDIS_HOST

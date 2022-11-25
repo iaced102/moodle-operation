@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	client "moodle/client/mariaclient"
+	client "moodle/client/maria"
 	"os"
 )
 
@@ -22,6 +22,8 @@ func (cli *MariaCli) Run() {
 			mariaclient.CreateInstance(os.Args[2])
 		case "delete-instance":
 			mariaclient.DeleteInstance(os.Args[2])
+		case "create-instance-from-backup":
+			mariaclient.CreateInstanceFromBackup(os.Args[2], os.Args[3])
 	default:
 		fmt.Println("Invalid command")
 	}

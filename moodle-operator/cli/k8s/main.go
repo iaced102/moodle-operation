@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	client "moodle/client/k8sclient"
+	client "moodle/client/k8s"
 	"os"
 )
 

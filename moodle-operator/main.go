@@ -3,6 +3,11 @@ package main
 import (
 	"context"
 	"log"
+
+	// mariacli "moodle/cli/maria"
+	k8scli "moodle/cli/k8s"
+	mariaworker "moodle/worker/maria"
+
 	"moodle/handler"
 	"net/http"
 
@@ -12,7 +17,6 @@ import (
 
 	"flag"
 	"fmt"
-	k8scli "moodle/cli"
 	"os"
 	"os/signal"
 	"sync/atomic"
@@ -31,10 +35,27 @@ var (
 )
 
 func main() {
+	// run worker in background with interval
+
+ go func() {
+ 	for {
+ 		time.Sleep(5* time.Second)
+ 		mariaWorker := mariaworker.NewMariaWorker()
+ 		fmt.Println("start worker")
+ 		mariaWorker.GetMariaInstances()
+ 	}
+ }()
+
+
+
+
+
 	// cli
 	if len(os.Args) > 1 {
-		k8scli := k8scli.NewK8sCli()
-		k8scli.Run()
+		cli := k8scli.NewK8sCli()
+		cli.Run()
+		// mariacli := mariacli.NewMariaCli()
+		// mariacli.Run()
 		return
 	}
 
