@@ -2,10 +2,11 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"moodle/handler"
+	"moodle/config"
 	"net/http"
 	"strings"
 )
@@ -26,8 +27,8 @@ type Session struct {
 func (m *MariaClient) GetSession() *Session {
 	client := &http.Client{}
 	var data = strings.NewReader(`{
-            "username": "` + handler.USERNAME+ `",
-            "password": "` + handler.PASSWORD+ `",
+            "username": "` + config.USERNAME+ `",
+            "password": "` + config.PASSWORD+ `",
             "auth_method": "password"
         }`)
 	req, err := http.NewRequest("POST", "https://manage.bizflycloud.vn/api/token", data)
@@ -151,31 +152,39 @@ type CloudDatabaseNetworks struct {
 
 
 // return list of instances
-func (m *MariaClient) ListInstances() ([]*CloudDatabaseInstance , error) {
+func (m *MariaClient) GetMariaInstances() ([]*CloudDatabaseInstance , error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://hn.manage.bizflycloud.vn/api/cloud-database/instances", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 	req.Header.Set("X-Region-Name", "HaNoi")
-	req.Header.Set("X-Tenant-Name", handler.USERNAME)
-	req.Header.Set("X-Auth-Token", handler.TOKEN)
+	req.Header.Set("X-Tenant-Name", config.USERNAME)
+	req.Header.Set("X-Auth-Token", config.TOKEN)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
+	// return message as string if request fail 
+	if resp.StatusCode != 200 {
+		bodyText, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return nil, errors.New(string(bodyText))
+	}
 	var data struct {
 		Instances []*CloudDatabaseInstance `json:"instances"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
-	for _, instance := range data.Instances {
-		fmt.Println(instance)
-	}
+	// for _, instance := range data.Instances {
+	// 	fmt.Println(instance)
+	// }
 
-	return data.Instances, err
+	return data.Instances, nil
 }
 
 
@@ -188,8 +197,8 @@ func (m *MariaClient) CreateInstance(name string) error {
 		log.Fatal(err)
 	}
 	req.Header.Set("X-Region-Name", "HaNoi")
-	req.Header.Set("X-Tenant-Name", handler.USERNAME)
-	req.Header.Set("X-Auth-Token", handler.TOKEN)
+	req.Header.Set("X-Tenant-Name", config.USERNAME)
+	req.Header.Set("X-Auth-Token", config.TOKEN)
 	req.Header.Set("content-type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
@@ -213,8 +222,8 @@ func (m *MariaClient) DeleteInstance(instanceID string) error {
 		log.Fatal(err)
 	}
 	req.Header.Set("X-Region-Name", "HaNoi")
-	req.Header.Set("X-Tenant-Name", handler.USERNAME)
-	req.Header.Set("X-Auth-Token", handler.TOKEN)
+	req.Header.Set("X-Tenant-Name", config.USERNAME)
+	req.Header.Set("X-Auth-Token", config.TOKEN)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
@@ -231,14 +240,14 @@ func (m *MariaClient) DeleteInstance(instanceID string) error {
 // create instance from backup
 func (m *MariaClient) CreateInstanceFromBackup(name string, backupID string) error {
 	client := &http.Client{}
-	var data = strings.NewReader(`{"networks":[{"network_id":"7ef80d87-f2b0-4409-9b74-1b10e84fee1e"}],"public_access":true,"datastore":{"type":"MariaDB","version_id":"550aebf7-df97-49f1-bf24-7cd7b69fa365"},"autoscaling":{"enable":false,"volume":{"threshold":80,"limited":180}},"volume_size":40,"flavor_name":"2c_4g","availability_zone":"HN1","name":"` + name + `","backup_id":"` + backupID + `"}`)
+	var data = strings.NewReader(`{"networks":[{"network_id":"7ef80d87-f2b0-4409-9b74-1b10e84fee1e"}],"public_access":true,"datastore":{"type":"MariaDB","version_id":"550aebf7-df97-49f1-bf24-7cd7b69fa365"},"autoscaling":{"enable":false,"volume":{"threshold":80,"limited":180}},"volume_size":40,"flavor_name":"1c_2g","availability_zone":"HN1","name":"` + name + `","backup_id":"` + backupID + `"}`)
 	req, err := http.NewRequest("POST", "https://hn.manage.bizflycloud.vn/api/cloud-database/instances", data)
 	if err != nil {
 		log.Fatal(err)
 	}
 	req.Header.Set("X-Region-Name", "HaNoi")
-	req.Header.Set("X-Tenant-Name", handler.USERNAME)
-	req.Header.Set("X-Auth-Token", handler.TOKEN)
+	req.Header.Set("X-Tenant-Name", config.USERNAME)
+	req.Header.Set("X-Auth-Token", config.TOKEN)
 	req.Header.Set("content-type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
@@ -249,6 +258,9 @@ func (m *MariaClient) CreateInstanceFromBackup(name string, backupID string) err
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%s\n", bodyText)
+	// error if status code != 201
+	if resp.StatusCode != 201 {
+		return errors.New(string(bodyText))
+	}
 	return nil
 }

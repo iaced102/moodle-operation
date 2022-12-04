@@ -1,0 +1,11 @@
+package config
+
+
+var (
+	MONGOURI = "mongodb://localhost:27017"
+	DBNAME = "moodle"
+	USERNAME = "duynn@bizflycloud.vn"
+	PASSWORD = "MzU2ZmE3ZDM5MmUwMDFkYThiMzkwMmE3"
+	TOKEN = "gAAAAABjmTiO2LZMTJKMrCiFaSu1oRPhJZ85xZKGRFFy_CVepekZ4BfBIwUIAP6xw0pi0vYYVMvu--gKO3nuM46rHUhTGNE506bbgOEU4N2CHcfzw3lV77WJAN4f5VR8V0l2MES1Jffi4tEtrUzSIxnOnEr8S9t7HXE4j9y88SXBzkbVriFmIZ0"
+	INTERVAL = 5
+)

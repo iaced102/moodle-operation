@@ -131,7 +131,7 @@ func (client *K8sClient) CreateNamespace(clientset *kubernetes.Clientset, namesp
 	if err != nil {
 		panic(err.Error())
 	}
-	return result, err
+	return result, nil
 }
 
 
@@ -142,7 +142,7 @@ func (client *K8sClient) DeleteNamespace(clientset *kubernetes.Clientset, namesp
 	if err != nil {
 		panic(err.Error())
 	}
-	return err
+	return nil
 }
 
 
@@ -178,7 +178,7 @@ func (client *K8sClient) ApplyPVC(clientset *kubernetes.Clientset, namespace str
 	if err != nil {
 		panic(err.Error())
 	}
-	return result, err
+	return result, nil
 }
 
 // apply service from filepath
@@ -201,7 +201,7 @@ func (client *K8sClient) ApplyService(clientset *kubernetes.Clientset, namespace
 	if err != nil {
 		panic(err.Error())
 	}
-	return result, err
+	return result, nil
 }
 
 
@@ -225,7 +225,7 @@ func (client *K8sClient) ApplyStatefulSet(clientset *kubernetes.Clientset, names
 	if err != nil {
 		panic(err.Error())
 	}
-	return *result, err
+	return *result, nil
 }
 
 
@@ -344,3 +344,14 @@ func (client *K8sClient) ScaleStatefulSet(clientset *kubernetes.Clientset, names
 	return err
 }
 
+
+// patch statefulset from string (yaml)
+func (client *K8sClient) PatchStatefulet(clientset *kubernetes.Clientset, namespace string, patch string) error {
+	statefulset := "moodle"
+	fmt.Printf("Patching statefulset %q in namespace %q:\n", statefulset, namespace)
+	_, err := clientset.AppsV1().StatefulSets(namespace).Patch(context.Background(), statefulset, types.StrategicMergePatchType, []byte(patch), metav1.PatchOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+	return err
+}

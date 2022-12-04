@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	"moodle/handler"
+	"moodle/config"
 	"net/http"
 )
 
@@ -54,8 +54,8 @@ func (m *LBClient) GetLBInstances() ([]*LoadBalancer, error) {
 		log.Fatal(err)
 	}
 	req.Header.Set("X-Region-Name", "HaNoi")
-	req.Header.Set("X-Tenant-Name", handler.USERNAME)
-	req.Header.Set("X-Auth-Token", handler.TOKEN)
+	req.Header.Set("X-Tenant-Name", config.USERNAME)
+	req.Header.Set("X-Auth-Token", config.TOKEN)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
@@ -72,7 +72,7 @@ func (m *LBClient) GetLBInstances() ([]*LoadBalancer, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return data.LB, err
+	return data.LB, nil
 }
 
 

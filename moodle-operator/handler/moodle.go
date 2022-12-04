@@ -6,35 +6,34 @@ import (
 	"fmt"
 	"net/http"
 
+	mongoadapter "moodle/adapter/mongo"
 	k8sclient "moodle/client/k8s"
+	mariaclient "moodle/client/maria"
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"k8s.io/client-go/kubernetes"
 )
 
 
 
-type Database interface{
-	 Collection(name string, opts ...*options.CollectionOptions) *mongo.Collection
-	 CreateCollection(ctx context.Context, name string, opts ...*options.CreateCollectionOptions) error
-}
 
 type Handler struct {
 	k8sclient k8sclient.K8sClient
 	clientset *kubernetes.Clientset
-    db Database
+	mariaclient mariaclient.MariaClient
+    db mongoadapter.MongoAdapter
 }
 
-func New(d Database) *Handler {
-	client := k8sclient.NewK8sClient()
-	clientset := client.NewClientSet()
+func New(d mongoadapter.MongoAdapter) *Handler {
+	k8sclient := k8sclient.NewK8sClient()
+	clientset := k8sclient.NewClientSet()
+	mariaclient := mariaclient.NewMariaClient()
     return &Handler{
-		k8sclient: *client,
+		k8sclient: *k8sclient,
 		clientset: clientset,
-        db: d,
+		mariaclient: *mariaclient,
+		db: d,
     }
 }
 
@@ -65,6 +64,10 @@ type Moodle struct {
 	Memory string `json:"memory"`
 }
 
+type MoodleQueue struct {
+	Id string `json:"id"`
+}
+
 
 // Apply statefulset
 func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
@@ -77,43 +80,60 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println(payload)
-	// create namespace before creating statefulset
 	uuid := uuid.New()
-	_, err = h.k8sclient.CreateNamespace(h.clientset, payload.Name+"-"+uuid.String())
-		if err != nil {
-		w.Write([]byte(err.Error()))
-	}
 
-
-	moodle.Id = payload.Name+"-"+uuid.String()
-	moodle.Name = payload.Name
+	name := payload.Name+"-"+uuid.String()
+	moodle.Name = name[:31]
+	moodle.Id = uuid.String()
 	moodle.Ccu = payload.Ccu
 
-	// create db before creating statefulset
 
-
-	// create pvc before creating statefulset
-	_, err = h.k8sclient.ApplyPVC(h.clientset, moodle.Id)
+	// create namespace before creating statefulset
+	_, err = h.k8sclient.CreateNamespace(h.clientset, uuid.String()[:31])
 		if err != nil {
 		w.Write([]byte(err.Error()))
 	}
 
+	// write moodle id to maria_queue collection
+	moodleQueue := MoodleQueue{
+		Id: moodle.Id[:31],
+	}
+	moodleQueueCollection := h.db.Collection("maria_queue")
+	_, err = moodleQueueCollection.InsertOne(context.Background(), moodleQueue)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+	}
+
+
+	// create db before creating statefulset
+	backupID := "0fb8221a-a31c-4dce-bf87-18bf918298f0"
+	err = h.mariaclient.CreateInstanceFromBackup(moodle.Id[:31], backupID)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+	}
+
+	// apply the service
+	_, err = h.k8sclient.ApplyService(h.clientset, moodle.Id[:31])
+		if err != nil {
+		w.Write([]byte(err.Error()))
+	}
+
+	// create pvc before creating statefulset
+	_, err = h.k8sclient.ApplyPVC(h.clientset, moodle.Id[:31])
+		if err != nil {
+		w.Write([]byte(err.Error()))
+	}
 
 	// apply the statefulset
-	statefulset, err := h.k8sclient.ApplyStatefulSet(h.clientset, moodle.Id, payload.Theme)
+	// statefulset, err := h.k8sclient.ApplyStatefulSet(h.clientset, moodle.Id[:31], payload.Theme)
 
-	replicas := statefulset.Spec.Replicas
+	// replicas := statefulset.Spec.Replicas
+	// moodle.Replicas = *replicas
+	moodle.Replicas = 2
 	moodle.Status = "Provisioning"
-	moodle.Replicas = *replicas
 	moodle.Cpu = "2"
 	moodle.Memory = "2Gi"
 	moodle.Userid = payload.UserId
-
-	// apply the service
-	_, err = h.k8sclient.ApplyService(h.clientset, moodle.Id)
-		if err != nil {
-		w.Write([]byte(err.Error()))
-	}
 
 
 	// write to db
@@ -223,4 +243,3 @@ func (h *Handler) ScaleMoodle(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
-

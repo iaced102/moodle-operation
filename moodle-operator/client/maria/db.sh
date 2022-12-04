@@ -2,7 +2,7 @@
 
 
 
-token="gAAAAABjidIWazLO0p6-d-X-gvfMan93LV_q8nzwFfVkov4miJS4DSaki8fucMxtRWrMTOGEv84IdhK9KdH6LtIwGuthddMbxmXMMh5pAxCOYxwRK2QUbjZigIqdTpoOdWs5p_-3jNyD5GaulEBguaS0J0M51eJ3ASu4zjqx25kPg5iDcamwAes"
+token="gAAAAABjmDFLGpjfCuojYa_OgfpixlgtV-npZYd5sSDQBz7hUjFToHqRPOe_vnF_uki6YP5DKb5z5dSMY_Ks5zGRnY4DEbndr_ywsbsXc9OQIYhdILtTHLX3kYTBQoipvGofHiBJBLzKyD4gcgaqTqdFJj0HI8kGERZp8S0zMRG-nsIqErcLInE"
 username="duynn@bizflycloud.vn"
 password="MzU2ZmE3ZDM5MmUwMDFkYThiMzkwMmE3"
 
@@ -29,7 +29,7 @@ create_db() {
 	}
 
 list_db() {
-	curl 'https://hn.manage.bizflycloud.vn/api/cloud-database/instances?instance_name=&results_per_page=5&page=1' \
+	curl 'https://hn.manage.bizflycloud.vn/api/cloud-database/instances' \
 			-H "X-Region-Name: HaNoi" \
 			-H "X-Tenant-Name: $username" \
 			-H "X-Auth-Token: $token" 

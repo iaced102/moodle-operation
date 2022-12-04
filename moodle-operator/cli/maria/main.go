@@ -17,7 +17,10 @@ func (cli *MariaCli) Run() {
 	mariaclient := client.NewMariaClient()
 	switch os.Args[1] {
 		case "list-instance":
-			mariaclient.ListInstances()
+			instances , _:= mariaclient.GetMariaInstances()
+			for _, instance := range instances {
+				fmt.Println(instance)
+			}
 		case "create-instance":
 			mariaclient.CreateInstance(os.Args[2])
 		case "delete-instance":

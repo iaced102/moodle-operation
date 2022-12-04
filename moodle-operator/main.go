@@ -4,10 +4,13 @@ import (
 	"context"
 	"log"
 
-	// mariacli "moodle/cli/maria"
 	k8scli "moodle/cli/k8s"
+	mariacli "moodle/cli/maria"
+	k8sworker "moodle/worker/k8s"
+	lbworker "moodle/worker/loadbalancer"
 	mariaworker "moodle/worker/maria"
 
+	"moodle/config"
 	"moodle/handler"
 	"net/http"
 
@@ -21,6 +24,8 @@ import (
 	"os/signal"
 	"sync/atomic"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 type key int
@@ -34,29 +39,53 @@ var (
 	healthy    int32
 )
 
+
+var mariaCommands = []string{
+	"list-instance",
+	"create-instance",
+	"delete-instance",
+	"create-instance-from-backup",
+}
+
+
+var k8sCommands = []string{
+	"list-namespaces",
+	"list-pods",
+	"list-storages-classes",
+	"set-default-storage-class",
+	"get-env-vars-values",
+	"create-namespace",
+	"delete-namespace",
+	"get-service",
+	"apply-pvc",
+	"apply-service",
+	"apply-statefulset",
+	"delete-pvc",
+	"delete-service",
+	"delete-statefulset",
+	"list-pvc",
+	"get-podlogs",
+	"list-statefulsets",
+	"list-services",
+	"patch-statefulset",
+}
+
+
 func main() {
-	// run worker in background with interval
-
- go func() {
- 	for {
- 		time.Sleep(5* time.Second)
- 		mariaWorker := mariaworker.NewMariaWorker()
- 		fmt.Println("start worker")
- 		mariaWorker.GetMariaInstances()
- 	}
- }()
-
-
-
 
 
 	// cli
 	if len(os.Args) > 1 {
-		cli := k8scli.NewK8sCli()
-		cli.Run()
-		// mariacli := mariacli.NewMariaCli()
-		// mariacli.Run()
-		return
+		// check string in slice
+		if slices.Contains(k8sCommands, os.Args[1]) {
+			cli := k8scli.NewK8sCli()
+			cli.Run()
+			return
+		} else if slices.Contains(mariaCommands, os.Args[1]) {
+			mariacli := mariacli.NewMariaCli()
+			mariacli.Run()
+			return
+		}
 	}
 
 	// api
@@ -68,7 +97,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	client, err := mongo.NewClient(
-		options.Client().ApplyURI(handler.MONGOURI))
+		options.Client().ApplyURI(config.MONGOURI))
 	if err != nil {
 		log.Fatalf("Error creating mongo client: %+v", err)
 	}
@@ -76,7 +105,7 @@ func main() {
 	if err := client.Connect(ctx); err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %+v", err)
 	}
-	myHandler := handler.New(client.Database(handler.DBNAME))
+	myHandler := handler.New(client.Database(config.DBNAME))
 	r := mux.NewRouter()
 	r.HandleFunc("/health", myHandler.HealthCheck).Methods("GET")
 	r.HandleFunc("/api/moodles", myHandler.ListMoodle).
@@ -119,6 +148,40 @@ func main() {
 		}
 		close(done)
 	}()
+
+	// lb worker
+
+	go func() {
+		for {
+			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
+			lbWorker := lbworker.NewLBWorker()
+			fmt.Println("lb worker is running...")
+			lbWorker.GetLBInstances()
+		}
+	}()
+
+	// maria worker
+
+	go func() {
+		for {
+			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
+			mariaWorker := mariaworker.NewMariaWorker()
+			fmt.Println("maria worker is running...")
+			mariaWorker.GetMariaInstances()
+		}
+	}()
+
+	// k8s worker
+
+	go func() {
+		for {
+			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
+			k8sWorker := k8sworker.NewK8sWorker()
+			fmt.Println("k8s worker is running...")
+			k8sWorker.GetActiveMariaInstances([]string{"moodle004"})
+		}
+	}()
+
 
 	logger.Println("Server is ready to handle requests at", listenAddr)
 	atomic.StoreInt32(&healthy, 1)

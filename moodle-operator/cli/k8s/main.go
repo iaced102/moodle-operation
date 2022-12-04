@@ -53,6 +53,8 @@ func (cli *K8sCli) Run() {
 		fmt.Println(k8s.ListStatefulSet(clientset, os.Args[2]))
 	case "list-services":
 		fmt.Println(k8s.ListService(clientset, os.Args[2]))
+	case "patch-statefulset":
+		k8s.PatchStatefulet(clientset, os.Args[2], os.Args[3])
 	default:
 		fmt.Println("Invalid command")
 	}
