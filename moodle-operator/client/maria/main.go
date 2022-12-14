@@ -240,7 +240,7 @@ func (m *MariaClient) DeleteInstance(instanceID string) error {
 // create instance from backup
 func (m *MariaClient) CreateInstanceFromBackup(name string, backupID string) error {
 	client := &http.Client{}
-	var data = strings.NewReader(`{"networks":[{"network_id":"7ef80d87-f2b0-4409-9b74-1b10e84fee1e"}],"public_access":true,"datastore":{"type":"MariaDB","version_id":"550aebf7-df97-49f1-bf24-7cd7b69fa365"},"autoscaling":{"enable":false,"volume":{"threshold":80,"limited":180}},"volume_size":40,"flavor_name":"1c_2g","availability_zone":"HN1","name":"` + name + `","backup_id":"` + backupID + `"}`)
+	var data = strings.NewReader(`{"networks":[{"network_id":"7ef80d87-f2b0-4409-9b74-1b10e84fee1e"}],"public_access":false,"datastore":{"type":"MariaDB","version_id":"550aebf7-df97-49f1-bf24-7cd7b69fa365"},"autoscaling":{"enable":false,"volume":{"threshold":80,"limited":180}},"volume_size":40,"flavor_name":"1c_2g","availability_zone":"HN1","name":"` + name + `","backup_id":"` + backupID + `"}`)
 	req, err := http.NewRequest("POST", "https://hn.manage.bizflycloud.vn/api/cloud-database/instances", data)
 	if err != nil {
 		log.Fatal(err)

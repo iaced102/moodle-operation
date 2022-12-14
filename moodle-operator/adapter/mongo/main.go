@@ -13,11 +13,6 @@ type Adapter struct {
 	adapter MongoAdapter
 }
 
-// Collection implements MongoAdapter
-func (*Adapter) Collection(name string, opts ...*options.CollectionOptions) *mongo.Collection {
-	panic("unimplemented")
-}
-
 func New(m MongoAdapter) *Adapter {
 	return &Adapter{
 		adapter: m,

@@ -3,43 +3,26 @@ package worker
 import (
 	"context"
 	"log"
-	mongoadapter "moodle/adapter/mongo"
+	adapter "moodle/adapter/mongo"
 	lb "moodle/client/lb"
-	"moodle/config"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 
-type LBWoker struct {
+type LBWorker struct {
+    adapter adapter.MongoAdapter
 }
 
-
-func  NewLBWorker() *LBWoker {
-	return &LBWoker{}
-}
-
-// new mongoadapter
-func (l *LBWoker) NewMongoAdapter() *mongoadapter.Adapter {
-		ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	client, err := mongo.NewClient(
-		options.Client().ApplyURI(config.MONGOURI))
-	if err != nil {
-		log.Fatalf("Error creating mongo client: %+v", err)
-	}
-	defer client.Disconnect(ctx)
-	if err := client.Connect(ctx); err != nil {
-		log.Fatalf("Failed to connect to MongoDB: %+v", err)
-	}
-	return mongoadapter.New(client.Database(config.DBNAME))
+func NewLBWorker(m adapter.MongoAdapter) *LBWorker{
+    return &LBWorker{
+		adapter: m,
+    }
 }
 
 // list lb then insert to mongodb
-func (m *LBWoker) GetLBInstances() error {
+func (m *LBWorker) GetLBInstances() error {
 	var client *lb.LBClient = lb.NewLBClient()
 
 	// list instances
@@ -47,22 +30,8 @@ func (m *LBWoker) GetLBInstances() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(config.MONGOURI))
-	if err != nil {
-	   log.Fatal(err)
-	}
-	err = mongoClient.Connect(ctx)
-	if err != nil {
-	   log.Fatal(err)
-	}
-	defer mongoClient.Disconnect(ctx)
-	collection := mongoClient.Database(config.DBNAME).Collection("lb_instances")
-
-
-
-
+	ctx := context.Background()
+	collection := m.adapter.Collection("lb_instances")
 
 	// for lb in collection if not in instances then delete
 	cur, err := collection.Find(ctx, bson.M{})

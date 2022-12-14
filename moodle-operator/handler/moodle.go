@@ -16,8 +16,6 @@ import (
 )
 
 
-
-
 type Handler struct {
 	k8sclient k8sclient.K8sClient
 	clientset *kubernetes.Clientset
@@ -62,6 +60,8 @@ type Moodle struct {
 	Replicas int32 `json:"replicas"`
 	Cpu string `json:"cpu"`
 	Memory string `json:"memory"`
+	Theme string `json:"theme"`
+	Database string `json:"database"`
 }
 
 type MoodleQueue struct {
@@ -84,8 +84,10 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 
 	name := payload.Name+"-"+uuid.String()
 	moodle.Name = name[:31]
-	moodle.Id = uuid.String()
+	moodle.Id = uuid.String()[:31]
 	moodle.Ccu = payload.Ccu
+	moodle.Theme = payload.Theme
+	moodle.Database = ""
 
 
 	// create namespace before creating statefulset
@@ -242,4 +244,10 @@ func (h *Handler) ScaleMoodle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
+}
+
+
+// return clientset
+func (h *Handler) GetClientset() *kubernetes.Clientset {
+	return h.clientset
 }

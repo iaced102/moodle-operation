@@ -3,26 +3,24 @@ package worker
 import (
 	"context"
 	"log"
+	adapter "moodle/adapter/mongo"
 	maria "moodle/client/maria"
-	"moodle/config"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 
 
 type MariaWorker struct {
+    adapter adapter.MongoAdapter
 }
 
-
-
-func NewMariaWorker() *MariaWorker {
-	return &MariaWorker{}
+func NewMariaWorker(m adapter.MongoAdapter) *MariaWorker{
+    return &MariaWorker{
+		adapter: m,
+    }
 }
-
 
 // list maria instances then insert to mongodb
 func (m *MariaWorker) GetMariaInstances() error {
@@ -35,18 +33,8 @@ func (m *MariaWorker) GetMariaInstances() error {
 		log.Fatal(err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	mongoClient, err := mongo.NewClient(options.Client().ApplyURI(config.MONGOURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = mongoClient.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer mongoClient.Disconnect(ctx)
-	collection := mongoClient.Database(config.DBNAME).Collection("maria_instances")
+	ctx := context.Background()
+	collection := m.adapter.Collection("maria_instances")
 
 	// for maria instance in collection if not in instances then delete
 	cur, err := collection.Find(ctx, bson.M{})
@@ -68,7 +56,6 @@ func (m *MariaWorker) GetMariaInstances() error {
 			}
 		}
 	}
-
 
 	for _, instance := range instances {
 		filter := bson.M{"name": instance.Name}

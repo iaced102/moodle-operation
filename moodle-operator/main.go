@@ -154,7 +154,7 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
-			lbWorker := lbworker.NewLBWorker()
+			lbWorker := lbworker.NewLBWorker(client.Database(config.DBNAME))
 			fmt.Println("lb worker is running...")
 			lbWorker.GetLBInstances()
 		}
@@ -165,7 +165,7 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
-			mariaWorker := mariaworker.NewMariaWorker()
+			mariaWorker := mariaworker.NewMariaWorker(client.Database(config.DBNAME))
 			fmt.Println("maria worker is running...")
 			mariaWorker.GetMariaInstances()
 		}
@@ -176,9 +176,9 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
-			k8sWorker := k8sworker.NewK8sWorker()
+			k8sWorker := k8sworker.NewK8sWorker(client.Database(config.DBNAME))
 			fmt.Println("k8s worker is running...")
-			k8sWorker.GetActiveMariaInstances([]string{"moodle004"})
+			k8sWorker.ApplyStatefulSetWorker(myHandler.GetClientset())
 		}
 	}()
 
