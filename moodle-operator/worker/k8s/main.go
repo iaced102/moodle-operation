@@ -5,44 +5,14 @@ import (
 	"log"
 	adapter "moodle/adapter/mongo"
 	k8sclient "moodle/client/k8s"
-	"moodle/config"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"k8s.io/client-go/kubernetes"
 )
-
-func checkMariaInstanceStatus(name string) (string, error) {
-	// mongoclient
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	client, err := mongo.NewClient(options.Client().ApplyURI(config.MONGOURI))
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer client.Disconnect(ctx)
-	// check instance status by name
-	collection := client.Database("moodle").Collection("maria_instances")
-	filter := bson.D{{Key: "name", Value: name}}
-	var result bson.M
-	err = collection.FindOne(context.Background(), filter).Decode(&result)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return result["status"].(string), nil
-}
-
 
 // k8s worker
 type K8sWorker struct {
     adapter adapter.MongoAdapter
-	// clientset *kubernetes.Clientset
 	k8sclient k8sclient.K8sClient
 }
 
@@ -52,11 +22,8 @@ func NewK8sWorker(m adapter.MongoAdapter) *K8sWorker{
     return &K8sWorker{
 		adapter: m,
 		k8sclient: *k8sclient,
-		// clientset: clientset,
     }
 }
-
-
 
 // list maria id from maria_queue
 func (k *K8sWorker) ListMariaQueue() ([]string, error) {
@@ -99,10 +66,11 @@ func (k *K8sWorker) GetActiveMariaInstances(mariaIds []string) ([]string, error)
 			var result bson.M
 			err := collection.FindOne(context.Background(), filter).Decode(&result)
 			if err != nil {
-				log.Fatal(err)
+				continue
 			}
-			if result["status"].(string) == "ACTIVE" {
-				results = append(results, result["id"].(string))
+
+			if result["status"] == "ACTIVE" {
+				results = append(results, result["name"].(string))
 			}
 		}
 	}
@@ -117,11 +85,11 @@ func (k *K8sWorker) GetTheme(moodleId string) (string, error) {
 	var result bson.M
 	err := collection.FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
-		log.Fatal(err)
-	}
-	// if result is empty, return default theme
-	if result == nil {
-		return "", nil
+		if err.Error() == "mongo: no documents in result" {
+			return "", nil
+		} else {
+			log.Fatal(err)
+		}
 	}
 	return result["theme"].(string), nil
 }
@@ -166,11 +134,11 @@ func (k *K8sWorker) ApplyStatefulSetWorker(clientset *kubernetes.Clientset) erro
 	for _, activeMariaId := range activeMariaIds {
 		// get theme from moodles collection by moodle id
 		theme, err := k.GetTheme(activeMariaId)
-		if theme == "" {
-			log.Fatal("theme is empty")
-		}
 		if err != nil {
 			log.Fatal(err)
+		}
+		if theme == "" {
+			return nil
 		}
 
 		err = k.ApplyStatefulSet(clientset, activeMariaId, theme)

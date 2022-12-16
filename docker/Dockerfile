@@ -10,11 +10,19 @@ RUN apt-get install -y apache2 php7.3 php7.3-bcmath php7.3-curl php7.3-gd \
 	php7.3-mbstring php7.3-mysql php7.3-opcache php7.3-readline \
 	php7.3-redis php7.3-soap php7.3-xml php7.3-xmlrpc php7.3-xsl \
 	php7.3-zip  libapache2-mod-php7.3  curl postfix vim  libcurl3-dev \
-	telnet # openssh-server
+	telnet cron # openssh-server
+
 ADD ./000-default.conf /etc/apache2/sites-available/000-default.conf
 ADD ./php.ini /etc/php/7.3/apache2/php.ini
 ADD ./moodle /var/www/moodle
 ADD ./moodledata /var/www/moodledata_src
 RUN chown -R www-data:www-data /var/www/moodle
+
+# Expose apache.
 EXPOSE 80
-CMD ["apache2ctl", "-D", "FOREGROUND"]
+
+# cron
+RUN crontab -l | { cat; echo "* * * * * /usr/bin/php /var/www/moodle/admin/cli/cron.php >> /var/log/scheduler.log"; } | crontab -
+
+# run
+CMD /usr/sbin/apache2ctl -D FOREGROUND; 

@@ -40,6 +40,8 @@ spec:
             value: '7200'
           - name: REDIS_LOCK_RETRY
             value: '100'
+          - name: SERVER_NAME
+            value: '123.31.39.115'
           image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:latest
           name: moodle
           resources:
