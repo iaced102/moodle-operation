@@ -44,11 +44,11 @@ spec:
             value: '123.31.39.115'
           image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:latest
           name: moodle
-          resources:
-            limits:
-              cpu: "2000m"
-              memory: "2Gi"
-          imagePullPolicy: Always
+            # resources:
+            #   requests:
+            #     cpu: 1
+            #     memory: "2900Mi"
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
               protocol: TCP
