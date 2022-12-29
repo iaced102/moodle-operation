@@ -6,17 +6,26 @@ $CFG = new stdClass();
 
 $CFG->dbtype    = 'mariadb';
 $CFG->dblibrary = 'native';
-$CFG->dbhost    = getenv('DB_HOST');
+$CFG->dbhost    = getenv('DB_HOST_WRITE');
 $CFG->dbname    = getenv('DB_NAME');
 $CFG->dbuser    = getenv('DB_USER');
 $CFG->dbpass    = getenv('DB_PASS');
 $CFG->theme		= getenv('THEME');
 $CFG->prefix    = 'mdl_';
 $CFG->dboptions = array (
-  'dbpersist' => 0,
   'dbport' => '',
-  'dbsocket' => '',
   'dbcollation' => 'utf8_general_ci',
+  'dbpersist' => false,
+  'dbsocket' => false,
+  'dbhandlesoptions' => false,
+);
+$CFG->dboptions['read'] = array(
+	'dbtype' => 'mariadb',
+	'dblibrary' => 'native',
+	'dbhost' => getenv('DB_HOST_READ'),
+	'dbname' => getenv('DB_NAME'),
+	'dbuser' => getenv('DB_NAME'),
+	'dbpass' => getenv('DB_PASS'),
 );
 
 $CFG->wwwroot   = 'http://'.$_SERVER['SERVER_NAME'];

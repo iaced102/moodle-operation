@@ -5,7 +5,7 @@ metadata:
     app: moodle
   name: moodle
 spec:
-  replicas: 2
+  replicas: 10
   serviceName: moodle-service
   selector:
     matchLabels:
@@ -18,8 +18,10 @@ spec:
     spec:
       containers:
         - env:
-          - name: DB_HOST
-            value: 45.124.94.128
+          - name: DB_HOST_READ
+            value: 45.124.94.39
+          - name: DB_HOST_WRITE
+            value: 45.124.94.112
           - name: DB_NAME
             value: moodle
           - name: DB_USER
@@ -35,13 +37,13 @@ spec:
           - name: REDIS_PASS
             value: Vcc123**
           - name: REDIS_LOCK_TIMEOUT
-            value: '120'
+            value: '30'
           - name: REDIS_LOCK_EXPIRE
             value: '7200'
           - name: REDIS_LOCK_RETRY
-            value: '100'
+            value: '5'
           - name: SERVER_NAME
-            value: '123.31.39.115'
+            value: '123.31.39.70'
           image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:latest
           name: moodle
             # resources:
