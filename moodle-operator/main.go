@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	mysqladapter "moodle/adapter/mariadb"
+	// mysqladapter "moodle/adapter/mariadb"
 	k8scli "moodle/cli/k8s"
 	mariacli "moodle/cli/maria"
 	k8sworker "moodle/worker/k8s"
@@ -81,9 +81,7 @@ func main() {
 	// 	Password: "4Yk7741J2JVWPTQkT9eKkcbAaTUs5XzTvIFL",
 	// 	Database: "moodle",
 	// }
-
 	// mysqlAdapter.Select([]string{"id", "email"}, "mdl_user")
-
 
 	// cli
 	if len(os.Args) > 1 {

@@ -71,36 +71,33 @@ func (m *MariaAdapter) Select(selectSQL []string, fromSQL string) []interface{} 
 }
 
 
-// update data from mysql
 func (m *MariaAdapter) Update(updateSQL []string, fromSQL string) {
 	db := m.Connect()
 	defer db.Close()
 	queryString := fmt.Sprintf("UPDATE %s SET %s", fromSQL, strings.Join(updateSQL, ","))
-	_, err := db.Query(query := queryString)
+	_, err := db.Query(queryString)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 
-// insert data from mysql
 func (m *MariaAdapter) Insert(insertSQL []string, fromSQL string) {
 	db := m.Connect()
 	defer db.Close()
 	queryString := fmt.Sprintf("INSERT INTO %s VALUES %s", fromSQL, strings.Join(insertSQL, ","))
-	_, err := db.Query(query := queryString)
+	_, err := db.Query(queryString)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 
-// delete data from mysql
 func (m *MariaAdapter) Delete(deleteSQL []string, fromSQL string) {
 	db := m.Connect()
 	defer db.Close()
 	queryString := fmt.Sprintf("DELETE FROM %s WHERE %s", fromSQL, strings.Join(deleteSQL, ","))
-	_, err := db.Query(query := queryString)
+	_, err := db.Query(queryString)
 	if err != nil {
 		log.Fatal(err)
 	}
