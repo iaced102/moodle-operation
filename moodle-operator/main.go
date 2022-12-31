@@ -74,15 +74,15 @@ var k8sCommands = []string{
 
 func main() {
 	// mysql adapter
-	mysqlAdapter := mysqladapter.MariaAdapter{
-		Host:     "45.124.94.39",
-		Port:     3306,
-		Username: "duy",
-		Password: "4Yk7741J2JVWPTQkT9eKkcbAaTUs5XzTvIFL",
-		Database: "moodle",
-	}
+	// mysqlAdapter := mysqladapter.MariaAdapter{
+	// 	Host:     "45.124.94.39",
+	// 	Port:     3306,
+	// 	Username: "duy",
+	// 	Password: "4Yk7741J2JVWPTQkT9eKkcbAaTUs5XzTvIFL",
+	// 	Database: "moodle",
+	// }
 
-	mysqlAdapter.Select([]string{"id", "email"}, "mdl_user")
+	// mysqlAdapter.Select([]string{"id", "email"}, "mdl_user")
 
 
 	// cli

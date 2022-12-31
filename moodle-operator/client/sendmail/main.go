@@ -3,12 +3,20 @@ package client
 // sendmail client
 
 import (
-	"net/smtp"
 	"moodle/config"
+	"net/smtp"
 )
 
+type SendmailClient struct {
+}
 
-func SendMail(to []string, subject, body string) error {
+// new sendmail client
+func NewSendmailClient() *SendmailClient {
+	return &SendmailClient{}
+}
+
+
+func (client *SendmailClient) SendMail(to []string, subject, body string) error {
 	// Set up authentication information.
 	auth := smtp.PlainAuth(
 		"",
