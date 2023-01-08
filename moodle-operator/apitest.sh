@@ -2,12 +2,17 @@
 
 # list moodle
 function moodle-list() {
-	curl -iX GET "http://localhost:5000/api/moodles?user_id=$1" 
+	curl -iX GET "http://localhost:5000/api/moodles?email=duynn@bizflycloud.vn&page=1&limit=10"
+}
+
+# search moodle
+function search() {
+	curl -iX GET "http://localhost:5000/api/moodles?search=test&page=1&limit=10"
 }
 
 # create moodle
 function moodle-create() {
-	echo $1 $2 $3 $4 $5 $6
+	# echo $1 $2 $3 $4 $5 $6
 	curl -i -X POST "http://localhost:5000/api/moodles" \
 	-H "Content-Type: application/json" \
 	-d "{

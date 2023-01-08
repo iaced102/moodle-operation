@@ -26,6 +26,7 @@ func NewTrackingWorker(m adapter.MongoAdapter) *TrackingWorker{
 func (w *TrackingWorker) UpdateLbStatus() error {
 	lbInstancesCollection := w.adapter.Collection("lb_instances")
 	lbTrackingCollection := w.adapter.Collection("lb_tracking")
+	moodlesCollection := w.adapter.Collection("moodles")
 
 	// get all lb instances
 	lbInstances, err := lbInstancesCollection.Find(context.Background(), bson.M{})
@@ -44,8 +45,14 @@ func (w *TrackingWorker) UpdateLbStatus() error {
 		}
 
 		filter := bson.M{"lbname": lbInstance.Name}
-		update := bson.M{"$set": bson.M{"lbstatus": lbInstance.OperatingStatus, "vipaddress": lbInstance.VipAddress, "updatedat": time.Now()}}
-		_, err = lbTrackingCollection.UpdateOne(context.Background(), filter, update)
+		update1 := bson.M{"$set": bson.M{"lbstatus": lbInstance.OperatingStatus, "vipaddress": lbInstance.VipAddress, "updatedat": time.Now()}}
+		update2 := bson.M{"$set": bson.M{"status": lbInstance.OperatingStatus, "ip": lbInstance.VipAddress, "updatedat": time.Now()}}
+		_, err = lbTrackingCollection.UpdateOne(context.Background(), filter, update1)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		_, err = moodlesCollection.UpdateOne(context.Background(), filter, update2)
 		if err != nil {
 			log.Println(err)
 			return err

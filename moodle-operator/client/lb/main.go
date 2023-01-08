@@ -57,6 +57,10 @@ func (m *LBClient) GetLBInstances() ([]*LoadBalancer, error) {
 	req.Header.Set("X-Tenant-Name", config.USERNAME)
 	req.Header.Set("X-Auth-Token", config.TOKEN)
 	resp, err := client.Do(req)
+	if resp.StatusCode == 401 {
+		log.Fatal("Unauthorized")
+	}
+	// log.Println(resp)
 	if err != nil {
 		log.Fatal(err)
 	}

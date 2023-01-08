@@ -51,7 +51,7 @@ type MoodlePackages struct {
 }
 
 var SmallPackages = MoodlePackages{
-	Name : "small",
+	Name : "100CCU",
 	Ccu: 100,
 	AccountMax: 4000,
 	DocumentStorage: 50,
@@ -62,7 +62,7 @@ var SmallPackages = MoodlePackages{
 }
 
 var MediumPackages = MoodlePackages{
-	Name : "medium",
+	Name : "200CCU",
 	Ccu: 200,
 	AccountMax: 8000,
 	DocumentStorage: 100,
@@ -73,7 +73,7 @@ var MediumPackages = MoodlePackages{
 }
 
 var LargePackages = MoodlePackages{
-	Name : "large",
+	Name : "300CCU",
 	Ccu: 300,
 	AccountMax: 12000,
 	DocumentStorage: 150,
@@ -131,12 +131,15 @@ type Moodle struct {
 	Email string `json:"email"`
 	Ip string `json:"ip"`
 	Name string `json:"name"`
+	LbName string `json:"lb_name"`
 	WebSiteName string `json:"website_name"`
 	PreInstalledCourse []int `json:"pre_installed_course"`
 	Packages MoodlePackages `json:"packages"`
 	AutoScale bool `json:"autoscale"`
 	DocumentsStorageExtra int `json:"documents_storage_extra"`
 	Status string `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type MoodleQueue struct {
@@ -174,27 +177,29 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch payload.PakcagesName {
-	case "small":
+	case "100CCU":
 		moodle.Packages = SmallPackages
-	case "medium":
+	case "200CCU":
 		moodle.Packages = MediumPackages
-	case "large":
+	case "300CCU":
 		moodle.Packages = LargePackages
 	default:
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("moodle-packages is not valid, please choose small, medium, or large"))
+		w.Write([]byte("moodle-packages is not valid, please choose 100CCU, 200CCU, or 300CCU"))
 		return
 	}
 	moodle.Id = uuid.New().String()
 	moodle.Email = payload.Email
 	moodle.Name = payload.WebSiteName
+	moodle.LbName = "kube_service" + "_6o0cn9lv42livqek_" + moodle.Id + "_moodle-service"
 	moodle.Ip = "Provisioning"
 	moodle.WebSiteName = payload.WebSiteName + ".lms.bizflycloud.vn"
 	moodle.PreInstalledCourse = payload.PreInstalledCourse
 	moodle.AutoScale = payload.AutoScale
 	moodle.DocumentsStorageExtra = payload.DocumentsStorageExtra
 	moodle.Status = "Creating"
-
+	moodle.CreatedAt = time.Now()
+	moodle.UpdatedAt = time.Now()
 
 	// create namespace before creating statefulset
 	_, err = h.k8sclient.CreateNamespace(h.clientset, moodle.Id)
@@ -203,14 +208,14 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// write moodle id to maria_queue collection
-	moodleQueue := MoodleQueue{
-		Id: moodle.Id,
-	}
-	moodleQueueCollection := h.db.Collection("maria_queue")
-	_, err = moodleQueueCollection.InsertOne(context.Background(), moodleQueue)
-	if err != nil {
-		w.Write([]byte(err.Error()))
-	}
+	// moodleQueue := MoodleQueue{
+	// 	Id: moodle.Id,
+	// }
+	// moodleQueueCollection := h.db.Collection("maria_queue")
+	// _, err = moodleQueueCollection.InsertOne(context.Background(), moodleQueue)
+	// if err != nil {
+	// 	w.Write([]byte(err.Error()))
+	// }
 
 	// apply the service
 	_, err = h.k8sclient.ApplyService(h.clientset, moodle.Id)
@@ -290,15 +295,15 @@ func (h *Handler) ChangeMoodlePackages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch payload.PackagesName {
-	case "small":
+	case "100CCU":
 		moodle.Packages = SmallPackages
-	case "medium":
+	case "200CCU":
 		moodle.Packages = MediumPackages
-	case "large":
+	case "300CCU":
 		moodle.Packages = LargePackages
 	default:
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("moodle-packages is not valid, please choose [small, medium, large]"))
+		w.Write([]byte("moodle-packages is not valid, please choose [100CCU, 200CCU, or 300CCU]"))
 		return
 	}
 
@@ -538,8 +543,26 @@ func (h *Handler) ListMoodle(w http.ResponseWriter, r *http.Request) {
 		cursor.Decode(&moodle)
 		moodles = append(moodles, moodle)
 	}
+
+	type ListMoodleResponse struct {
+		Total int `json:"total"`
+		Pages int `json:"pages"`
+		Page int `json:"page"`
+		Limit int `json:"limit"`
+		Moodles []Moodle `json:"moodles"`
+	}
+
 	if len(moodles) == 0 {
-		moodles = []Moodle{}
+		moodles = []Moodle{} 
+		resp := ListMoodleResponse{
+			Total: 0,
+			Pages: 0,
+			Page: 0,
+			Limit: 0,
+			Moodles: moodles,
+		}
+		json.NewEncoder(w).Encode(resp)
+		return
 	}
 	// pagination
 	var page int
@@ -572,14 +595,6 @@ func (h *Handler) ListMoodle(w http.ResponseWriter, r *http.Request) {
 	var end int = start + limit
 	if end > total {
 		end = total
-	}
-
-	type ListMoodleResponse struct {
-		Total int `json:"total"`
-		Pages int `json:"pages"`
-		Page int `json:"page"`
-		Limit int `json:"limit"`
-		Moodles []Moodle `json:"moodles"`
 	}
 
 	var moodlesPage []Moodle = moodles[start:end]
