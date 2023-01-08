@@ -9,7 +9,8 @@ import (
 	mariacli "moodle/cli/maria"
 
 	// k8sworker "moodle/worker/k8s"
-	// lbworker "moodle/worker/loadbalancer"
+	lbworker "moodle/worker/loadbalancer"
+	trackingworker "moodle/worker/tracking"
 	// mariaworker "moodle/worker/maria"
 
 	"moodle/config"
@@ -173,17 +174,26 @@ func main() {
 
 	// lb worker
 
-// 	go func() {
-// 		for {
-// 			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
-// 			lbWorker := lbworker.NewLBWorker(client.Database(config.DBNAME))
-// 			fmt.Println("lb worker is running...")
-// 			lbWorker.GetLBInstances()
-// 		}
-// 	}()
-// 
+	go func() {
+		for {
+			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
+			lbWorker := lbworker.NewLBWorker(client.Database(config.DBNAME))
+			fmt.Println("lb worker is running...")
+			lbWorker.GetLBInstances()
+		}
+	}()
+
+	// tracking worker
+	go func() {
+		for {
+			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
+			trackingWorker := trackingworker.NewTrackingWorker(client.Database(config.DBNAME))
+			fmt.Println("tracking worker is running...")
+			trackingWorker.UpdateLbStatus()
+		}
+	}()
+ 
 // 	// maria worker
-// 
 // 	go func() {
 // 		for {
 // 			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
@@ -192,9 +202,8 @@ func main() {
 // 			mariaWorker.GetMariaInstances()
 // 		}
 // 	}()
-// 
+ 
 // 	// k8s worker
-// 
 // 	go func() {
 // 		for {
 // 			time.Sleep(time.Duration(config.INTERVAL) * time.Second)

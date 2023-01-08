@@ -6,7 +6,7 @@ var (
 	DBNAME = "moodle"
 	USERNAME = "duynn@bizflycloud.vn"
 	PASSWORD = "MzU2ZmE3ZDM5MmUwMDFkYThiMzkwMmE3"
-	TOKEN = "gAAAAABjm_D45-Udiwl9GRqFlllTc1FRyBeywtqNDvrnxOD_Ny9orOMnSw6A9dPWdxv_wn8YWfx4pkXKTRuIQpsnaFL0mQGHEbJGVaB2x1ZRDdQM4jz8dehDExSbJts_L_tjs0l3AVJWvxijD2ek3KYb0EAB8jUDo1ZSvSK83sqZtnhaICJTf-Q"
+	TOKEN = "gAAAAABjut6JL4OcSfN3mmYH7trS7cKd23avhvCwG3-PAbpoA3V3UBN4goChQcpLO5A0rZq1hlEf1UBueaqIhF6Y8G8a5I-wuMy_pJm9FrO_Hlv6dfb0jPKOXxABcek1NnEswxnyvaNEaqadnov_VLjEWK8LZ-obAEer34irIPDrYKpJUshfxWg"
 	INTERVAL = 5
 	EMAIL = "duynn@bizflycloud.vn"
 	EMAIL_PASSWORD = "MzU2ZmE3ZDM5MmUwMDFkYThiMzkwMmE3"

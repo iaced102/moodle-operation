@@ -7,7 +7,9 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 
+	mariaadapter "moodle/adapter/mariadb"
 	mongoadapter "moodle/adapter/mongo"
 	k8sclient "moodle/client/k8s"
 	mariaclient "moodle/client/maria"
@@ -79,6 +81,31 @@ var LargePackages = MoodlePackages{
 	BackupNum: 4,
 	CcuExtraMax: 1200,
 	DocumentStorageExtraMax: 6000,
+}
+
+type LBTracking struct {
+	MoodleId string `json:"moodle_id"`
+	LbName string `json:"lb_name"`
+	VipAddress string `json:"vip_address"`
+	LbStatus string `json:"lb_status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type DBTracking struct {
+	MoodleId string `json:"moodle_id"`
+	DbName string `json:"db_name"`
+	DbStatus string `json:"lb_status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type MoodleConfig struct {
+	MoodleId string `json:"moodle_id"`
+	DbName string `json:"db_name"`
+	Ip string `json:"ip"`
+	CreatedAt string `json:"created_at"`
+	UpadatedAt string `json:"updated_at"`
 }
 
 type CreateMoodlePayload struct {
@@ -161,7 +188,7 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	moodle.Id = uuid.New().String()
 	moodle.Email = payload.Email
 	moodle.Name = payload.WebSiteName
-	moodle.Ip = ""
+	moodle.Ip = "Provisioning"
 	moodle.WebSiteName = payload.WebSiteName + ".lms.bizflycloud.vn"
 	moodle.PreInstalledCourse = payload.PreInstalledCourse
 	moodle.AutoScale = payload.AutoScale
@@ -187,6 +214,32 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 
 	// apply the service
 	_, err = h.k8sclient.ApplyService(h.clientset, moodle.Id)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+	}
+	lbTracking := LBTracking{
+		MoodleId: moodle.Id,
+		LbName: "kube_service" + "_6o0cn9lv42livqek_" + moodle.Id + "_moodle-service",
+		VipAddress: "",
+		LbStatus: "Creating",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	lbTrackingCollection := h.db.Collection("lb_tracking")
+	_, err = lbTrackingCollection.InsertOne(context.Background(), lbTracking)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+	}
+
+	mariaTracking := DBTracking{
+		MoodleId: moodle.Id,
+		DbName: "moodle_" + moodle.Id,
+		DbStatus: "Creating",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	mariaTrackingCollection := h.db.Collection("maria_tracking")
+	_, err = mariaTrackingCollection.InsertOne(context.Background(), mariaTracking)
 	if err != nil {
 		w.Write([]byte(err.Error()))
 	}
@@ -447,6 +500,16 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Write([]byte(err.Error()))
 	}
+	LbTrackingCollection := h.db.Collection("lb_tracking")
+	_, err = LbTrackingCollection.DeleteMany(context.Background(), bson.M{"moodleid": payload.Id})
+	if err != nil {
+		w.Write([]byte(err.Error()))
+	}
+	MariaTrackingCollection := h.db.Collection("maria_tracking")
+	_, err = MariaTrackingCollection.DeleteMany(context.Background(), bson.M{"moodleid": payload.Id})
+	if err != nil {
+		w.Write([]byte(err.Error()))
+	}
 	w.WriteHeader(http.StatusNoContent)
 	json.NewEncoder(w).Encode(resp)
 
@@ -458,6 +521,9 @@ type ListByIdPayload struct {
 
 // list all moodles by email
 func (h *Handler) ListMoodle(w http.ResponseWriter, r *http.Request) {
+	// result := h.SelectDataFromMariaDB("moodle")
+	// fmt.Println(result)
+	
 	// get id from params
 	v := r.URL.Query()
 	email := v.Get("email")
@@ -663,4 +729,12 @@ func (h *Handler) ValidateMoodleWebSiteName(webSiteName string) bool {
 		return false
 	}
 	return true
+}
+
+
+// select data from mariadb use maria worker
+func (h *Handler) SelectDataFromMariaDB(dbname string) map[string]string {
+	newMariaAdapter := mariaadapter.NewMariaAdapter("45.124.94.39", 3306, "duy", "4Yk7741J2JVWPTQkT9eKkcbAaTUs5XzTvIFL", dbname)
+	result := newMariaAdapter.Select("SELECT * FROM mdl_course")
+	return result
 }

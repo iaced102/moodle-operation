@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -16,6 +15,17 @@ type MariaAdapter struct {
 	Username string
 	Password string
 	Database string
+}
+
+// new maria adapter
+func NewMariaAdapter(host string, port int, username string, password string, database string) *MariaAdapter {
+	return &MariaAdapter{
+		Host:     host,
+		Port:     port,
+		Username: username,
+		Password: password,
+		Database: database,
+	}
 }
 
 func (m *MariaAdapter) Connect() *sql.DB {
@@ -32,10 +42,10 @@ func (m *MariaAdapter) Connect() *sql.DB {
 
 
 // select data from mysql
-func (m *MariaAdapter) Select(selectSQL []string, fromSQL string) []interface{} {
+func (m *MariaAdapter) Select(query string) map[string]string {
 	db := m.Connect()
 	defer db.Close()
-	queryString := fmt.Sprintf("SELECT %s FROM %s", strings.Join(selectSQL, ","), fromSQL)
+	queryString := fmt.Sprintf("%s", query)
 	rows, err := db.Query(queryString)
 	if err != nil {
 		log.Fatal(err)
@@ -46,60 +56,40 @@ func (m *MariaAdapter) Select(selectSQL []string, fromSQL string) []interface{} 
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	count := len(columns)
-	tableData := make([]interface{}, count)
-	values := make([]interface{}, count)
-	scanArgs := make([]interface{}, count)
+	// map column and column data as key and value
+	columnsMap := make(map[string]string)
+	// make a slice for the values
+	values := make([]sql.RawBytes, len(columns))
+	// rows.Scan wants '[]interface{}' as an argument, so we must copy the
+	// references into such a slice
+	// see http://code.google.com/p/go-wiki/wiki/InterfaceSlice for details
+	scanArgs := make([]interface{}, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
-
+	// Fetch rows
 	for rows.Next() {
+		// get RawBytes from data
 		err = rows.Scan(scanArgs...)
 		if err != nil {
 			log.Fatal(err)
 		}
+		// Now do something with the data.
+		// Here we just print each column as a string.
+		var value string
 		for i, col := range values {
-			if col != nil {
-				tableData[i] = col
+			// Here we can check if the value is nil (NULL value)
+			if col == nil {
+				value = "NULL"
+			} else {
+				value = string(col)
 			}
+			columnsMap[columns[i]] = value
 		}
 	}
-	fmt.Println(tableData)
-	return tableData
-}
-
-
-func (m *MariaAdapter) Update(updateSQL []string, fromSQL string) {
-	db := m.Connect()
-	defer db.Close()
-	queryString := fmt.Sprintf("UPDATE %s SET %s", fromSQL, strings.Join(updateSQL, ","))
-	_, err := db.Query(queryString)
-	if err != nil {
+	if err = rows.Err(); err != nil {
 		log.Fatal(err)
 	}
-}
-
-
-func (m *MariaAdapter) Insert(insertSQL []string, fromSQL string) {
-	db := m.Connect()
-	defer db.Close()
-	queryString := fmt.Sprintf("INSERT INTO %s VALUES %s", fromSQL, strings.Join(insertSQL, ","))
-	_, err := db.Query(queryString)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-
-func (m *MariaAdapter) Delete(deleteSQL []string, fromSQL string) {
-	db := m.Connect()
-	defer db.Close()
-	queryString := fmt.Sprintf("DELETE FROM %s WHERE %s", fromSQL, strings.Join(deleteSQL, ","))
-	_, err := db.Query(queryString)
-	if err != nil {
-		log.Fatal(err)
-	}
+	return columnsMap
 }
 
