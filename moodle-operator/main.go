@@ -7,9 +7,10 @@ import (
 	// mysqladapter "moodle/adapter/mariadb"
 	k8scli "moodle/cli/k8s"
 	mariacli "moodle/cli/maria"
-	k8sworker "moodle/worker/k8s"
-	lbworker "moodle/worker/loadbalancer"
-	mariaworker "moodle/worker/maria"
+
+	// k8sworker "moodle/worker/k8s"
+	// lbworker "moodle/worker/loadbalancer"
+	// mariaworker "moodle/worker/maria"
 
 	"moodle/config"
 	"moodle/handler"
@@ -119,11 +120,23 @@ func main() {
 	r.HandleFunc("/health", myHandler.HealthCheck).Methods("GET")
 	r.HandleFunc("/api/moodles", myHandler.ListMoodle).
 	    Queries(
-        "userid", "{userid}",
+        "email", "{email}",
+		"page", "{page}",
+		"limit", "{limit}",
+
     ).Methods("GET")
 	r.HandleFunc("/api/moodles", myHandler.CreateMoodle).Methods("POST")
 	r.HandleFunc("/api/moodles", myHandler.DeleteMoodle).Methods("DELETE")
-	r.HandleFunc("/api/moodles", myHandler.ScaleMoodle).Methods("PUT")
+	r.HandleFunc("/api/moodles", myHandler.GetMoodle).Queries(
+		"id", "{id}",
+	).Methods("GET")
+	r.HandleFunc("/api/moodles", myHandler.SearchMoodle).Queries(
+		"search", "{search}",
+	).Methods("GET")
+	r.HandleFunc("/api/moodles/packages", myHandler.ChangeMoodlePackages).Methods("PUT")
+	r.HandleFunc("/api/moodles/autoscale", myHandler.ChangeMoodleAutoScale).Methods("PUT")
+	r.HandleFunc("/api/moodles/document-storage-extra", myHandler.ChangeMoodleDocumentsStorageExtra).Methods("PUT")
+	r.HandleFunc("/api/moodles/pre-installed-course", myHandler.ChangeMoodlePreInstalledCourse).Methods("PUT")
 	r.HandleFunc("/api/users", myHandler.UserAdd).Methods("POST")
 	r.HandleFunc("/api/users", myHandler.UserDelete).Methods("DELETE")
 	nextRequestID := func() string {
@@ -160,36 +173,36 @@ func main() {
 
 	// lb worker
 
-	go func() {
-		for {
-			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
-			lbWorker := lbworker.NewLBWorker(client.Database(config.DBNAME))
-			fmt.Println("lb worker is running...")
-			lbWorker.GetLBInstances()
-		}
-	}()
-
-	// maria worker
-
-	go func() {
-		for {
-			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
-			mariaWorker := mariaworker.NewMariaWorker(client.Database(config.DBNAME))
-			fmt.Println("maria worker is running...")
-			mariaWorker.GetMariaInstances()
-		}
-	}()
-
-	// k8s worker
-
-	go func() {
-		for {
-			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
-			k8sWorker := k8sworker.NewK8sWorker(client.Database(config.DBNAME))
-			fmt.Println("k8s worker is running...")
-			k8sWorker.ApplyStatefulSetWorker(myHandler.GetClientset())
-		}
-	}()
+// 	go func() {
+// 		for {
+// 			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
+// 			lbWorker := lbworker.NewLBWorker(client.Database(config.DBNAME))
+// 			fmt.Println("lb worker is running...")
+// 			lbWorker.GetLBInstances()
+// 		}
+// 	}()
+// 
+// 	// maria worker
+// 
+// 	go func() {
+// 		for {
+// 			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
+// 			mariaWorker := mariaworker.NewMariaWorker(client.Database(config.DBNAME))
+// 			fmt.Println("maria worker is running...")
+// 			mariaWorker.GetMariaInstances()
+// 		}
+// 	}()
+// 
+// 	// k8s worker
+// 
+// 	go func() {
+// 		for {
+// 			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
+// 			k8sWorker := k8sworker.NewK8sWorker(client.Database(config.DBNAME))
+// 			fmt.Println("k8s worker is running...")
+// 			k8sWorker.ApplyStatefulSetWorker(myHandler.GetClientset())
+// 		}
+// 	}()
 
 
 	logger.Println("Server is ready to handle requests at", listenAddr)

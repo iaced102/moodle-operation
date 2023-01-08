@@ -35,9 +35,9 @@ func NewK8sClient() *K8sClient {
 func (client *K8sClient) NewClientSet() *kubernetes.Clientset {
 	var kubeconfig *string
 	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, "moodle.kubeconfig"), "(optional) absolute path to the kubeconfig file")
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, "moodle-cluster.kubeconfig"), "(optional) absolute path to the kubeconfig file")
 	} else {
-		kubeconfig = flag.String("/home/duy/moodle.kubeconfig", "", "absolute path to the kubeconfig file")
+		kubeconfig = flag.String("/home/duy/moodle-cluster.kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)

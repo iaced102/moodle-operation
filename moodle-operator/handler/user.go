@@ -1,24 +1,30 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type User struct {
 	Id string `json:"id"`
+	Email string `json:"email"`
 	Status string `json:"status"`
 }
 type CreateUserPayload struct {
-	Id    string `json:"id"`
+	Email string `json:"email"`
 }
 type DeleteUserPayload struct {
 	Id    string `json:"id"`
 }
 
 type CreateUserResponse struct {
+	Status string `json:"status"`
+}
+type DeleteUserResponse struct {
 	Id string `json:"id"`
 	Status string `json:"status"`
 }
@@ -36,19 +42,44 @@ func (h *Handler) UserAdd(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(payload)
 
-	user.Id = payload.Id
-	user.Status = "Active"
-	// add user to mongo
 	userCollection := h.db.Collection("users")
-	_, err = userCollection.InsertOne(context.Background(), user)
+	user.Email = payload.Email
+	// count user by email
+	count, err := userCollection.CountDocuments(r.Context(), bson.M{"email": payload.Email})
 	if err != nil {
 		w.Write([]byte(err.Error()))
 	}
-	response.Id = payload.Id
-	response.Status = "Created"
+	if count == 0 {
+		user.Id = uuid.New().String()
+		user.Status = "Active"
+		_, err = userCollection.InsertOne(r.Context(), user)
+		if err != nil {
+			w.Write([]byte(err.Error()))
+		}
+		response.Status = "User created"
+	} else {
+		response.Status = "User already exist"
+	}
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
 }
+
+// get all users from mongo
+
+
+
+// 	user.Id = uuid.New().String()
+// 	user.Status = "Active"
+// 	// add user to mongo
+// 	userCollection := h.db.Collection("users")
+// 	_, err = userCollection.InsertOne(context.Background(), user)
+// 	if err != nil {
+// 		w.Write([]byte(err.Error()))
+// 	}
+// 	response.Status = "Active"
+// 	w.WriteHeader(http.StatusCreated)
+// 	json.NewEncoder(w).Encode(response)
+// }
 
 
 // delete user from mongo
@@ -66,7 +97,7 @@ func (h *Handler) UserDelete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Write([]byte(err.Error()))
 	}
-	var response CreateUserResponse
+	var response DeleteUserResponse
 	response.Id = payload.Id
 	response.Status = "Deleted"
 	w.WriteHeader(http.StatusNoContent)
