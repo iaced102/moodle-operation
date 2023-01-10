@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -23,10 +24,12 @@ type DeleteUserPayload struct {
 
 type CreateUserResponse struct {
 	Status string `json:"status"`
+	Error string `json:"error"`
 }
 type DeleteUserResponse struct {
 	Id string `json:"id"`
 	Status string `json:"status"`
+	Error string `json:"error"`
 }
 
 // add user to mongo
@@ -47,57 +50,57 @@ func (h *Handler) UserAdd(w http.ResponseWriter, r *http.Request) {
 	// count user by email
 	count, err := userCollection.CountDocuments(r.Context(), bson.M{"email": payload.Email})
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		log.Println(err)
+		w.WriteHeader(http.StatusNotImplemented)
+		response.Error = "Not implemented"
+		json.NewEncoder(w).Encode(response)
+		return
 	}
 	if count == 0 {
 		user.Id = uuid.New().String()
 		user.Status = "Active"
 		_, err = userCollection.InsertOne(r.Context(), user)
 		if err != nil {
-			w.Write([]byte(err.Error()))
+			log.Println(err)
+			w.WriteHeader(http.StatusNotImplemented)
+			response.Error = "Not implemented"
+			json.NewEncoder(w).Encode(response)
+			return
 		}
 		response.Status = "User created"
+		w.WriteHeader(http.StatusCreated)
 	} else {
 		response.Status = "User already exist"
+		w.WriteHeader(http.StatusConflict)
+		return
 	}
-	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
 }
-
-// get all users from mongo
-
-
-
-// 	user.Id = uuid.New().String()
-// 	user.Status = "Active"
-// 	// add user to mongo
-// 	userCollection := h.db.Collection("users")
-// 	_, err = userCollection.InsertOne(context.Background(), user)
-// 	if err != nil {
-// 		w.Write([]byte(err.Error()))
-// 	}
-// 	response.Status = "Active"
-// 	w.WriteHeader(http.StatusCreated)
-// 	json.NewEncoder(w).Encode(response)
-// }
 
 
 // delete user from mongo
 func (h *Handler) UserDelete(w http.ResponseWriter, r *http.Request) {
 	// get the payload
 	var payload DeleteUserPayload
+	var response DeleteUserResponse
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		response.Error = "Bad request"
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 	// delete user from mongo
 	userCollection := h.db.Collection("users")
 	_, err = userCollection.DeleteMany(r.Context(), payload)
 	if err != nil {
-		w.Write([]byte(err.Error()))
+		log.Println(err)
+		w.WriteHeader(http.StatusNotImplemented)
+		response.Error = "Not implemented"
+		json.NewEncoder(w).Encode(response)
+		return
 	}
-	var response DeleteUserResponse
 	response.Id = payload.Id
 	response.Status = "Deleted"
 	w.WriteHeader(http.StatusNoContent)

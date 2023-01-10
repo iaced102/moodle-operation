@@ -11,6 +11,7 @@ import (
 	// k8sworker "moodle/worker/k8s"
 	lbworker "moodle/worker/loadbalancer"
 	trackingworker "moodle/worker/tracking"
+
 	// mariaworker "moodle/worker/maria"
 
 	"moodle/config"
@@ -75,15 +76,6 @@ var k8sCommands = []string{
 
 
 func main() {
-	// mysql adapter
-	// mysqlAdapter := mysqladapter.MariaAdapter{
-	// 	Host:     "45.124.94.39",
-	// 	Port:     3306,
-	// 	Username: "duy",
-	// 	Password: "4Yk7741J2JVWPTQkT9eKkcbAaTUs5XzTvIFL",
-	// 	Database: "moodle",
-	// }
-	// mysqlAdapter.Select([]string{"id", "email"}, "mdl_user")
 
 	// cli
 	if len(os.Args) > 1 {
@@ -117,29 +109,34 @@ func main() {
 		log.Fatalf("Failed to connect to MongoDB: %+v", err)
 	}
 	myHandler := handler.New(client.Database(config.DBNAME))
-	r := mux.NewRouter()
-	r.HandleFunc("/health", myHandler.HealthCheck).Methods("GET")
-	r.HandleFunc("/api/moodles", myHandler.ListMoodle).
+	r := mux.NewRouter().PathPrefix("/api/v1").Subrouter()
+	r.Use(MoodleMiddleware)
+	r.HandleFunc("/health", myHandler.HealthCheck).Methods("GET", "OPTIONS")
+	r.HandleFunc("/moodles", myHandler.ListMoodle).
 	    Queries(
-        "email", "{email}",
 		"page", "{page}",
 		"limit", "{limit}",
-
-    ).Methods("GET")
-	r.HandleFunc("/api/moodles", myHandler.CreateMoodle).Methods("POST")
-	r.HandleFunc("/api/moodles", myHandler.DeleteMoodle).Methods("DELETE")
-	r.HandleFunc("/api/moodles", myHandler.GetMoodle).Queries(
+    ).Methods("GET", "OPTIONS")
+	r.HandleFunc("/moodles", myHandler.CreateMoodle).Methods("POST", "OPTIONS")
+	r.HandleFunc("/moodles", myHandler.DeleteMoodle).Methods("DELETE", "OPTIONS")
+	r.HandleFunc("/moodles", myHandler.GetMoodle).Queries(
 		"id", "{id}",
-	).Methods("GET")
-	r.HandleFunc("/api/moodles", myHandler.SearchMoodle).Queries(
+	).Methods("GET", "OPTIONS")
+	r.HandleFunc("/courses", myHandler.ListCourse).
+	    Queries(
+		"page", "{page}",
+		"limit", "{limit}",
+    ).Methods("GET", "OPTIONS")
+	r.HandleFunc("/moodles", myHandler.SearchMoodle).Queries(
+		"email", "{email}",
 		"search", "{search}",
-	).Methods("GET")
-	r.HandleFunc("/api/moodles/packages", myHandler.ChangeMoodlePackages).Methods("PUT")
-	r.HandleFunc("/api/moodles/autoscale", myHandler.ChangeMoodleAutoScale).Methods("PUT")
-	r.HandleFunc("/api/moodles/document-storage-extra", myHandler.ChangeMoodleDocumentsStorageExtra).Methods("PUT")
-	r.HandleFunc("/api/moodles/pre-installed-course", myHandler.ChangeMoodlePreInstalledCourse).Methods("PUT")
-	r.HandleFunc("/api/users", myHandler.UserAdd).Methods("POST")
-	r.HandleFunc("/api/users", myHandler.UserDelete).Methods("DELETE")
+	).Methods("GET", "OPTIONS")
+	r.HandleFunc("/packages", myHandler.ChangeMoodlePackages).Methods("PUT", "OPTIONS")
+	r.HandleFunc("/pre-installed-course", myHandler.ChangeMoodlePreInstalledCourse).Methods("PUT", "OPTIONS")
+	r.HandleFunc("/autoscale", myHandler.ChangeMoodleAutoScale).Methods("PUT", "OPTIONS")
+	r.HandleFunc("/document-storage-extra", myHandler.ChangeMoodleDocumentsStorageExtra).Methods("PUT", "OPTIONS")
+	r.HandleFunc("/users", myHandler.UserAdd).Methods("POST", "OPTIONS")
+	r.HandleFunc("/users", myHandler.UserDelete).Methods("DELETE", "OPTIONS")
 	nextRequestID := func() string {
 		return fmt.Sprintf("%d", time.Now().UnixNano())
 	}
@@ -254,3 +251,44 @@ func tracing(nextRequestID func() string) func(http.Handler) http.Handler {
 	}
 }
 
+func Auth(tenantName, token string) bool {
+	if _, ok := config.USERS[tenantName]; !ok {
+		return false
+	}
+
+	if token != config.MOODLE_TOKEN {
+		return false
+	}
+	return true
+}
+
+
+func MoodleMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// ignore health check
+		if r.URL.Path == "/health" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// handle cors
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		w.Header().Set("Access-Control-Expose-Headers", "Authorization")
+
+		// handle preflight request
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		tenentName := r.Header.Get("X-Tenant-Name")
+		token := r.Header.Get("X-Auth-Token")
+		if !Auth(tenentName, token) {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}

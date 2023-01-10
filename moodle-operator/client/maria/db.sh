@@ -7,7 +7,7 @@ username="duynn@bizflycloud.vn"
 password="MzU2ZmE3ZDM5MmUwMDFkYThiMzkwMmE3"
 
 get_token() {
-    curl -si --location --request POST 'https://manage.bizflycloud.vn/api/token' \
+    curl -X POST 'https://manage.bizflycloud.vn/api/token' \
         --header 'Content-Type: application/json' \
         -d "{
             \"username\": \"$username\",

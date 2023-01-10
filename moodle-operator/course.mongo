@@ -1,0 +1,9 @@
+db.courses.insertOne({"id": 1, name: "Hội nhập", content: "Khóa học giúp nhân viên nhanh chóng nắm bắt được các thông tin chung của doanh nghiệp", thumb_url: "https://bizfly-lms.hn.ss.bfcplatform.vn/course_thumb/hoi_nhap.png" })
+db.courses.insertOne({"id": 2, name: "Định hướng", content: "Giúp doanh nghiệp có được cái nhìn tổng quát về năng lực thực tế của nhân viên", thumb_url: "https://bizfly-lms.hn.ss.bfcplatform.vn/course_thumb/dinh_huong.png" })
+db.courses.insertOne({"id": 3, name: "Phát triển chuyên môn", content: "Giúp doanh nghiệp có được cái nhìn tổng quát về năng lực thực tế của nhân viên", thumb_url: "https://bizfly-lms.hn.ss.bfcplatform.vn/course_thumb/phat_trien_chuyen_mon.png" })
+db.courses.insertOne({"id": 4, name: "Phát triển kỹ năng mềm", content: "Hình thức đào tạo nhân sự này thường được áp dụng tại các doanh nghiệp", thumb_url: "https://bizfly-lms.hn.ss.bfcplatform.vn/course_thumb/ky_nang_mem.png" })
+db.courses.insertOne({"id": 5, name: "Dịch vụ & sản phẩm", content: "Khóa học giúp nhân viên nhanh chóng nắm bắt được các thông tin chung của doanh nghiệp", thumb_url: "https://bizfly-lms.hn.ss.bfcplatform.vn/course_thumb/dv_san_pham.png"})
+db.courses.insertOne({"id": 6, name: "Tiêu chuẩn và chất lượng", content: "Giúp doanh nghiệp có được cái nhìn tổng quát về năng lực thực tế của nhân viên", thumb_url: "https://bizfly-lms.hn.ss.bfcplatform.vn/course_thumb/dt_tieu_chaun.png"})
+db.courses.insertOne({"id": 7, name: "An toàn và lao động", content: "Giúp doanh nghiệp có được cái nhìn tổng quát về năng lực thực tế của nhân viên", thumb_url: "https://bizfly-lms.hn.ss.bfcplatform.vn/course_thumb/an_toan_lao_dong.png" })
+db.courses.insertOne({"id": 8, name: "Đội nhóm", content: "Hình thức đào tạo nhân sự này thường được áp dụng tại các doanh nghiệp", thumb_url: "https://bizfly-lms.hn.ss.bfcplatform.vn/course_thumb/dt_doi_nhom.png" })
+

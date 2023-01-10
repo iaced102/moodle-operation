@@ -93,3 +93,14 @@ func (m *MariaAdapter) Select(query string) map[string]string {
 	return columnsMap
 }
 
+
+// create new database in mysql 
+func (m *MariaAdapter) CreateDatabase(dbname string) {
+	db := m.Connect()
+	defer db.Close()
+	queryString := fmt.Sprintf("CREATE DATABASE %s", dbname)
+	_, err := db.Exec(queryString)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
