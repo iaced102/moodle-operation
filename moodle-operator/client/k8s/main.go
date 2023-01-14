@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	appv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
@@ -139,8 +141,9 @@ func (client *K8sClient) CreateNamespace(clientset *kubernetes.Clientset, namesp
 func (client *K8sClient) DeleteNamespace(clientset *kubernetes.Clientset, namespace string) error {
 	fmt.Printf("Deleting namespace %q:\n", namespace)
 	err := clientset.CoreV1().Namespaces().Delete(context.Background(), namespace, metav1.DeleteOptions{})
-	if err != nil {
-		panic(err.Error())
+	// ignore if namespace not found
+	if err != nil && !strings.Contains(err.Error(), "not found") {
+		log.Fatal(err)
 	}
 	return nil
 }

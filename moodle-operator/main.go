@@ -112,10 +112,11 @@ func main() {
 	r := mux.NewRouter().PathPrefix("/api/v1").Subrouter()
 	r.Use(MoodleMiddleware)
 	r.HandleFunc("/health", myHandler.HealthCheck).Methods("GET", "OPTIONS")
-	r.HandleFunc("/moodles", myHandler.ListMoodle).
+	r.HandleFunc("/moodles", myHandler.ListMoodle). // search if have search params
 	    Queries(
 		"page", "{page}",
 		"limit", "{limit}",
+		"email", "{email}",
     ).Methods("GET", "OPTIONS")
 	r.HandleFunc("/moodles", myHandler.CreateMoodle).Methods("POST", "OPTIONS")
 	r.HandleFunc("/moodles", myHandler.DeleteMoodle).Methods("DELETE", "OPTIONS")
@@ -127,10 +128,11 @@ func main() {
 		"page", "{page}",
 		"limit", "{limit}",
     ).Methods("GET", "OPTIONS")
-	r.HandleFunc("/moodles", myHandler.SearchMoodle).Queries(
-		"email", "{email}",
-		"search", "{search}",
-	).Methods("GET", "OPTIONS")
+	r.HandleFunc("/packages", myHandler.ListPackage).
+	    Queries(
+		"page", "{page}",
+		"limit", "{limit}",
+    ).Methods("GET", "OPTIONS")
 	r.HandleFunc("/packages", myHandler.ChangeMoodlePackages).Methods("PUT", "OPTIONS")
 	r.HandleFunc("/pre-installed-course", myHandler.ChangeMoodlePreInstalledCourse).Methods("PUT", "OPTIONS")
 	r.HandleFunc("/autoscale", myHandler.ChangeMoodleAutoScale).Methods("PUT", "OPTIONS")
@@ -252,7 +254,7 @@ func tracing(nextRequestID func() string) func(http.Handler) http.Handler {
 }
 
 func Auth(tenantName, token string) bool {
-	if _, ok := config.USERS[tenantName]; !ok {
+	if tenantName != config.USER {
 		return false
 	}
 
@@ -266,7 +268,8 @@ func Auth(tenantName, token string) bool {
 func MoodleMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// ignore health check
-		if r.URL.Path == "/health" {
+		log.Println(r.URL.Path)
+		if r.URL.Path == "/api/v1/health" {
 			next.ServeHTTP(w, r)
 			return
 		}

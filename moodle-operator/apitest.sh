@@ -4,7 +4,7 @@ token="gAAAAABjvhxZwCj1n8fFu-nFALaMr4KKZ7G3UPI7pAETzVxGa4pYuWdUelC6DcjLSRd8rHXIW
 # create moodle
 function moodle-create() {
 	curl -i -X POST "http://localhost:5000/api/v1/moodles" \
-		-H "X-Tenant-Name: duynn@bizflycloud.vn" \
+		-H "X-Tenant-Name: admin" \
 		-H "X-Auth-Token: $token" \
 		-H "Content-Type: application/json" \
 		-d "{
@@ -19,31 +19,30 @@ function moodle-create() {
 
 # list moodle
 function moodle-list() {
-	curl -H "X-Tenant-Name: duynn@bizflycloud.vn" \
+	curl -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
-		 -iX GET "http://localhost:5000/api/v1/moodles?page=1&limit=10"
+		 -iX GET "http://localhost:5000/api/v1/moodles?page=1&limit=10&email=$1"
 }
 
 # get moodle
 function moodle-get() {
-	curl -H "X-Tenant-Name: duynn@bizflycloud.vn" \
+	curl -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
 		 -iX GET "http://localhost:5000/api/v1/moodles?id=$1" 
 }
 
 # search moodle
 function search() {
-	echo $token
-	curl -iX GET "http://localhost:5000/api/v1/moodles?search=test&page=1&limit=10" \
+	curl -X GET "http://localhost:5000/api/v1/moodles?search=$1&page=1&limit=10&email=duynn@bizflycloud.vn" \
 		 -H "X-Auth-Token: $token" \
-		 -H "X-Tenant-Name: duynn@bizflycloud.vn"
+		 -H "X-Tenant-Name: admin"
 }
 
 # change packages moodle
 function moodle-change-packages() {
 	curl -i -X PUT "http://localhost:5000/api/v1/packages" \
 		 -H "X-Auth-Token: $token" \
-		 -H "X-Tenant-Name: duynn@bizflycloud.vn" \
+		 -H "X-Tenant-Name: admin" \
 		 -H "Content-Type: application/json" \
 		 -d "{
 			\"moodle_id\": \"$1\",
@@ -56,7 +55,7 @@ function moodle-change-packages() {
 function moodle-change-autoscale() {
 	curl -i -X PUT "http://localhost:5000/api/v1/autoscale" \
 		 -H "X-Auth-Token: $token" \
-		 -H "X-Tenant-Name: duynn@bizflycloud.vn" \
+		 -H "X-Tenant-Name: admin" \
 		 -H "Content-Type: application/json" \
 		 -d "{
 		 	\"moodle_id\": \"$1\",
@@ -69,7 +68,7 @@ function moodle-change-document-storage-extra() {
 	curl -i -X PUT "http://localhost:5000/api/v1/document-storage-extra" \
 		 -H "Content-Type: application/json" \
 		 -H "X-Auth-Token: $token" \
-		 -H "X-Tenant-Name: duynn@bizflycloud.vn" \
+		 -H "X-Tenant-Name: admin" \
 		 -d "{
 		 	\"moodle_id\": \"$1\",
 		 	\"documents_storage_extra\": $2
@@ -80,7 +79,7 @@ function moodle-change-document-storage-extra() {
 function moodle-change-pre-installed-course() {
 	curl -i -X PUT "http://localhost:5000/api/v1/pre-installed-course" \
 		 -H "X-Auth-Token: $token" \
-		 -H "X-Tenant-Name: duynn@bizflycloud.vn" \
+		 -H "X-Tenant-Name: admin" \
 		 -H "Content-Type: application/json" \
 		 -d "{
 		 	\"moodle_id\": \"$1\",
@@ -93,7 +92,7 @@ function moodle-delete() {
 	curl -i -X DELETE "http://localhost:5000/api/v1/moodles" \
 		 -H "Content-Type: application/json" \
 		 -H "X-Auth-Token: $token" \
-		 -H "X-Tenant-Name: duynn@bizflycloud.vn" \
+		 -H "X-Tenant-Name: admin" \
 		 -d "{
 		 	\"moodle_id\": \"$1\"
 		 }"
@@ -101,9 +100,15 @@ function moodle-delete() {
 
 # list course
 function course-list() {
-	curl -H "X-Tenant-Name: duynn@bizflycloud.vn" \
+	curl -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
 		 -iX GET "http://localhost:5000/api/v1/courses?page=1&limit=10"
+}
+# list pacakge
+function package-list() {
+	curl -H "X-Tenant-Name: admin" \
+		 -H "X-Auth-Token: $token" \
+		 -iX GET "http://localhost:5000/api/v1/packages?page=1&limit=10"
 }
 
 

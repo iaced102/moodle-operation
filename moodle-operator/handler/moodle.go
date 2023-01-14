@@ -59,7 +59,7 @@ type MoodlePackages struct {
 	DocumentStorageExtraMax int `json:"document_storage_extra_max"`
 }
 
-var SmallPackages = MoodlePackages{
+var Package100 = MoodlePackages{
 	Price: 8500000,
 	Name : "100CCU",
 	Ccu: 100,
@@ -71,7 +71,7 @@ var SmallPackages = MoodlePackages{
 	DocumentStorageExtraMax: 2000,
 }
 
-var MediumPackages = MoodlePackages{
+var Package200 = MoodlePackages{
 	Price: 12600000,
 	Name : "200CCU",
 	Ccu: 200,
@@ -83,7 +83,7 @@ var MediumPackages = MoodlePackages{
 	DocumentStorageExtraMax: 4000,
 }
 
-var LargePackages = MoodlePackages{
+var Package300 = MoodlePackages{
 	Price: 16800000,
 	Name : "300CCU",
 	Ccu: 300,
@@ -93,6 +93,30 @@ var LargePackages = MoodlePackages{
 	BackupNum: 4,
 	CcuExtraMax: 1200,
 	DocumentStorageExtraMax: 6000,
+}
+
+var Package400 = MoodlePackages{
+	Price: 20900000,
+	Name : "400CCU",
+	Ccu: 400,
+	AccountMax: 16000,
+	DocumentStorage: 200,
+	MoodleVersion: "4.0.1",
+	BackupNum: 4,
+	CcuExtraMax: 1600,
+	DocumentStorageExtraMax: 8000,
+}
+
+var Package500 = MoodlePackages{
+	Price: 0,
+	Name : ">500CCU",
+	Ccu: 0,
+	AccountMax: 16000,
+	DocumentStorage: 200,
+	MoodleVersion: "4.0.1",
+	BackupNum: 4,
+	CcuExtraMax: 0,
+	DocumentStorageExtraMax: 0,
 }
 
 type LBTracking struct {
@@ -174,13 +198,13 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	// check if email not exist then reponse user not found
-	emailExist := h.ValidateEmail(payload.Email)
-	if !emailExist {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Email is invalid"})
-		return
-	}
+	// emailExist := h.ValidateAdmin(payload.Email)
+	// if !emailExist {
+	// 	w.Header().Set("Content-Type", "application/json")
+	// 	w.WriteHeader(http.StatusNotFound)
+	// 	json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Email is invalid"})
+	// 	return
+	// }
 	
 	// check if website name is exist then response website name is exist
 	exist := h.ValidateMoodleWebSiteName(payload.WebSiteName+".lms.bizflycloud.vn")
@@ -193,15 +217,19 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 
 	switch payload.PakcagesName {
 	case "100CCU":
-		moodle.Packages = SmallPackages
+		moodle.Packages = Package100
 	case "200CCU":
-		moodle.Packages = MediumPackages
+		moodle.Packages = Package200
 	case "300CCU":
-		moodle.Packages = LargePackages
+		moodle.Packages = Package300
+	case "400CCU":
+		moodle.Packages = Package400
+	case "500CCU":
+		moodle.Packages = Package500
 	default:
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "moodle-packages is not valid, please choose 100CCU, 200CCU, or 300CCU"})
+		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "moodle-packages is not valid, please choose 100CCU, 200CCU, 300CCU, 400CCU or Liên Hệ"})
 		return
 	}
 	moodle.Id = uuid.New().String()
@@ -345,16 +373,20 @@ func (h *Handler) ChangeMoodlePackages(w http.ResponseWriter, r *http.Request) {
 	}
 	switch payload.PackagesName {
 	case "100CCU":
-		moodle.Packages = SmallPackages
+		moodle.Packages = Package100
 	case "200CCU":
-		moodle.Packages = MediumPackages
+		moodle.Packages = Package200
 	case "300CCU":
-		moodle.Packages = LargePackages
+		moodle.Packages = Package300
+	case "400CCU":
+		moodle.Packages = Package400
+	case "500CCU":
+		moodle.Packages = Package500
 	default:
 		log.Println(err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		moodleErrorResponse := MoodleErrorResponse{Error: "moodle-packages is not valid, please choose [100CCU, 200CCU, or 300CCU]"}
+		moodleErrorResponse := MoodleErrorResponse{Error: "moodle-packages is not valid, please choose [100CCU, 200CCU, 300CCU, 400CCU, Liên Hệ]"}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
 	}
@@ -596,16 +628,16 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	// delete the statefulset
 	err = h.k8sclient.DeleteNamespace(h.clientset, payload.MoodleId)
 		if err != nil {
-		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
-		json.NewEncoder(w).Encode(moodleErrorResponse)
-	}
+			log.Println(err)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
+			json.NewEncoder(w).Encode(moodleErrorResponse)
+		}
 
 	// delete moodle from db
 	moodleCollection := h.db.Collection("moodles")
-	_, err = moodleCollection.DeleteMany(context.Background(), payload)
+	_, err = moodleCollection.DeleteMany(context.Background(), bson.M{"id": payload.MoodleId})
 	if err != nil {
 		log.Println(err)
 		w.Header().Set("Content-Type", "application/json")
@@ -649,24 +681,60 @@ func (h *Handler) ListMoodle(w http.ResponseWriter, r *http.Request) {
 	
 	// get id from params
 	v := r.URL.Query()
-	email := r.Header.Get("X-Tenant-Name")
+	email := v.Get("email")
+	search := v.Get("search")
 
 	var moodles []Moodle
 	moodleCollection := h.db.Collection("moodles")
-	cursor, err := moodleCollection.Find(context.Background(), bson.M{"email": email})
-	if err != nil {
-		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		moodleErrorResponse := MoodleErrorResponse{Error: "Email is NotFound"}
-		json.NewEncoder(w).Encode(moodleErrorResponse)
-		return
+	// search if have search params else list moodle
+	if search != "" {
+		// search moodle by name
+		cursor, err := moodleCollection.Find(context.Background(), bson.M{"name": bson.M{"$regex": search, "$options": "i"}})
+		if err != nil {
+			log.Println(err)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			moodleErrorResponse := MoodleErrorResponse{Error: "Email is NotFound"}
+			json.NewEncoder(w).Encode(moodleErrorResponse)
+		}
+		defer cursor.Close(context.Background())
+		for cursor.Next(context.Background()) {
+			var moodle Moodle
+			err := cursor.Decode(&moodle)
+			if err != nil {
+				log.Println(err)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusBadRequest)
+				moodleErrorResponse := MoodleErrorResponse{Error: "Email is NotFound"}
+				json.NewEncoder(w).Encode(moodleErrorResponse)
+			}
+			moodles = append(moodles, moodle)
+		}
+	} else {
+		// list all moodle
+		cursor, err := moodleCollection.Find(context.Background(), bson.M{"email": email})
+		if err != nil {
+			log.Println(err)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
+			json.NewEncoder(w).Encode(moodleErrorResponse)
+		}
+		defer cursor.Close(context.Background())
+		for cursor.Next(context.Background()) {
+			var moodle Moodle
+			err := cursor.Decode(&moodle)
+			if err != nil {
+				log.Println(err)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusBadRequest)
+				moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
+				json.NewEncoder(w).Encode(moodleErrorResponse)
+			}
+			moodles = append(moodles, moodle)
+		}
 	}
-	for cursor.Next(context.Background()) {
-		var moodle Moodle
-		cursor.Decode(&moodle)
-		moodles = append(moodles, moodle)
-	}
+
 
 	var page int
 	var limit int
@@ -748,67 +816,6 @@ func (h *Handler) ScaleMoodle(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-// search engine for moodle
-func (h *Handler) SearchMoodle(w http.ResponseWriter, r *http.Request) {
-	// get id from params
-	v := r.URL.Query()
-	search := v.Get("search")
-	email := r.Header.Get("X-Tenant-Name")
-
-	var moodles []Moodle
-	moodleCollection := h.db.Collection("moodles")
-	if email != "" {
-		// serach moodle.name by regex
-		cursor, err := moodleCollection.Find(context.Background(), bson.M{"name": bson.M{"$regex": search}, "email": email})
-
-		// cursor, err := moodleCollection.Find(context.Background(), bson.M{"$text": bson.M{"$search": search}})
-		if err != nil {
-			log.Println(err)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusNotFound)
-			moodleErrorResponse := MoodleErrorResponse{Error: "Not Found"}
-			json.NewEncoder(w).Encode(moodleErrorResponse)
-			return
-		}
-		for cursor.Next(context.Background()) {
-			var moodle Moodle
-			cursor.Decode(&moodle)
-			moodles = append(moodles, moodle)
-		}
-	}
-
-	var page int
-	var limit int
-	var err1 error
-	var err2 error
-
-	if v.Get("page") != "" {
-		page, err1 = strconv.Atoi(v.Get("page"))
-	}
-	if v.Get("limit") != "" {
-		limit, err2 = strconv.Atoi(v.Get("limit"))
-	}
-	if err1 != nil || err2 != nil {
-		log.Println(err1, err2)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		moodleErrorResponse := MoodleErrorResponse{Error: "page or limit is not valid"}
-		json.NewEncoder(w).Encode(moodleErrorResponse)
-		return
-	}
-	if page < 1 || limit < 1 {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		moodleErrorResponse := MoodleErrorResponse{Error: "page or limit is not valid"}
-		json.NewEncoder(w).Encode(moodleErrorResponse)
-		return
-	}
-	resp := h.PaginationMoodle(moodles, page, limit)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(resp)
-
-}
 
 // return clientset
 func (h *Handler) GetClientset() *kubernetes.Clientset {
@@ -867,20 +874,12 @@ func (h *Handler) SelectDataFromMariaDB(dbname string) map[string]string {
 	return result
 }
 
-// validate email is existed or not
-func (h *Handler) ValidateEmail(email string) bool {
-	if _, ok := config.USERS[email]; !ok {
-		return false
-	}
-	return true
-}
-
 
 type Course struct {
 	Id int `json:"id"`
 	Name string `json:"name"`
 	Content string `json:"content"`
-	ThumbUrl string `json:"thumb_url"`
+	Thumb_Url string `json:"thumb_url"`
 }
 
 type  Meta struct {
@@ -981,4 +980,78 @@ func (h *Handler) ListCourse(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
+}
+
+
+type ListPackageResponse struct {
+	Meta Meta `json:"_meta"`
+	Packages []MoodlePackages `json:"packages"`
+}
+
+func (h *Handler) ListPackage(w http.ResponseWriter, r *http.Request) {
+	var packages []MoodlePackages
+	packages = append(packages, Package100, Package200, Package300, Package400, Package500)
+	var page int
+	var limit int
+	var err1 error
+	var err2 error
+
+	v := r.URL.Query()
+	if v.Get("page") != "" {
+		page, err1 = strconv.Atoi(v.Get("page"))
+	}
+	if v.Get("limit") != "" {
+		limit, err2 = strconv.Atoi(v.Get("limit"))
+	}
+	if err1 != nil || err2 != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "page or limit is not valid"})
+		return
+	}
+	if page < 1 || limit < 1 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "page or limit is not valid"})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	resp := h.PaginationPackage(packages, page, limit)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
+}
+
+
+// paginate packages
+func (h *Handler) PaginationPackage(packages []MoodlePackages, page int, limit int) ListPackageResponse {
+	var total int = len(packages)
+	if total == 0 {
+		return ListPackageResponse{
+			Meta: Meta{
+				Total: 0,
+				Pages: 1,
+				Page: 1,
+				Limit: 0,
+			},
+			Packages: packages,
+		}
+	}
+
+	var pages int = int(math.Ceil(float64(total) / float64(limit)))
+	if page > pages {
+		page = pages
+	}
+	var start int = (page - 1) * limit
+	var end int = start + limit
+	if end > total {
+		end = total
+	}
+	var packagesPage []MoodlePackages = packages[start:end]
+	var resp ListPackageResponse
+	resp.Meta.Total = total
+	resp.Meta.Pages = pages
+	resp.Meta.Page = page
+	resp.Meta.Limit = limit
+	resp.Packages = packagesPage
+	return resp
 }

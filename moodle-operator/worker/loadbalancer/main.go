@@ -24,13 +24,18 @@ func NewLBWorker(m adapter.MongoAdapter) *LBWorker{
 // list lb then insert to mongodb
 func (m *LBWorker) GetLBInstances() error {
 	var client *lb.LBClient = lb.NewLBClient()
+	// get token from tokens collection
+	var result bson.M
+	ctx := context.Background()
+	tokenCollection := m.adapter.Collection("tokens")
+	err := tokenCollection.FindOne(context.Background(), bson.M{}).Decode(&result)
+	token := result["token"].(string)
 
 	// list instances
-	instances, err := client.GetLBInstances()
+	instances, err := client.GetLBInstances(token)
 	if err != nil {
 		log.Fatal(err)
 	}
-	ctx := context.Background()
 	collection := m.adapter.Collection("lb_instances")
 
 	// for lb in collection if not in instances then delete

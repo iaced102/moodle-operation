@@ -47,7 +47,7 @@ type resourceID struct {
 
 
 // return list of instances
-func (m *LBClient) GetLBInstances() ([]*LoadBalancer, error) {
+func (m *LBClient) GetLBInstances(token string) ([]*LoadBalancer, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://hn.manage.bizflycloud.vn/api/loadbalancers/loadbalancers", nil)
 	if err != nil {
@@ -55,7 +55,7 @@ func (m *LBClient) GetLBInstances() ([]*LoadBalancer, error) {
 	}
 	req.Header.Set("X-Region-Name", "HaNoi")
 	req.Header.Set("X-Tenant-Name", config.USERNAME)
-	req.Header.Set("X-Auth-Token", config.TOKEN)
+	req.Header.Set("X-Auth-Token", token)
 	resp, err := client.Do(req)
 	if resp.StatusCode == 401 {
 		log.Fatal("Unauthorized")

@@ -12,6 +12,7 @@
 
 > | name				   |  type     | data type					| description                                                           |
 > |------------------------|-----------|----------------------------|-----------------------------------------------------------------------|
+> | email	 |  required   |   string  |			N/A				|																		|
 > | website_name		   |  required |			string			| N/A																	|
 > | pre_installed_course   |  required |			[]int			| N/A																	|
 > | packages_name		   |  required |			string			| N/A																	|
@@ -64,6 +65,7 @@ curl -i -X POST "http://localhost:5000/api/v1/moodles" \
 > |------------------------|-----------|----------------------------|-----------------------------------------------------------------------|
 > | page				   |  required |			int				| N/A																	|
 > | limit				   |  required |			int				| N/A																	|
+> | email	 |  required   |  string	| N/A						|																		|
 
 ##### Responses
 
@@ -126,6 +128,7 @@ curl -iX GET "http://localhost:5000/api/v1/moodles?id=366561ed-de0b-422c-ac00-65
 ##### Parameters
 > | name				   |  type     | data type					| description                                                           |
 > |------------------------|-----------|----------------------------|-----------------------------------------------------------------------|
+> | email				   |  required |			string			| N/A																	|
 > | search				   |  required |			string			| N/A																	|
 > | page				   |  required |			int				| N/A																	|
 > | limit				   |  required |			int				| N/A																	|

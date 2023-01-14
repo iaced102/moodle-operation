@@ -160,7 +160,7 @@ func (m *MariaClient) GetMariaInstances() ([]*CloudDatabaseInstance , error) {
 	}
 	req.Header.Set("X-Region-Name", "HaNoi")
 	req.Header.Set("X-Tenant-Name", config.USERNAME)
-	req.Header.Set("X-Auth-Token", config.TOKEN)
+	req.Header.Set("X-Auth-Token", config.BIZFLYCLOUD_TOKEN)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
@@ -198,7 +198,7 @@ func (m *MariaClient) CreateInstance(name string) error {
 	}
 	req.Header.Set("X-Region-Name", "HaNoi")
 	req.Header.Set("X-Tenant-Name", config.USERNAME)
-	req.Header.Set("X-Auth-Token", config.TOKEN)
+	req.Header.Set("X-Auth-Token", config.BIZFLYCLOUD_TOKEN)
 	req.Header.Set("content-type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
@@ -223,7 +223,7 @@ func (m *MariaClient) DeleteInstance(instanceID string) error {
 	}
 	req.Header.Set("X-Region-Name", "HaNoi")
 	req.Header.Set("X-Tenant-Name", config.USERNAME)
-	req.Header.Set("X-Auth-Token", config.TOKEN)
+	req.Header.Set("X-Auth-Token", config.BIZFLYCLOUD_TOKEN)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
@@ -247,7 +247,7 @@ func (m *MariaClient) CreateInstanceFromBackup(name string, backupID string) err
 	}
 	req.Header.Set("X-Region-Name", "HaNoi")
 	req.Header.Set("X-Tenant-Name", config.USERNAME)
-	req.Header.Set("X-Auth-Token", config.TOKEN)
+	req.Header.Set("X-Auth-Token", config.BIZFLYCLOUD_TOKEN)
 	req.Header.Set("content-type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
