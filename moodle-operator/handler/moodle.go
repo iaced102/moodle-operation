@@ -166,8 +166,9 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
-		moodleErrorResponse := MoodleErrorResponse{Error: "Not implemented"}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		moodleErrorResponse := MoodleErrorResponse{Error: "Error when decode payload"}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
 	}
@@ -175,6 +176,7 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	// check if email not exist then reponse user not found
 	emailExist := h.ValidateEmail(payload.Email)
 	if !emailExist {
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Email is invalid"})
 		return
@@ -183,6 +185,7 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	// check if website name is exist then response website name is exist
 	exist := h.ValidateMoodleWebSiteName(payload.WebSiteName+".lms.bizflycloud.vn")
 	if exist {
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Website name is exist"})
 		return
@@ -196,6 +199,7 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	case "300CCU":
 		moodle.Packages = LargePackages
 	default:
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "moodle-packages is not valid, please choose 100CCU, 200CCU, or 300CCU"})
 		return
@@ -217,7 +221,8 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = h.k8sclient.CreateNamespace(h.clientset, moodle.Id)
 		if err != nil {
 			log.Println(err)
-			w.WriteHeader(http.StatusNotImplemented)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
 			moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 			json.NewEncoder(w).Encode(moodleErrorResponse)
 			return
@@ -227,7 +232,8 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = h.k8sclient.ApplyService(h.clientset, moodle.Id)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
@@ -244,7 +250,8 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = lbTrackingCollection.InsertOne(context.Background(), lbTracking)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
@@ -261,7 +268,8 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = mariaTrackingCollection.InsertOne(context.Background(), mariaTracking)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
@@ -271,7 +279,8 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = h.k8sclient.ApplyPVC(h.clientset, moodle.Id)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
@@ -281,7 +290,8 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = h.k8sclient.ApplyStatefulSet(h.clientset, moodle.Id, "default")
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
@@ -292,7 +302,8 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = moodleCollection.InsertOne(context.Background(), moodle)
 		if err != nil {
 			log.Println(err)
-			w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
 			moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 			json.NewEncoder(w).Encode(moodleErrorResponse)
 			return
@@ -315,7 +326,8 @@ func (h *Handler) ChangeMoodlePackages(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: "Not implemented"}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
@@ -325,7 +337,8 @@ func (h *Handler) ChangeMoodlePackages(w http.ResponseWriter, r *http.Request) {
 	moodle, err := h.GetMoodleById(payload.MoodleId)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
@@ -339,6 +352,7 @@ func (h *Handler) ChangeMoodlePackages(w http.ResponseWriter, r *http.Request) {
 		moodle.Packages = LargePackages
 	default:
 		log.Println(err)
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: "moodle-packages is not valid, please choose [100CCU, 200CCU, or 300CCU]"}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -350,7 +364,8 @@ func (h *Handler) ChangeMoodlePackages(w http.ResponseWriter, r *http.Request) {
 	_, err = moodleCollection.UpdateOne(context.Background(), bson.M{"id": payload.MoodleId}, bson.M{"$set": moodle})
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: "Not implemented"}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
@@ -403,6 +418,7 @@ func (h *Handler) GetMoodle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusBadRequest)
 	json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "id is required"})
 }
@@ -413,6 +429,7 @@ func (h *Handler) ChangeMoodleAutoScale(w http.ResponseWriter, r *http.Request) 
 	var payload ChangeMoodleAutoScalePayload
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -421,7 +438,8 @@ func (h *Handler) ChangeMoodleAutoScale(w http.ResponseWriter, r *http.Request) 
 	moodle, err := h.GetMoodleById(payload.MoodleId)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
@@ -435,6 +453,7 @@ func (h *Handler) ChangeMoodleAutoScale(w http.ResponseWriter, r *http.Request) 
 	_, err = moodleCollection.UpdateOne(context.Background(), bson.M{"id": payload.MoodleId}, bson.M{"$set": moodle})
 	if err != nil {
 		log.Println(err)
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -457,6 +476,7 @@ func (h *Handler) ChangeMoodleDocumentsStorageExtra(w http.ResponseWriter, r *ht
 	var payload ChangeMoodleDocumentsStorageExtraPayload
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -465,13 +485,15 @@ func (h *Handler) ChangeMoodleDocumentsStorageExtra(w http.ResponseWriter, r *ht
 	moodle, err := h.GetMoodleById(payload.MoodleId)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
 	}
 
 	if payload.DocumentsStorageExtra > moodle.Packages.DocumentStorageExtraMax || payload.DocumentsStorageExtra < 0 {
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err)
 		moodleErrorResponse := MoodleErrorResponse{Error: "documents_storage_extra is not valid, please choose in range [0, " + strconv.Itoa(moodle.Packages.DocumentStorageExtraMax) + "]"}
@@ -487,7 +509,8 @@ func (h *Handler) ChangeMoodleDocumentsStorageExtra(w http.ResponseWriter, r *ht
 	_, err = moodleCollection.UpdateOne(context.Background(), bson.M{"id": payload.MoodleId}, bson.M{"$set": moodle})
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
@@ -516,6 +539,7 @@ func (h *Handler) ChangeMoodlePreInstalledCourse(w http.ResponseWriter, r *http.
 	// validate the payload any course is not in range [1,8]
 	for _, course := range payload.PreInstalledCourse {
 		if course < 1 || course > 8 {
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			log.Println(err)
 			moodleErrorResponse := MoodleErrorResponse{Error: "pre_installed_course is not valid, please choose in range [1, 8]"}
@@ -528,7 +552,8 @@ func (h *Handler) ChangeMoodlePreInstalledCourse(w http.ResponseWriter, r *http.
 	moodle, err := h.GetMoodleById(payload.MoodleId)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
@@ -542,7 +567,8 @@ func (h *Handler) ChangeMoodlePreInstalledCourse(w http.ResponseWriter, r *http.
 	_, err = moodleCollection.UpdateOne(context.Background(), bson.M{"id": payload.MoodleId}, bson.M{"$set": moodle})
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 	}
@@ -560,6 +586,7 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	var payload DeleteMoodlePayload
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -570,7 +597,8 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	err = h.k8sclient.DeleteNamespace(h.clientset, payload.MoodleId)
 		if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 	}
@@ -580,7 +608,8 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = moodleCollection.DeleteMany(context.Background(), payload)
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 	}
@@ -588,7 +617,8 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = LbTrackingCollection.DeleteMany(context.Background(), bson.M{"moodleid": payload.MoodleId})
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 	}
@@ -596,7 +626,8 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = MariaTrackingCollection.DeleteMany(context.Background(), bson.M{"moodleid": payload.MoodleId})
 	if err != nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusNotImplemented)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 	}
@@ -625,6 +656,7 @@ func (h *Handler) ListMoodle(w http.ResponseWriter, r *http.Request) {
 	cursor, err := moodleCollection.Find(context.Background(), bson.M{"email": email})
 	if err != nil {
 		log.Println(err)
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		moodleErrorResponse := MoodleErrorResponse{Error: "Email is NotFound"}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -681,6 +713,7 @@ func (h *Handler) ScaleMoodle(w http.ResponseWriter, r *http.Request) {
 	var payload ScaleMoodlePayload
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -688,6 +721,7 @@ func (h *Handler) ScaleMoodle(w http.ResponseWriter, r *http.Request) {
 	err = h.k8sclient.ScaleStatefulSet(h.clientset, payload.Id, payload.Replicas)
 		if err != nil {
 			log.Println(err)
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 			json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -699,6 +733,7 @@ func (h *Handler) ScaleMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = moodleCollection.UpdateOne(context.Background(), bson.M{"id": payload.Id}, bson.M{"$set": bson.M{"replicas": payload.Replicas}})
 	if err != nil {
 		log.Println(err)
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -729,6 +764,7 @@ func (h *Handler) SearchMoodle(w http.ResponseWriter, r *http.Request) {
 		// cursor, err := moodleCollection.Find(context.Background(), bson.M{"$text": bson.M{"$search": search}})
 		if err != nil {
 			log.Println(err)
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
 			moodleErrorResponse := MoodleErrorResponse{Error: "Not Found"}
 			json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -754,12 +790,14 @@ func (h *Handler) SearchMoodle(w http.ResponseWriter, r *http.Request) {
 	}
 	if err1 != nil || err2 != nil {
 		log.Println(err1, err2)
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: "page or limit is not valid"}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
 	}
 	if page < 1 || limit < 1 {
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: "page or limit is not valid"}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -903,6 +941,7 @@ func (h *Handler) ListCourse(w http.ResponseWriter, r *http.Request) {
 	cursor, err := courseCollection.Find(context.Background(), bson.M{})
 	if err != nil {
 		log.Println(err)
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		courseErrorResponse := CourseErrorResponse{Error: "Not Found"}
 		json.NewEncoder(w).Encode(courseErrorResponse)
@@ -926,11 +965,13 @@ func (h *Handler) ListCourse(w http.ResponseWriter, r *http.Request) {
 		limit, err2 = strconv.Atoi(v.Get("limit"))
 	}
 	if err1 != nil || err2 != nil {
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "page or limit is not valid"})
 		return
 	}
 	if page < 1 || limit < 1 {
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "page or limit is not valid"})
 		return
