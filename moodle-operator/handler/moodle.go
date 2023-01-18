@@ -7,13 +7,13 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"reflect"
 	"strconv"
 	"time"
 
 	mariaadapter "moodle/adapter/mariadb"
 	mongoadapter "moodle/adapter/mongo"
 	k8sclient "moodle/client/k8s"
-	mariaclient "moodle/client/maria"
 	"moodle/config"
 
 	"github.com/google/uuid"
@@ -26,25 +26,20 @@ import (
 type Handler struct {
 	k8sclient k8sclient.K8sClient
 	clientset *kubernetes.Clientset
-	mariaclient mariaclient.MariaClient
+	mariaclient *mariaadapter.MariaAdapter
     db mongoadapter.MongoAdapter
 }
 
 func New(d mongoadapter.MongoAdapter) *Handler {
 	k8sclient := k8sclient.NewK8sClient()
 	clientset := k8sclient.NewClientSet()
-	mariaclient := mariaclient.NewMariaClient()
+	mariaclient := mariaadapter.NewMariaAdapter(config.MARIAHOSTW, 3306, config.MARIAUSER, config.MARIAPASSWORD)
     return &Handler{
 		k8sclient: *k8sclient,
 		clientset: clientset,
-		mariaclient: *mariaclient,
+		mariaclient: mariaclient,
 		db: d,
     }
-}
-
-type ListMoodleResponse struct {
-	Meta Meta `json:"_meta"`
-	Moodles []Moodle `json:"moodles"`
 }
 
 type MoodlePackages struct {
@@ -190,7 +185,6 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: "Error when decode payload"}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -200,7 +194,6 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	// check if email not exist then reponse user not found
 	// emailExist := h.ValidateAdmin(payload.Email)
 	// if !emailExist {
-	// 	w.Header().Set("Content-Type", "application/json")
 	// 	w.WriteHeader(http.StatusNotFound)
 	// 	json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Email is invalid"})
 	// 	return
@@ -209,7 +202,6 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	// check if website name is exist then response website name is exist
 	exist := h.ValidateMoodleWebSiteName(payload.WebSiteName+".lms.bizflycloud.vn")
 	if exist {
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Website name is exist"})
 		return
@@ -227,7 +219,6 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	case "500CCU":
 		moodle.Packages = Package500
 	default:
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "moodle-packages is not valid, please choose 100CCU, 200CCU, 300CCU, 400CCU or Liên Hệ"})
 		return
@@ -249,7 +240,6 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = h.k8sclient.CreateNamespace(h.clientset, moodle.Id)
 		if err != nil {
 			log.Println(err)
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 			json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -260,7 +250,6 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = h.k8sclient.ApplyService(h.clientset, moodle.Id)
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -278,7 +267,6 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = lbTrackingCollection.InsertOne(context.Background(), lbTracking)
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -287,7 +275,7 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 
 	mariaTracking := DBTracking{
 		MoodleId: moodle.Id,
-		DbName: "moodle_" + moodle.Id,
+		DbName: moodle.Id,
 		DbStatus: "Creating",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -296,7 +284,6 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = mariaTrackingCollection.InsertOne(context.Background(), mariaTracking)
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -307,7 +294,6 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = h.k8sclient.ApplyPVC(h.clientset, moodle.Id)
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -318,7 +304,6 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = h.k8sclient.ApplyStatefulSet(h.clientset, moodle.Id, "default")
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -330,13 +315,11 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = moodleCollection.InsertOne(context.Background(), moodle)
 		if err != nil {
 			log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 			json.NewEncoder(w).Encode(moodleErrorResponse)
 			return
 	}
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(moodle)
 
@@ -354,7 +337,6 @@ func (h *Handler) ChangeMoodlePackages(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: "Not implemented"}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -365,7 +347,6 @@ func (h *Handler) ChangeMoodlePackages(w http.ResponseWriter, r *http.Request) {
 	moodle, err := h.GetMoodleById(payload.MoodleId)
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -384,7 +365,6 @@ func (h *Handler) ChangeMoodlePackages(w http.ResponseWriter, r *http.Request) {
 		moodle.Packages = Package500
 	default:
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: "moodle-packages is not valid, please choose [100CCU, 200CCU, 300CCU, 400CCU, Liên Hệ]"}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -396,7 +376,6 @@ func (h *Handler) ChangeMoodlePackages(w http.ResponseWriter, r *http.Request) {
 	_, err = moodleCollection.UpdateOne(context.Background(), bson.M{"id": payload.MoodleId}, bson.M{"$set": moodle})
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: "Not implemented"}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -404,7 +383,6 @@ func (h *Handler) ChangeMoodlePackages(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(moodle)
 }
@@ -438,19 +416,16 @@ func (h *Handler) GetMoodle(w http.ResponseWriter, r *http.Request) {
 		moodle, err := h.GetMoodleById(id)
 		if err != nil {
 			log.Println(err)
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
 			moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 			json.NewEncoder(w).Encode(moodleErrorResponse)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(moodle)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusBadRequest)
 	json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "id is required"})
 }
@@ -461,7 +436,6 @@ func (h *Handler) ChangeMoodleAutoScale(w http.ResponseWriter, r *http.Request) 
 	var payload ChangeMoodleAutoScalePayload
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -470,7 +444,6 @@ func (h *Handler) ChangeMoodleAutoScale(w http.ResponseWriter, r *http.Request) 
 	moodle, err := h.GetMoodleById(payload.MoodleId)
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -485,14 +458,12 @@ func (h *Handler) ChangeMoodleAutoScale(w http.ResponseWriter, r *http.Request) 
 	_, err = moodleCollection.UpdateOne(context.Background(), bson.M{"id": payload.MoodleId}, bson.M{"$set": moodle})
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(moodle)
 }
@@ -508,7 +479,6 @@ func (h *Handler) ChangeMoodleDocumentsStorageExtra(w http.ResponseWriter, r *ht
 	var payload ChangeMoodleDocumentsStorageExtraPayload
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -517,7 +487,6 @@ func (h *Handler) ChangeMoodleDocumentsStorageExtra(w http.ResponseWriter, r *ht
 	moodle, err := h.GetMoodleById(payload.MoodleId)
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -525,7 +494,6 @@ func (h *Handler) ChangeMoodleDocumentsStorageExtra(w http.ResponseWriter, r *ht
 	}
 
 	if payload.DocumentsStorageExtra > moodle.Packages.DocumentStorageExtraMax || payload.DocumentsStorageExtra < 0 {
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err)
 		moodleErrorResponse := MoodleErrorResponse{Error: "documents_storage_extra is not valid, please choose in range [0, " + strconv.Itoa(moodle.Packages.DocumentStorageExtraMax) + "]"}
@@ -541,14 +509,12 @@ func (h *Handler) ChangeMoodleDocumentsStorageExtra(w http.ResponseWriter, r *ht
 	_, err = moodleCollection.UpdateOne(context.Background(), bson.M{"id": payload.MoodleId}, bson.M{"$set": moodle})
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(moodle)
 }
@@ -571,7 +537,6 @@ func (h *Handler) ChangeMoodlePreInstalledCourse(w http.ResponseWriter, r *http.
 	// validate the payload any course is not in range [1,8]
 	for _, course := range payload.PreInstalledCourse {
 		if course < 1 || course > 8 {
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			log.Println(err)
 			moodleErrorResponse := MoodleErrorResponse{Error: "pre_installed_course is not valid, please choose in range [1, 8]"}
@@ -584,7 +549,6 @@ func (h *Handler) ChangeMoodlePreInstalledCourse(w http.ResponseWriter, r *http.
 	moodle, err := h.GetMoodleById(payload.MoodleId)
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -599,13 +563,11 @@ func (h *Handler) ChangeMoodlePreInstalledCourse(w http.ResponseWriter, r *http.
 	_, err = moodleCollection.UpdateOne(context.Background(), bson.M{"id": payload.MoodleId}, bson.M{"$set": moodle})
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(moodle)
 }
@@ -618,7 +580,6 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	var payload DeleteMoodlePayload
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -629,7 +590,6 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	err = h.k8sclient.DeleteNamespace(h.clientset, payload.MoodleId)
 		if err != nil {
 			log.Println(err)
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 			json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -640,7 +600,6 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = moodleCollection.DeleteMany(context.Background(), bson.M{"id": payload.MoodleId})
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -649,7 +608,6 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = LbTrackingCollection.DeleteMany(context.Background(), bson.M{"moodleid": payload.MoodleId})
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -658,7 +616,6 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	_, err = MariaTrackingCollection.DeleteMany(context.Background(), bson.M{"moodleid": payload.MoodleId})
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -674,10 +631,13 @@ type ListByIdPayload struct {
 
 // list all moodles by email
 func (h *Handler) ListMoodle(w http.ResponseWriter, r *http.Request) {
-	// result := h.SelectDataFromMariaDB("moodle")
-	// fmt.Println(result)
-	// result := h.CreateMoodleDatabase("hello", "moodle")
-	// fmt.Println(result)
+	// result := h.mariaclient.Select("moodle", "SELECT * FROM mdl_course")
+	// log.Println(result)
+
+	// err := h.mariaclient.CreateDatabase("moodle002")
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 	
 	// get id from params
 	v := r.URL.Query()
@@ -692,7 +652,6 @@ func (h *Handler) ListMoodle(w http.ResponseWriter, r *http.Request) {
 		cursor, err := moodleCollection.Find(context.Background(), bson.M{"name": bson.M{"$regex": search, "$options": "i"}})
 		if err != nil {
 			log.Println(err)
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			moodleErrorResponse := MoodleErrorResponse{Error: "Email is NotFound"}
 			json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -703,7 +662,6 @@ func (h *Handler) ListMoodle(w http.ResponseWriter, r *http.Request) {
 			err := cursor.Decode(&moodle)
 			if err != nil {
 				log.Println(err)
-				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusBadRequest)
 				moodleErrorResponse := MoodleErrorResponse{Error: "Email is NotFound"}
 				json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -715,7 +673,6 @@ func (h *Handler) ListMoodle(w http.ResponseWriter, r *http.Request) {
 		cursor, err := moodleCollection.Find(context.Background(), bson.M{"email": email})
 		if err != nil {
 			log.Println(err)
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 			json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -726,7 +683,6 @@ func (h *Handler) ListMoodle(w http.ResponseWriter, r *http.Request) {
 			err := cursor.Decode(&moodle)
 			if err != nil {
 				log.Println(err)
-				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusBadRequest)
 				moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 				json.NewEncoder(w).Encode(moodleErrorResponse)
@@ -735,87 +691,18 @@ func (h *Handler) ListMoodle(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-
-	var page int
-	var limit int
-	var err1 error
-	var err2 error
-
-	if v.Get("page") != "" {
-		page, err1 = strconv.Atoi(v.Get("page"))
-	}
-	if v.Get("limit") != "" {
-		limit, err2 = strconv.Atoi(v.Get("limit"))
-	}
-	if err1 != nil || err2 != nil {
+	page, err1 := strconv.Atoi(v.Get("page"))
+	limit, err2 := strconv.Atoi(v.Get("limit"))
+	if err1 != nil || err2 != nil || page < 1 || limit < 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "page or limit is not valid"})
 		return
 	}
-	if page < 1 || limit < 1 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "page or limit is not valid"})
-		return
-	}
-	resp := h.PaginationMoodle(moodles, page, limit)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(resp)
-
-}
-
-
-type ScaleMoodlePayload struct {
-	Id string `json:"id"`
-	Replicas int32 `json:"replicas"`
-}
-type ScaleMoodleResponse struct {
-	Id string `json:"id"`
-	Replicas int32 `json:"replicas"`
-	Status string `json:"status"`
-}
-
-// scale statefulset
-func (h *Handler) ScaleMoodle(w http.ResponseWriter, r *http.Request) {
-	// get the payload
-	var payload ScaleMoodlePayload
-	err := json.NewDecoder(r.Body).Decode(&payload)
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	// scale the statefulset
-	err = h.k8sclient.ScaleStatefulSet(h.clientset, payload.Id, payload.Replicas)
-		if err != nil {
-			log.Println(err)
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
-			moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
-			json.NewEncoder(w).Encode(moodleErrorResponse)
-			return
-	}
-
-	// update db
-	moodleCollection := h.db.Collection("moodles")
-	_, err = moodleCollection.UpdateOne(context.Background(), bson.M{"id": payload.Id}, bson.M{"$set": bson.M{"replicas": payload.Replicas}})
-	if err != nil {
-		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
-		json.NewEncoder(w).Encode(moodleErrorResponse)
-		return
-	}
-	var resp ScaleMoodleResponse
-	resp.Id = payload.Id
-	resp.Replicas = payload.Replicas
-	resp.Status = "Scaled"
-	w.Header().Set("Content-Type", "application/json")
+	// resp := h.PaginationMoodle(moodles, page, limit)
+	resp := PaginateList(moodles, page, limit)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
-
 
 // return clientset
 func (h *Handler) GetClientset() *kubernetes.Clientset {
@@ -834,47 +721,6 @@ func (h *Handler) ValidateMoodleWebSiteName(webSiteName string) bool {
 }
 
 
-func (h *Handler) PaginationMoodle(moodles []Moodle, page int, limit int) ListMoodleResponse {
-	var total int = len(moodles)
-	var resp ListMoodleResponse
-	if total == 0 {
-		return ListMoodleResponse{
-			Meta: Meta{
-				Total: 0,
-				Pages: 1,
-				Page: 1,
-				Limit: 0,
-			},
-			Moodles: []Moodle{},
-		}
-	}
-
-	var pages int = int(math.Ceil(float64(total) / float64(limit)))
-	if page > pages {
-		page = pages
-	}
-	var start int = (page - 1) * limit
-	var end int = start + limit
-	if end > total {
-		end = total
-	}
-	var moodlesPage []Moodle = moodles[start:end]
-	resp.Moodles = moodlesPage
-	resp.Meta.Total = total
-	resp.Meta.Pages = pages
-	resp.Meta.Page = page
-	resp.Meta.Limit = limit
-	return resp
-}
-
-// select data from mariadb use maria worker
-func (h *Handler) SelectDataFromMariaDB(dbname string) map[string]string {
-	newMariaAdapter := mariaadapter.NewMariaAdapter(config.MARIAHOSTR, 3306, config.MARIAUSER, config.MARIAPASSWORD, dbname)
-	result := newMariaAdapter.Select("SELECT * FROM mdl_course")
-	return result
-}
-
-
 type Course struct {
 	Id int `json:"id"`
 	Name string `json:"name"`
@@ -889,45 +735,6 @@ type  Meta struct {
 	Limit int `json:"limit"`
 }
 
-type  ListCourseResponse struct {
-	Meta Meta `json:"_meta"`
-	Courses []Course `json:"courses"`
-}
-
-// pagination for course
-func (h *Handler) PaginationCourse(courses []Course, page int, limit int) ListCourseResponse {
-	var total int = len(courses)
-	if total == 0 {
-		return ListCourseResponse{
-			Meta: Meta{
-				Total: 0,
-				Pages: 1,
-				Page: 1,
-				Limit: 0,
-			},
-			Courses: courses,
-		}
-	}
-
-	var pages int = int(math.Ceil(float64(total) / float64(limit)))
-	if page > pages {
-		page = pages
-	}
-	var start int = (page - 1) * limit
-	var end int = start + limit
-	if end > total {
-		end = total
-	}
-	var coursesPage []Course = courses[start:end]
-	var resp ListCourseResponse
-	resp.Courses = coursesPage
-	resp.Meta.Total = total
-	resp.Meta.Pages = pages
-	resp.Meta.Page = page
-	resp.Meta.Limit = limit
-	return resp
-}
-
 type CourseErrorResponse struct {
 	Error string `json:"error"`
 }
@@ -940,7 +747,6 @@ func (h *Handler) ListCourse(w http.ResponseWriter, r *http.Request) {
 	cursor, err := courseCollection.Find(context.Background(), bson.M{})
 	if err != nil {
 		log.Println(err)
-		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
 		courseErrorResponse := CourseErrorResponse{Error: "Not Found"}
 		json.NewEncoder(w).Encode(courseErrorResponse)
@@ -952,106 +758,104 @@ func (h *Handler) ListCourse(w http.ResponseWriter, r *http.Request) {
 		courses = append(courses, course)
 	}
 
-	var page int
-	var limit int
-	var err1 error
-	var err2 error
+	page, err1 := strconv.Atoi(v.Get("page"))
+	limit, err2 := strconv.Atoi(v.Get("limit"))
 
-	if v.Get("page") != "" {
-		page, err1 = strconv.Atoi(v.Get("page"))
-	}
-	if v.Get("limit") != "" {
-		limit, err2 = strconv.Atoi(v.Get("limit"))
-	}
-	if err1 != nil || err2 != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "page or limit is not valid"})
-		return
-	}
-	if page < 1 || limit < 1 {
-		w.Header().Set("Content-Type", "application/json")
+	if err1 != nil || err2 != nil || page < 1 || limit < 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "page or limit is not valid"})
 		return
 	}
 
-	resp := h.PaginationCourse(courses, page, limit)
-	w.Header().Set("Content-Type", "application/json")
+	resp := PaginateList(courses, page, limit)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
-}
-
-
-type ListPackageResponse struct {
-	Meta Meta `json:"_meta"`
-	Packages []MoodlePackages `json:"packages"`
 }
 
 func (h *Handler) ListPackage(w http.ResponseWriter, r *http.Request) {
 	var packages []MoodlePackages
 	packages = append(packages, Package100, Package200, Package300, Package400, Package500)
-	var page int
-	var limit int
-	var err1 error
-	var err2 error
-
 	v := r.URL.Query()
-	if v.Get("page") != "" {
-		page, err1 = strconv.Atoi(v.Get("page"))
-	}
-	if v.Get("limit") != "" {
-		limit, err2 = strconv.Atoi(v.Get("limit"))
-	}
-	if err1 != nil || err2 != nil {
-		w.Header().Set("Content-Type", "application/json")
+
+	page, err1 := strconv.Atoi(v.Get("page"))
+	limit, err2 := strconv.Atoi(v.Get("limit"))
+
+	if err1 != nil || err2 != nil || page < 1 || limit < 1 {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "page or limit is not valid"})
 		return
 	}
-	if page < 1 || limit < 1 {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "page or limit is not valid"})
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	resp := h.PaginationPackage(packages, page, limit)
+	resp := PaginateList(packages, page, limit)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 }
 
 
-// paginate packages
-func (h *Handler) PaginationPackage(packages []MoodlePackages, page int, limit int) ListPackageResponse {
-	var total int = len(packages)
+// pagiante
+type Pagination interface {
+	GetPage() int
+	GetLimit() int
+	GetTotal() int
+	GetPages() int
+	GetData() interface{}
+}
+
+type pagination struct {
+	Page    int         `json:"page"`
+	Limit   int         `json:"limit"`
+	Total   int         `json:"total"`
+	Pages   int         `json:"pages"`
+	Data    interface{} `json:"data"`
+}
+
+func (p *pagination) GetPage() int {
+	return p.Page
+}
+
+func (p *pagination) GetLimit() int {
+	return p.Limit
+}
+
+func (p *pagination) GetTotal() int {
+	return p.Total
+}
+
+func (p *pagination) GetPages() int {
+	return p.Pages
+}
+
+func (p *pagination) GetData() interface{} {
+	return p.Data
+}
+
+func PaginateList(list interface{}, page int, limit int) Pagination {
+	total := reflect.ValueOf(list).Len()
 	if total == 0 {
-		return ListPackageResponse{
-			Meta: Meta{
-				Total: 0,
-				Pages: 1,
-				Page: 1,
-				Limit: 0,
-			},
-			Packages: packages,
+		return &pagination{
+			Page:    1,
+			Limit:   0,
+			Total:   0,
+			Pages:   1,
+			Data:    []interface{}{},
 		}
 	}
 
-	var pages int = int(math.Ceil(float64(total) / float64(limit)))
+	pages := int(math.Ceil(float64(total) / float64(limit)))
 	if page > pages {
 		page = pages
 	}
-	var start int = (page - 1) * limit
-	var end int = start + limit
+	start := (page - 1) * limit
+	end := start + limit
 	if end > total {
 		end = total
 	}
-	var packagesPage []MoodlePackages = packages[start:end]
-	var resp ListPackageResponse
-	resp.Meta.Total = total
-	resp.Meta.Pages = pages
-	resp.Meta.Page = page
-	resp.Meta.Limit = limit
-	resp.Packages = packagesPage
-	return resp
+	data := reflect.ValueOf(list).Slice(start, end).Interface()
+
+	return &pagination{
+		Page:    page,
+		Limit:   limit,
+		Total:   total,
+		Pages:   pages,
+		Data:    data,
+	}
 }

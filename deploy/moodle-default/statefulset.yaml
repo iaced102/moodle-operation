@@ -23,11 +23,13 @@ spec:
           - name: DB_HOST_WRITE
             value: 45.124.94.112
           - name: DB_NAME
-            value: moodle
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
           - name: DB_USER
-            value: duy
+            value: root
           - name: DB_PASS
-            value: 4Yk7741J2JVWPTQkT9eKkcbAaTUs5XzTvIFL
+            value: 0YU8381WUlk1u9ysVbF4Qb5FigNW8z8uCvPI
           - name: THEME
             value: edumy
           - name: REDIS_HOST
@@ -43,7 +45,7 @@ spec:
           - name: REDIS_LOCK_RETRY
             value: '5'
           - name: SERVER_NAME
-            value: '123.31.39.70'
+            value: 'localhost'
           image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:latest
           name: moodle
             # resources:

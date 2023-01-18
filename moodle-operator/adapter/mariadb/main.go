@@ -18,18 +18,17 @@ type MariaAdapter struct {
 }
 
 // new maria adapter
-func NewMariaAdapter(host string, port int, username string, password string, database string) *MariaAdapter {
+func NewMariaAdapter(host string, port int, username string, password string) *MariaAdapter {
 	return &MariaAdapter{
 		Host:     host,
 		Port:     port,
 		Username: username,
 		Password: password,
-		Database: database,
 	}
 }
 
-func (m *MariaAdapter) Connect() *sql.DB {
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", m.Username, m.Password, m.Host, m.Port, m.Database))
+func (m *MariaAdapter) Connect(dbname string) *sql.DB {
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", m.Username, m.Password, m.Host, m.Port, dbname))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,19 +41,21 @@ func (m *MariaAdapter) Connect() *sql.DB {
 
 
 // select data from mysql
-func (m *MariaAdapter) Select(query string) map[string]string {
-	db := m.Connect()
+func (m *MariaAdapter) Select(dbname, query string) map[string]string {
+	db := m.Connect(dbname)
 	defer db.Close()
 	queryString := fmt.Sprintf("%s", query)
 	rows, err := db.Query(queryString)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil
 	}
 	defer rows.Close()
 
 	columns, err := rows.Columns()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil
 	}
 	// map column and column data as key and value
 	columnsMap := make(map[string]string)
@@ -72,7 +73,8 @@ func (m *MariaAdapter) Select(query string) map[string]string {
 		// get RawBytes from data
 		err = rows.Scan(scanArgs...)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			return nil
 		}
 		// Now do something with the data.
 		// Here we just print each column as a string.
@@ -88,19 +90,22 @@ func (m *MariaAdapter) Select(query string) map[string]string {
 		}
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return nil
 	}
 	return columnsMap
 }
 
 
-// create new database in mysql 
-func (m *MariaAdapter) CreateDatabase(dbname string) {
-	db := m.Connect()
+// create new database from existing Database
+func (m *MariaAdapter) CreateDatabase(dbname string) error {
+	db := m.Connect("")
 	defer db.Close()
 	queryString := fmt.Sprintf("CREATE DATABASE %s", dbname)
 	_, err := db.Exec(queryString)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return err
 	}
+	return err
 }

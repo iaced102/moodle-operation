@@ -98,16 +98,24 @@ func main() {
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
 	logger.Println("Server is starting...")
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	client, err := mongo.NewClient(
-		options.Client().ApplyURI(config.MONGOURI))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.MONGOURI))
 	if err != nil {
-		log.Fatalf("Error creating mongo client: %+v", err)
+		logger.Fatal(err)
 	}
-	defer client.Disconnect(ctx)
-	if err := client.Connect(ctx); err != nil {
-		log.Fatalf("Failed to connect to MongoDB: %+v", err)
+	defer cancel()
+	defer func() {
+		if err = client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+	ctx_, cancel_ := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel_()
+	err = client.Ping(ctx_, nil)
+	if err != nil {
+		logger.Fatal(err)
 	}
+	logger.Println("Connected to MongoDB!")
+
 	myHandler := handler.New(client.Database(config.DBNAME))
 	r := mux.NewRouter().PathPrefix("/api/v1").Subrouter()
 	r.Use(MoodleMiddleware)
@@ -172,12 +180,11 @@ func main() {
 	}()
 
 	// lb worker
-
 	go func() {
 		for {
 			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
 			lbWorker := lbworker.NewLBWorker(client.Database(config.DBNAME))
-			fmt.Println("lb worker is running...")
+			// fmt.Println("lb worker is running...")
 			lbWorker.GetLBInstances()
 		}
 	}()
@@ -187,7 +194,7 @@ func main() {
 		for {
 			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
 			trackingWorker := trackingworker.NewTrackingWorker(client.Database(config.DBNAME))
-			fmt.Println("tracking worker is running...")
+			// fmt.Println("tracking worker is running...")
 			trackingWorker.UpdateLbStatus()
 		}
 	}()
@@ -268,7 +275,6 @@ func Auth(tenantName, token string) bool {
 func MoodleMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// ignore health check
-		log.Println(r.URL.Path)
 		if r.URL.Path == "/api/v1/health" {
 			next.ServeHTTP(w, r)
 			return
@@ -279,6 +285,9 @@ func MoodleMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		w.Header().Set("Access-Control-Expose-Headers", "Authorization")
+
+		// set response header
+		w.Header().Set("Content-Type", "application/json")
 
 		// handle preflight request
 		if r.Method == "OPTIONS" {
