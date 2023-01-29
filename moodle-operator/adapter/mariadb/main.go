@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os/exec"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -107,5 +108,24 @@ func (m *MariaAdapter) CreateDatabase(dbname string) error {
 		log.Println(err)
 		return err
 	}
+	return err
+}
+
+// restore database from sql filepath
+func (m *MariaAdapter) RestoreDatabase(dbname, filepath string) error {
+	db := m.Connect(dbname)
+	defer db.Close()
+
+	comand :=  "mysql -u root -h 45.124.94.112 -p0YU8381WUlk1u9ysVbF4Qb5FigNW8z8uCvPI " + dbname + " < " + filepath
+	// print current time
+	log.Println("start at: ", time.Now())
+	output, err := exec.Command("bash", "-c", comand).Output()
+	log.Println("end at: ", time.Now())
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	log.Println(string(output))
 	return err
 }

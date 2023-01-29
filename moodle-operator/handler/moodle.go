@@ -191,14 +191,6 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	// check if email not exist then reponse user not found
-	// emailExist := h.ValidateAdmin(payload.Email)
-	// if !emailExist {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Email is invalid"})
-	// 	return
-	// }
-	
 	// check if website name is exist then response website name is exist
 	exist := h.ValidateMoodleWebSiteName(payload.WebSiteName+".lms.bizflycloud.vn")
 	if exist {
@@ -635,6 +627,11 @@ func (h *Handler) ListMoodle(w http.ResponseWriter, r *http.Request) {
 	// log.Println(result)
 
 	// err := h.mariaclient.CreateDatabase("moodle002")
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+
+	// err := h.mariaclient.RestoreDatabase("moodle002", "/home/duy/gits/moodle-operator/docker/moodle21122022.sql")
 	// if err != nil {
 	// 	log.Println(err)
 	// }
