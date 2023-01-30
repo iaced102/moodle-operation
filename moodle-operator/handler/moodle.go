@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	mariaadapter "moodle/adapter/mariadb"
@@ -265,9 +266,20 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// create mariadb for moodle
+	moodleDbName := strings.ReplaceAll(moodle.Id, "-", "_")
+	err = h.mariaclient.CreateDatabase(moodleDbName)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
+		json.NewEncoder(w).Encode(moodleErrorResponse)
+		return
+	}
+
 	mariaTracking := DBTracking{
 		MoodleId: moodle.Id,
-		DbName: moodle.Id,
+		DbName: moodleDbName,
 		DbStatus: "Creating",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -723,6 +735,8 @@ type Course struct {
 	Name string `json:"name"`
 	Content string `json:"content"`
 	Thumb_Url string `json:"thumb_url"`
+	Highlight []string `json:"highlight"`
+	Routine []string `json:"routine"`
 }
 
 type  Meta struct {

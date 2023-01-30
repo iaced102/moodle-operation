@@ -111,6 +111,20 @@ func (m *MariaAdapter) CreateDatabase(dbname string) error {
 	return err
 }
 
+
+// deletre database 
+func (m *MariaAdapter) DeleteDatabase(dbname string) error {
+	db := m.Connect("")
+	defer db.Close()
+	queryString := fmt.Sprintf("DROP DATABASE %s", dbname)
+	_, err := db.Exec(queryString)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return err
+}
+
 // restore database from sql filepath
 func (m *MariaAdapter) RestoreDatabase(dbname, filepath string) error {
 	db := m.Connect(dbname)
