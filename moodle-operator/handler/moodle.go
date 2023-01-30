@@ -128,6 +128,7 @@ type DBTracking struct {
 	MoodleId string `json:"moodle_id"`
 	DbName string `json:"db_name"`
 	DbStatus string `json:"lb_status"`
+	FilePath string `json:"file_path"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -256,15 +257,6 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	lbTrackingCollection := h.db.Collection("lb_tracking")
-	_, err = lbTrackingCollection.InsertOne(context.Background(), lbTracking)
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
-		json.NewEncoder(w).Encode(moodleErrorResponse)
-		return
-	}
 
 	// create mariadb for moodle
 	moodleDbName := strings.ReplaceAll(moodle.Id, "-", "_")
@@ -281,17 +273,9 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 		MoodleId: moodle.Id,
 		DbName: moodleDbName,
 		DbStatus: "Creating",
+		FilePath: "$HOME/gits/moodle-operator/docker/moodle21122022.sql",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-	}
-	mariaTrackingCollection := h.db.Collection("maria_tracking")
-	_, err = mariaTrackingCollection.InsertOne(context.Background(), mariaTracking)
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
-		json.NewEncoder(w).Encode(moodleErrorResponse)
-		return
 	}
 
 	// create pvc before creating statefulset
@@ -315,6 +299,27 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// write to db
+
+	lbTrackingCollection := h.db.Collection("lb_tracking")
+	_, err = lbTrackingCollection.InsertOne(context.Background(), lbTracking)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
+		json.NewEncoder(w).Encode(moodleErrorResponse)
+		return
+	}
+
+	mariaTrackingCollection := h.db.Collection("maria_tracking")
+	_, err = mariaTrackingCollection.InsertOne(context.Background(), mariaTracking)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
+		json.NewEncoder(w).Encode(moodleErrorResponse)
+		return
+	}
+
 	moodleCollection := h.db.Collection("moodles")
 	_, err = moodleCollection.InsertOne(context.Background(), moodle)
 		if err != nil {
@@ -590,7 +595,7 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	var resp DeleteMoodleResponse
 	resp.Id = payload.MoodleId
 	resp.Status = "Deleted"
-	// delete the statefulset
+	// delete the namespace
 	err = h.k8sclient.DeleteNamespace(h.clientset, payload.MoodleId)
 		if err != nil {
 			log.Println(err)
@@ -598,6 +603,16 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 			moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 			json.NewEncoder(w).Encode(moodleErrorResponse)
 		}
+
+	mariaTrackingCollection := h.db.Collection("maria_tracking")
+	// update dbstatus to mariaTrackingCollection
+	_, err = mariaTrackingCollection.UpdateOne(context.Background(), bson.M{"moodleid": payload.MoodleId}, bson.M{"$set": bson.M{"dbstatus": "Deleting"}})
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
+		json.NewEncoder(w).Encode(moodleErrorResponse)
+	}
 
 	// delete moodle from db
 	moodleCollection := h.db.Collection("moodles")
@@ -616,14 +631,25 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
 		json.NewEncoder(w).Encode(moodleErrorResponse)
 	}
-	MariaTrackingCollection := h.db.Collection("maria_tracking")
-	_, err = MariaTrackingCollection.DeleteMany(context.Background(), bson.M{"moodleid": payload.MoodleId})
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
-		json.NewEncoder(w).Encode(moodleErrorResponse)
-	}
+
+	// this for clean worker
+
+	// err = h.mariaclient.DropDatabase(strings.ReplaceAll(payload.MoodleId, "-", "_"))
+	// if err != nil {
+	// 	log.Println(err)
+	// 	w.WriteHeader(http.StatusBadRequest)
+	// 	moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
+	// 	json.NewEncoder(w).Encode(moodleErrorResponse)
+	// }
+	// MariaTrackingCollection := h.db.Collection("maria_tracking")
+	// _, err = MariaTrackingCollection.DeleteMany(context.Background(), bson.M{"moodleid": payload.MoodleId})
+	// if err != nil {
+	// 	log.Println(err)
+	// 	w.WriteHeader(http.StatusBadRequest)
+	// 	moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
+	// 	json.NewEncoder(w).Encode(moodleErrorResponse)
+	// }
+
 	w.WriteHeader(http.StatusNoContent)
 	json.NewEncoder(w).Encode(resp)
 
@@ -737,6 +763,7 @@ type Course struct {
 	Thumb_Url string `json:"thumb_url"`
 	Highlight []string `json:"highlight"`
 	Routine []string `json:"routine"`
+	Course_Preview []string `json:"course_preview"`
 }
 
 type  Meta struct {

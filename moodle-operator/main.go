@@ -12,7 +12,7 @@ import (
 	lbworker "moodle/worker/loadbalancer"
 	trackingworker "moodle/worker/tracking"
 
-	// mariaworker "moodle/worker/maria"
+	mariaworker "moodle/worker/maria"
 
 	"moodle/config"
 	"moodle/handler"
@@ -199,15 +199,15 @@ func main() {
 		}
 	}()
  
-// 	// maria worker
-// 	go func() {
-// 		for {
-// 			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
-// 			mariaWorker := mariaworker.NewMariaWorker(client.Database(config.DBNAME))
-// 			fmt.Println("maria worker is running...")
-// 			mariaWorker.GetMariaInstances()
-// 		}
-// 	}()
+	// maria worker
+	go func() {
+		for {
+			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
+			mariaWorker := mariaworker.NewMariaWorker(client.Database(config.DBNAME))
+			// fmt.Println("maria worker is running...")
+			mariaWorker.Restore()
+		}
+	}()
  
 // 	// k8s worker
 // 	go func() {

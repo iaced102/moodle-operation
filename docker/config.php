@@ -7,7 +7,9 @@ $CFG = new stdClass();
 $CFG->dbtype    = 'mariadb';
 $CFG->dblibrary = 'native';
 $CFG->dbhost    = getenv('DB_HOST_WRITE');
-$CFG->dbname    = getenv('DB_NAME');
+// replace - with _ in the dbname
+// $CFG->dbname    = getenv('DB_NAME');
+$CFG->dbname    = str_replace('-', '_', getenv('DB_NAME'));
 $CFG->dbuser    = getenv('DB_USER');
 $CFG->dbpass    = getenv('DB_PASS');
 $CFG->theme		= getenv('THEME');

@@ -1,20 +1,64 @@
 package worker
 
 import (
-	adapter "moodle/adapter/mariadb"
+	"context"
+	"log"
+	mariaAdapter "moodle/adapter/mariadb"
+	mongoAdapter "moodle/adapter/mongo"
+	"moodle/handler"
+	"moodle/config"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
-// new mariadb worker
 type MariaWorker struct {
-	Adapter *adapter.MariaAdapter
+	MariaAdapter *mariaAdapter.MariaAdapter
+	MongoAdapter mongoAdapter.MongoAdapter
 }
 
 // new mariadb worker
-func NewMariaWorker(adapter *adapter.MariaAdapter) *MariaWorker {
+func NewMariaWorker(adapter mongoAdapter.MongoAdapter) *MariaWorker {
+	mariaclient := mariaAdapter.NewMariaAdapter(config.MARIAHOSTW, 3306, config.MARIAUSER, config.MARIAPASSWORD)
+	
 	return &MariaWorker{
-		Adapter: adapter,
+		MariaAdapter: mariaclient,
+		MongoAdapter: adapter,
 	}
 }
 
-
-
+// restore database then update to maria_tracking collection
+func (w *MariaWorker) Restore() error {
+	mariaTrackingCollection := w.MongoAdapter.Collection("maria_tracking")
+	// get all from maria_tracking
+	mariaTracking, err := mariaTrackingCollection.Find(context.Background(), bson.M{})
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	
+	// for each maria_tracking then restore database and update to maria_tracking
+	for mariaTracking.Next(context.Background()) {
+		var tracking handler.DBTracking
+		err := mariaTracking.Decode(&tracking)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		// restore database
+		// check if status is Creating
+		if tracking.DbStatus == "Creating" {
+			err = w.MariaAdapter.RestoreDatabase(tracking.DbName, tracking.FilePath)
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+			// update DbStatus to maria_tracking
+			_, err = mariaTrackingCollection.UpdateOne(context.Background(), bson.M{"dbname": tracking.DbName}, bson.M{"$set": bson.M{"dbstatus": "Online"}})
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+		}
+	}
+	return nil
+}

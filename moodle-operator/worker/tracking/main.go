@@ -45,8 +45,8 @@ func (w *TrackingWorker) UpdateLbStatus() error {
 		}
 
 		filter := bson.M{"lbname": lbInstance.Name}
-		update1 := bson.M{"$set": bson.M{"lbstatus": lbInstance.OperatingStatus, "vipaddress": lbInstance.VipAddress, "updatedat": time.Now()}}
-		update2 := bson.M{"$set": bson.M{"status": lbInstance.OperatingStatus, "ip": lbInstance.VipAddress, "updatedat": time.Now()}}
+		update1 := bson.M{"$set": bson.M{"lbstatus": lbInstance.ProvisioningStatus, "vipaddress": lbInstance.VipAddress, "updatedat": time.Now()}}
+		update2 := bson.M{"$set": bson.M{"status": lbInstance.ProvisioningStatus, "ip": lbInstance.VipAddress, "updatedat": time.Now()}}
 		_, err = lbTrackingCollection.UpdateOne(context.Background(), filter, update1)
 		if err != nil {
 			log.Println(err)

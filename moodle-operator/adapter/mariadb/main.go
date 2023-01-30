@@ -112,8 +112,8 @@ func (m *MariaAdapter) CreateDatabase(dbname string) error {
 }
 
 
-// deletre database 
-func (m *MariaAdapter) DeleteDatabase(dbname string) error {
+// drop database 
+func (m *MariaAdapter) DropDatabase(dbname string) error {
 	db := m.Connect("")
 	defer db.Close()
 	queryString := fmt.Sprintf("DROP DATABASE %s", dbname)
@@ -122,6 +122,7 @@ func (m *MariaAdapter) DeleteDatabase(dbname string) error {
 		log.Println(err)
 		return err
 	}
+	log.Println("drop database success")
 	return err
 }
 
@@ -132,9 +133,9 @@ func (m *MariaAdapter) RestoreDatabase(dbname, filepath string) error {
 
 	comand :=  "mysql -u root -h 45.124.94.112 -p0YU8381WUlk1u9ysVbF4Qb5FigNW8z8uCvPI " + dbname + " < " + filepath
 	// print current time
-	log.Println("start at: ", time.Now())
+	log.Println("restoring databse", dbname, "at:", time.Now())
 	output, err := exec.Command("bash", "-c", comand).Output()
-	log.Println("end at: ", time.Now())
+	log.Println("restore database", dbname, "done at:", time.Now())
 
 	if err != nil {
 		log.Println(err)
