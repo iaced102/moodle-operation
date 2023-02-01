@@ -58,6 +58,20 @@ func (w *MariaWorker) Restore() error {
 				log.Println(err)
 				return err
 			}
+			// check if sitenameupdate is false then update shortname, fullname to mdl_course
+			if tracking.SiteNameUpdate == false {
+				err = w.MariaAdapter.Update(tracking.DbName, tracking.SiteName, tracking.SiteName)
+				if err != nil {
+					log.Println(err)
+					return err
+				}
+				// update sitenameupdate to true
+				_, err = mariaTrackingCollection.UpdateOne(context.Background(), bson.M{"dbname": tracking.DbName}, bson.M{"$set": bson.M{"sitenameupdate": true}})
+				if err != nil {
+					log.Println(err)
+					return err
+				}
+			}
 		}
 	}
 	return nil

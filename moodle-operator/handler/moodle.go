@@ -127,6 +127,8 @@ type LBTracking struct {
 type DBTracking struct {
 	MoodleId string `json:"moodle_id"`
 	DbName string `json:"db_name"`
+	SiteName string `json:"site_name"`
+	SiteNameUpdate bool `json:"site_name_update"`
 	DbStatus string `json:"lb_status"`
 	FilePath string `json:"file_path"`
 	CreatedAt time.Time `json:"created_at"`
@@ -272,6 +274,8 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	mariaTracking := DBTracking{
 		MoodleId: moodle.Id,
 		DbName: moodleDbName,
+		SiteName: moodle.Name,
+		SiteNameUpdate: false,
 		DbStatus: "Creating",
 		FilePath: "$HOME/gits/moodle-operator/docker/moodle21122022.sql",
 		CreatedAt: time.Now(),

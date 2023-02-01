@@ -144,3 +144,20 @@ func (m *MariaAdapter) RestoreDatabase(dbname, filepath string) error {
 	log.Println(string(output))
 	return err
 }
+
+
+// update shortname, fullname on mdl_course table
+func (m *MariaAdapter) Update(dbname, shortname, fullname string) error {
+	db := m.Connect(dbname)
+	defer db.Close()
+	queryString := fmt.Sprintf("UPDATE mdl_course SET shortname = '%s', fullname = '%s' WHERE id = 1", shortname, fullname)
+
+	update, err := db.Exec(queryString)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	log.Println("update success")
+	log.Println(update)
+	return err
+}
