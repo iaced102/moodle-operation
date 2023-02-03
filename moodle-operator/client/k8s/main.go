@@ -8,7 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
-	"os"
+	"moodle/config"
 	"path/filepath"
 	"strings"
 
@@ -37,9 +37,9 @@ func NewK8sClient() *K8sClient {
 func (client *K8sClient) NewClientSet() *kubernetes.Clientset {
 	var kubeconfig *string
 	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, "moodle-cluster.kubeconfig"), "(optional) absolute path to the kubeconfig file")
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, config.KUBECONFIG), "(optional) absolute path to the kubeconfig file")
 	} else {
-		kubeconfig = flag.String("/home/duy/moodle-cluster.kubeconfig", "", "absolute path to the kubeconfig file")
+		kubeconfig = flag.String("$HOME/moodle-cluster.kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.Parse()
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
@@ -163,7 +163,7 @@ func (client *K8sClient) GetServiceExternalIP(clientset *kubernetes.Clientset, n
 
 // apply pvc from filepath
 func (client *K8sClient) ApplyPVC(clientset *kubernetes.Clientset, namespace string) (*v1.PersistentVolumeClaim, error) {
-	filepath := os.Getenv("PVC_FILEPATH")
+	filepath := config.PVC_FILEPATH
 	fmt.Printf("Deploying pvc from file %q in namespace %q:\n", filepath, namespace)
 	// read file
 	file, err := ioutil.ReadFile(filepath)
@@ -186,7 +186,7 @@ func (client *K8sClient) ApplyPVC(clientset *kubernetes.Clientset, namespace str
 
 // apply service from filepath
 func (client *K8sClient) ApplyService(clientset *kubernetes.Clientset, namespace string) (*v1.Service, error) {
-	filepath := os.Getenv("SERVICE_FILEPATH")
+	filepath := config.SERVICE_FILEPATH
 	fmt.Printf("Applying service from file %q in namespace %q:\n", filepath, namespace)
 	// read file
 	file, err := ioutil.ReadFile(filepath)
@@ -210,7 +210,7 @@ func (client *K8sClient) ApplyService(clientset *kubernetes.Clientset, namespace
 
 //  apply statefulset from  filepath
 func (client *K8sClient) ApplyStatefulSet(clientset *kubernetes.Clientset, namespace string, theme string) (appv1.StatefulSet, error) {
-	filepath := os.Getenv("STATEFULSET_FILEPATH") + "-" + theme + "/statefulset.yaml"
+	filepath := config.STATEFULSET_FILEPATH + "-" + theme + "/statefulset.yaml"
 	fmt.Printf("Applying statefulset from file %q in namespace %q:\n", filepath, namespace)
 	// read file
 	file, err := ioutil.ReadFile(filepath)

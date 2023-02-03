@@ -11,6 +11,7 @@ import (
 	// k8sworker "moodle/worker/k8s"
 	lbworker "moodle/worker/loadbalancer"
 	trackingworker "moodle/worker/tracking"
+	sendmailworker "moodle/worker/sendmail"
 
 	mariaworker "moodle/worker/maria"
 
@@ -186,6 +187,16 @@ func main() {
 			lbWorker := lbworker.NewLBWorker(client.Database(config.DBNAME))
 			// fmt.Println("lb worker is running...")
 			lbWorker.GetLBInstances()
+		}
+	}()
+
+	// sendmail worker
+	go func() {
+		for {
+			time.Sleep(time.Duration(config.INTERVAL) * time.Second)
+			sendmailWorker := sendmailworker.NewSendmailWorker(client.Database(config.DBNAME))
+			// fmt.Println("sendmail worker is running...")
+			sendmailWorker.SendMailWorkerPool()
 		}
 	}()
 

@@ -1,13 +1,15 @@
 package config
+import "k8s.io/client-go/util/homedir"
 
 
 var (
+	HOME = homedir.HomeDir()
 	MONGOURI = "mongodb://localhost:27017"
 	DBNAME = "moodle"
 	USERNAME = "duynn@bizflycloud.vn"
 	PASSWORD = "MzU2ZmE3ZDM5MmUwMDFkYThiMzkwMmE3"
 	BIZFLYCLOUD_TOKEN = "gAAAAABjxQHVqjvryJlPvrm15_OdlNDk6RxhYwl291ivFlP78rdgLCv4M7HgX8IB2hUZV3Ge-qBVvFNl37nnptxsLoIs_uWTLshlLO__woefRpfwydU23oUF4Oxj1iT7ZsxgyOP278D4As6g35qG-geGhgdkEGZhgsythyuWh44qdz9ux22bK5U"
-	INTERVAL = 5
+	INTERVAL = 10
 	EMAIL = "duynn@bizflycloud.vn"
 	EMAIL_PASSWORD = "MzU2ZmE3ZDM5MmUwMDFkYThiMzkwMmE3"
 	SMTP = "smtp.bizflycloud.vn"
@@ -20,4 +22,9 @@ var (
 	MARIAPASSWORD = "0YU8381WUlk1u9ysVbF4Qb5FigNW8z8uCvPI"
 	MARIAPORT = "3306"
 	NFSSEVER = "123.30.234.224:2049"
+	PVC_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle-default/pvc.yaml"
+	SERVICE_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle-default/service.yaml"
+	STATEFULSET_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle"
+	KUBECONFIG = "moodle-cluster.kubeconfig"
+	CLUSTERID = "6o0cn9lv42livqek"
 )

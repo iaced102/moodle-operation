@@ -230,7 +230,7 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	moodle.Id = uuid.New().String()
 	moodle.Email = payload.Email
 	moodle.Name = payload.WebSiteName
-	moodle.LbName = "kube_service" + "_6o0cn9lv42livqek_" + moodle.Id + "_moodle-service"
+	moodle.LbName = "kube_service" + "_" + config.CLUSTERID + "_" + moodle.Id + "_moodle-service"
 	moodle.Ip = "Provisioning"
 	moodle.WebSiteName = payload.WebSiteName + ".lms.bizflycloud.vn"
 	moodle.PreInstalledCourse = payload.PreInstalledCourse
@@ -250,18 +250,9 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 			return
 	}
 
-	// apply the service
-	_, err = h.k8sclient.ApplyService(h.clientset, moodle.Id)
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
-		json.NewEncoder(w).Encode(moodleErrorResponse)
-		return
-	}
 	lbTracking := LBTracking{
 		MoodleId: moodle.Id,
-		LbName: "kube_service" + "_6o0cn9lv42livqek_" + moodle.Id + "_moodle-service",
+		LbName: "kube_service" + "_" + config.CLUSTERID + "_" + moodle.Id + "_moodle-service",
 		VipAddress: "",
 		LbStatus: "Creating",
 		CreatedAt: time.Now(),
@@ -285,7 +276,16 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 		SiteName: moodle.Name,
 		SiteNameUpdate: false,
 		DbStatus: "Creating",
-		FilePath: "$HOME/gits/moodle-operator/docker/moodle21122022.sql",
+		FilePath: "$HOME/gits/moodle-operator/docker/moodle_seded.sql",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+
+	mailTracking := MailTracking{
+		MoodleId: moodle.Id,
+		Email: moodle.Email,
+		IsSent: false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -310,7 +310,27 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// apply the service
+	_, err = h.k8sclient.ApplyService(h.clientset, moodle.Id)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
+		json.NewEncoder(w).Encode(moodleErrorResponse)
+		return
+	}
+
 	// write to db
+
+	mailTrackingCollection := h.db.Collection("mail_tracking")
+	_, err = mailTrackingCollection.InsertOne(context.Background(), mailTracking)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		moodleErrorResponse := MoodleErrorResponse{Error: err.Error()}
+		json.NewEncoder(w).Encode(moodleErrorResponse)
+		return
+	}
 
 	lbTrackingCollection := h.db.Collection("lb_tracking")
 	_, err = lbTrackingCollection.InsertOne(context.Background(), lbTracking)

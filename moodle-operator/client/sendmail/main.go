@@ -27,12 +27,13 @@ func (client *SendmailClient) SendMail(to []string, subject, body string) error 
 
 	// Connect to the server, authenticate, set the sender and recipient,
 	// and send the email all in one step.
+	subject = "Subject: " + subject + " \r \n"
 	err := smtp.SendMail(
 		config.SMTP+":"+config.SMTP_PORT,
 		auth,
 		config.EMAIL,
 		to,
-		[]byte(body),
+		[]byte(subject+body),
 	)
 	if err != nil {
 		return err
