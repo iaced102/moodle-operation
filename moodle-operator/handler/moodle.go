@@ -152,6 +152,14 @@ type CreateMoodlePayload struct {
 	DocumentsStorageExtra int `json:"documents_storage_extra"`
 }
 
+type MailTracking struct {
+	MoodleId string `json:"moodle_id"`
+	Email string `json:"email"`
+	IsSent bool `json:"is_sent"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type DeleteMoodlePayload struct {
 	MoodleId string `json:"moodle_id"`
 }
