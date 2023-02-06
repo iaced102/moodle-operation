@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"math"
+	"mime/multipart"
 	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -928,4 +931,97 @@ func PaginateList(list interface{}, page int, limit int) Pagination {
 		Pages:   pages,
 		Data:    data,
 	}
+}
+
+// upload file api
+func (h *Handler) UploadFile(w http.ResponseWriter, r *http.Request) {
+	// get moodle_id from query
+	moodle_id := r.URL.Query().Get("moodle_id")
+	log.Println(moodle_id)
+	// parse multipart form
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Bad Request"})
+		return
+	}
+	// log content-type
+	log.Println(r.Header.Get("Content-Type"))
+	// get file from request
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Bad Request"})
+		return
+	}
+	defer file.Close()
+	err = SaveFile(moodle_id, file, handler)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Internal Server Error"})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"Message": "Upload file success"})
+}
+
+// upload multiple file api
+func (h *Handler) UploadMultipleFile(w http.ResponseWriter, r *http.Request) {
+	// get moodle_id from query
+	moodle_id := r.URL.Query().Get("moodle_id")
+	log.Println(moodle_id)
+	// parse multipart form
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Bad Request"})
+		return
+	}
+	// log content-type
+	log.Println(r.Header.Get("Content-Type"))
+	// get file from request
+	files := r.MultipartForm.File["files"]
+	for _, file := range files {
+		log.Println(file.Filename)
+		f, err := file.Open()
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Bad Request"})
+			return
+		}
+		defer f.Close()
+		err = SaveFile(moodle_id, f, file)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(MoodleErrorResponse{Error: "Internal Server Error"})
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"Message": "Upload file success"})
+}
+
+
+// save file
+func SaveFile(moodleid string, file multipart.File, handler *multipart.FileHeader) error {
+	// create folder
+	err := os.MkdirAll("/tmp/"+moodleid, 0777)
+	// create file
+	f, err := os.OpenFile("/tmp/" + moodleid + "/" + handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	defer f.Close()
+	// copy file
+	io.Copy(f, file)
+	return nil
 }

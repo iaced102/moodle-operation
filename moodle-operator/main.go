@@ -10,8 +10,8 @@ import (
 
 	// k8sworker "moodle/worker/k8s"
 	lbworker "moodle/worker/loadbalancer"
-	trackingworker "moodle/worker/tracking"
 	sendmailworker "moodle/worker/sendmail"
+	trackingworker "moodle/worker/tracking"
 
 	mariaworker "moodle/worker/maria"
 
@@ -148,6 +148,7 @@ func main() {
 	r.HandleFunc("/document-storage-extra", myHandler.ChangeMoodleDocumentsStorageExtra).Methods("PUT", "OPTIONS")
 	r.HandleFunc("/users", myHandler.UserAdd).Methods("POST", "OPTIONS")
 	r.HandleFunc("/users", myHandler.UserDelete).Methods("DELETE", "OPTIONS")
+	r.HandleFunc("/logo", myHandler.UploadFile).Methods("POST", "OPTIONS")
 	nextRequestID := func() string {
 		return fmt.Sprintf("%d", time.Now().UnixNano())
 	}
