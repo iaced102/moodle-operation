@@ -1,0 +1,61 @@
+var ( 
+Package100 = MoodlePackages{
+Price: 8500000,
+Name : "100CCU",
+Ccu: 100,
+AccountMax: 4000,
+DocumentStorage: 50,
+MoodleVersion: "4.0.1",
+BackupNum: 4,
+CcuExtraMax: 400,
+DocumentStorageExtraMax: 2000,
+}
+Package200 = MoodlePackages{
+Price: 12600000,
+Name : "200CCU",
+Ccu: 200,
+AccountMax: 8000,
+DocumentStorage: 100,
+MoodleVersion: "4.0.1",
+BackupNum: 4,
+CcuExtraMax: 800,
+DocumentStorageExtraMax: 4000,
+}
+
+Package300 = MoodlePackages{
+Price: 16800000,
+Name : "300CCU",
+Ccu: 300,
+AccountMax: 12000,
+DocumentStorage: 150,
+MoodleVersion: "4.0.1",
+BackupNum: 4,
+CcuExtraMax: 1200,
+DocumentStorageExtraMax: 6000,
+}
+
+Package400 = MoodlePackages{
+Price: 20900000,
+Name : "400CCU",
+Ccu: 400,
+AccountMax: 16000,
+DocumentStorage: 200,
+MoodleVersion: "4.0.1",
+BackupNum: 4,
+CcuExtraMax: 1600,
+DocumentStorageExtraMax: 8000,
+}
+
+Package500 = MoodlePackages{
+Price: 0,
+Name : ">500CCU",
+Ccu: 0,
+AccountMax: 16000,
+DocumentStorage: 200,
+MoodleVersion: "4.0.1",
+BackupNum: 4,
+CcuExtraMax: 0,
+DocumentStorageExtraMax: 0,
+}
+)
+
