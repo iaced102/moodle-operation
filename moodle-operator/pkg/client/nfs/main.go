@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
-	"moodle/client/nfs/nfs4"
+	"moodle/pkg/client/nfs/nfs4"
 	"moodle/config"
 )
 

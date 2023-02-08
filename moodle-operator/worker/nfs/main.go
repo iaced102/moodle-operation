@@ -3,9 +3,9 @@ package worker
 import (
 	mariaAdapter "moodle/adapter/mariadb"
 	mongoAdapter "moodle/adapter/mongo"
-	nfs "moodle/client/nfs"
-	nfs4 "moodle/client/nfs/nfs4"
 	"moodle/config"
+	nfs "moodle/pkg/client/nfs"
+	nfs4 "moodle/pkg/client/nfs/nfs4"
 )
 
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 	adapter "moodle/adapter/mongo"
-	k8sclient "moodle/client/k8s"
+	k8sclient "moodle/pkg/client/k8s"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"k8s.io/client-go/kubernetes"

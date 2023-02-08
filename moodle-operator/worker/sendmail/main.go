@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 	mongoAdapter "moodle/adapter/mongo"
-	sendmailclient "moodle/client/sendmail"
+	sendmailclient "moodle/pkg/client/sendmail"
 
 	"go.mongodb.org/mongo-driver/bson"
 )

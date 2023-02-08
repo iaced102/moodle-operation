@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 	adapter "moodle/adapter/mongo"
-	lbclient "moodle/client/lb"
+	lbclient "moodle/pkg/client/lb"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"

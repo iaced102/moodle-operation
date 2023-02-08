@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 	adapter "moodle/adapter/mongo"
-	lb "moodle/client/lb"
+	lb "moodle/pkg/client/lb"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"

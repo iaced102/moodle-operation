@@ -17,7 +17,7 @@ import (
 
 	mariaadapter "moodle/adapter/mariadb"
 	mongoadapter "moodle/adapter/mongo"
-	k8sclient "moodle/client/k8s"
+	k8sclient "moodle/pkg/client/k8s"
 	"moodle/config"
 
 	"github.com/google/uuid"

@@ -6,7 +6,6 @@ import (
 
 	// mysqladapter "moodle/adapter/mariadb"
 	k8scli "moodle/cli/k8s"
-	mariacli "moodle/cli/maria"
 
 	// k8sworker "moodle/worker/k8s"
 	lbworker "moodle/worker/loadbalancer"
@@ -44,15 +43,6 @@ var (
 	healthy    int32
 )
 
-
-var mariaCommands = []string{
-	"list-instance",
-	"create-instance",
-	"delete-instance",
-	"create-instance-from-backup",
-}
-
-
 var k8sCommands = []string{
 	"list-namespaces",
 	"list-pods",
@@ -85,9 +75,7 @@ func main() {
 			cli := k8scli.NewK8sCli()
 			cli.Run()
 			return
-		} else if slices.Contains(mariaCommands, os.Args[1]) {
-			mariacli := mariacli.NewMariaCli()
-			mariacli.Run()
+		} else {
 			return
 		}
 	}
