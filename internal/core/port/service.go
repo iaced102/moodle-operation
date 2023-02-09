@@ -8,5 +8,6 @@ type MoodleService interface {
 	List(email string) ([]domain.Moodle, error)
 	Search(email string) ([]domain.Moodle, error)
 	Delete(moodleID string) error
+	ListCourses() ([]domain.Course, error)
 }
 

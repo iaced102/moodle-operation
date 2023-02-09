@@ -2,59 +2,45 @@ package server
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
-	"time"
+	"moodle/internal/dep"
+	"moodle/internal/handler"
 
 	"moodle/config"
-	"moodle/internal/dep"
-
 	moodleService "moodle/internal/core/service/moodle"
-	"moodle/internal/handler"
 	moodleRepo "moodle/internal/repository/moodle"
+	k8sRepo "moodle/pkg/client"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const (
-	CollectionName = "moodles"
-	mariadbName       = ""
-)
 
 func initDependencies() *dep.Dep {
 	d := &dep.Dep{}
 
 	d.MongoDB = NewMongoDB()
-	d.MariaDB = NewMariaDB()
-
-	d.MoodleRepository = moodleRepo.NewMongoDB(CollectionName, d.MongoDB)
-	d.MariaRepository = moodleRepo.NewMariaDB(mariadbName, d.MariaDB)
-	d.MoodleService = moodleService.NewService(d.MoodleRepository, d.MariaRepository)
-	d.MoodleHandler = handler.NewGameHandler(d.MoodleService, d.MariaService)
+	d.MoodleRepository = moodleRepo.NewMongoDB(d.MongoDB)
+	d.MariaRepository = moodleRepo.NewMariaDB(config.MARIAHOSTW, config.MARIAPORT, config.MARIAUSER, config.MARIAPASSWORD)
+	d.K8sRepository = k8sRepo.NewK8sClient()
+	d.MoodleService = moodleService.NewService(d.MoodleRepository, d.MariaRepository, d.K8sRepository)
+	d.MoodleHandler = handler.NewMoodleHandler(d.MoodleService)
 
 	return d
 }
 
-
-func NewMongoDB() *mongo.Client {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.MONGOURI))
+// new MongoDB
+func NewMongoDB() *mongo.Database {
+	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return client
-}
-
-
-func NewMariaDB() *sql.DB {
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)", config.MARIAUSER, config.MARIAPASSWORD, config.MARIAHOSTW, config.MARIAPORT))
+	err = client.Ping(context.Background(), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.SetConnMaxLifetime(time.Minute * 3)
-	db.SetMaxOpenConns(100)
-	db.SetMaxIdleConns(100)
-	return db
+	fmt.Println("Connected to MongoDB!")
+	return client.Database(config.DBNAME)
 }

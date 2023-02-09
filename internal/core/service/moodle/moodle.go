@@ -12,19 +12,20 @@ type Service struct {
 	k8sRepository port.K8sRepository
 }
 
-func NewService(moodleRepository port.MoodleRepository, mariaRepository port.MariaRepository) *Service {
+func NewService(moodleRepository port.MoodleRepository, mariaRepository port.MariaRepository, k8sRepository port.K8sRepository) *Service {
 	return &Service{
 		moodleRepository: moodleRepository,
 		mariaRepository: mariaRepository,
+		k8sRepository: k8sRepository,
 	}
 }
 
 func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, error) {
 	// create namespace
-	err := s.k8sRepository.CreateNamespace(moodle.Id)
-	if err != nil {
-		return domain.Moodle{}, err
-	}
+	// err := s.k8sRepository.CreateNamespace(moodle.Id)
+	// if err != nil {
+	// 	return domain.Moodle{}, err
+	// }
 	// create statefulset
 	// create service
 	// create pvc
@@ -54,4 +55,43 @@ func (s *Service) ValidateSitename(sitename string) bool {
 		return false
 	}
 	return true
+}
+
+// List moodles
+func (s *Service) List(email string) ([]domain.Moodle, error) {
+	moodles, err := s.moodleRepository.GetAll(email)
+	if err != nil {
+		return nil, err
+	}
+	return moodles, nil
+}
+
+
+// List courses
+func (s *Service) ListCourses() ([]domain.Course, error) {
+	courses, err := s.moodleRepository.ListCourses()
+	if err != nil {
+		return nil, err
+	}
+	return courses, nil
+}
+
+
+// Delete moodle
+func (s *Service) Delete(moodleID string) error {
+	err := s.moodleRepository.Delete(moodleID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+
+// search moodle by email
+func (s *Service) Search(email string) ([]domain.Moodle, error) {
+	moodles, err := s.moodleRepository.GetAll(email)
+	if err != nil {
+		return nil, err
+	}
+	return moodles, nil
 }

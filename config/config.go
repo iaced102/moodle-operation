@@ -20,7 +20,7 @@ var (
 	MARIAHOSTW = "45.124.94.112"
 	MARIAUSER = "root"
 	MARIAPASSWORD = "0YU8381WUlk1u9ysVbF4Qb5FigNW8z8uCvPI"
-	MARIAPORT = "3306"
+	MARIAPORT = 3306
 	NFSSEVER = "123.30.234.224:2049"
 	PVC_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle-default/pvc.yaml"
 	SERVICE_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle-default/service.yaml"

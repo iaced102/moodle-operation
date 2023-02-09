@@ -3,7 +3,7 @@ package worker
 import (
 	"context"
 	"log"
-	mariaAdapter "moodle/pkg/mariadbiface"
+	mariaAdapter "moodle/internal/repository/moodle"
 	mongoAdapter "moodle/pkg/mongodbiface"
 	"moodle/handler"
 	"moodle/config"
@@ -12,13 +12,13 @@ import (
 )
 
 type MariaWorker struct {
-	MariaAdapter *mariaAdapter.MariaAdapter
-	MongoAdapter mongoAdapter.MongoDB
+	MariaAdapter *mariaAdapter.MariaDB
+	MongoAdapter mongoAdapter.DB
 }
 
 // new mariadb worker
-func NewMariaWorker(adapter mongoAdapter.MongoDB) *MariaWorker {
-	mariaclient := mariaAdapter.NewMariaAdapter(config.MARIAHOSTW, 3306, config.MARIAUSER, config.MARIAPASSWORD)
+func NewMariaWorker(adapter mongoAdapter.DB ) *MariaWorker {
+	mariaclient := mariaAdapter.NewMariaDB(config.MARIAHOSTW, 3306, config.MARIAUSER, config.MARIAPASSWORD)
 	
 	return &MariaWorker{
 		MariaAdapter: mariaclient,
@@ -47,7 +47,7 @@ func (w *MariaWorker) Restore() error {
 		// restore database
 		// check if status is Creating
 		if tracking.DbStatus == "Creating" {
-			err = w.MariaAdapter.RestoreDatabase(tracking.DbName, tracking.FilePath)
+			err = w.MariaAdapter.RestoreDB(tracking.DbName, tracking.FilePath)
 			if err != nil {
 				log.Println(err)
 				return err
@@ -60,7 +60,7 @@ func (w *MariaWorker) Restore() error {
 			}
 			// check if sitenameupdate is false then update shortname, fullname to mdl_course
 			if tracking.SiteNameUpdate == false {
-				err = w.MariaAdapter.Update(tracking.DbName, tracking.SiteName, tracking.SiteName)
+				err = w.MariaAdapter.UpdateDB(tracking.DbName, tracking.SiteName, tracking.SiteName)
 				if err != nil {
 					log.Println(err)
 					return err
