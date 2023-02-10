@@ -8,13 +8,13 @@ import (
 )
 
 func routes(router *gin.Engine, dependencies *dep.Dep) {
-	router.GET("/ping", func(request *gin.Context) {
-		request.String(http.StatusOK, "pong")
+	router.GET("/health", func(request *gin.Context) {
+		request.String(http.StatusOK, "OK")
 	})
+	v1 := router.Group("/api/v1")
 
-	// list moodle by email
-	router.GET("/moodles", dependencies.MoodleHandler.List)
-	router.GET("/courses", dependencies.MoodleHandler.ListCourses)
+	v1.GET("/courses", dependencies.MoodleHandler.ListCourses)
+	v1.GET("/moodles", dependencies.MoodleHandler.List)
 	// router.POST("/users/:user_id/games", dependencies.MoodleHandler.Create)
 	// router.GET("/users/:user_id/games", dependencies.MoodleHandler.GetAll)
 	// router.GET("/users/:user_id/games/:game_id", dependencies.MoodleHandler.Get)

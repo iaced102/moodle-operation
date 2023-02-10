@@ -3,7 +3,7 @@ package worker
 import (
 	"context"
 	"log"
-	mongoAdapter "moodle/adapter/mongo"
+	mongo "moodle/pkg/mongodbiface"
 	sendmailclient "moodle/pkg/client"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,13 +11,13 @@ import (
 
 
 type SendmailWorker struct {
-    mongoAdapter mongoAdapter.MongoAdapter
+    mongo mongo.DB
 	sendmailclient sendmailclient.SendmailClient
 }
 
-func NewSendmailWorker(m mongoAdapter.MongoAdapter) *SendmailWorker{
+func NewSendmailWorker(m mongo.DB) *SendmailWorker{
     return &SendmailWorker{
-		mongoAdapter: m,
+		mongo: m,
 		sendmailclient: *sendmailclient.NewSendmailClient(),
     }
 }
@@ -34,7 +34,7 @@ type MailTracking struct {
 func (worker *SendmailWorker) GetMailQueue() ([]MailTracking, error) {
 	ctx := context.Background()
 	var mails []MailTracking
-	collection := worker.mongoAdapter.Collection("mail_tracking")
+	collection := worker.mongo.Collection("mail_tracking")
 	filter := bson.M{"issent": false}
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {
@@ -52,7 +52,6 @@ func (worker *SendmailWorker) GetMailQueue() ([]MailTracking, error) {
 	return mails, nil
 }
 
-// send mail
 func (worker *SendmailWorker) SendMail(mailTracking MailTracking) error {
 	to := []string{mailTracking.Email}
 	subject := "Moodle Deployed"
@@ -68,7 +67,7 @@ func (worker *SendmailWorker) SendMail(mailTracking MailTracking) error {
 
 func (worker *SendmailWorker) UpdateIsSent(moodleId string) {
 	ctx := context.Background()
-	collection := worker.mongoAdapter.Collection("mail_tracking")
+	collection := worker.mongo.Collection("mail_tracking")
 	filter := bson.M{"moodleid": moodleId}
 	update := bson.M{"$set": bson.M{"issent": true}}
 	_, err := collection.UpdateOne(ctx, filter, update)
@@ -77,7 +76,6 @@ func (worker *SendmailWorker) UpdateIsSent(moodleId string) {
 	}
 }
 
-// worker pool to send mail concurrency
 func (worker *SendmailWorker) SendMailWorkerPool() {
 	mails, err := worker.GetMailQueue()
 	if err != nil {

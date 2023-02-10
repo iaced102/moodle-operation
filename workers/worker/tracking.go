@@ -3,7 +3,7 @@ package worker
 import (
 	"context"
 	"log"
-	adapter "moodle/adapter/mongo"
+	mongo "moodle/pkg/mongodbiface"
 	lbclient "moodle/pkg/client"
 	"time"
 
@@ -12,21 +12,21 @@ import (
 
 
 type TrackingWorker struct {
-    adapter adapter.MongoAdapter
+    mongo mongo.DB
 }
 
-func NewTrackingWorker(m adapter.MongoAdapter) *TrackingWorker{
+func NewTrackingWorker(m mongo.DB) *TrackingWorker{
     return &TrackingWorker{
-		adapter: m,
+		mongo: m,
     }
 }
 
 
 // update lbstatus and vipaddress from lb_instances collection to lb_tracking colection
 func (w *TrackingWorker) UpdateLbStatus() error {
-	lbInstancesCollection := w.adapter.Collection("lb_instances")
-	lbTrackingCollection := w.adapter.Collection("lb_tracking")
-	moodlesCollection := w.adapter.Collection("moodles")
+	lbInstancesCollection := w.mongo.Collection("lb_instances")
+	lbTrackingCollection := w.mongo.Collection("lb_tracking")
+	moodlesCollection := w.mongo.Collection("moodles")
 
 	// get all lb instances
 	lbInstances, err := lbInstancesCollection.Find(context.Background(), bson.M{})

@@ -4,3 +4,4 @@ docker/moodle*/*
 docker/moodledata*/*
 client/__debug_bin
 docker/*.sql
+main

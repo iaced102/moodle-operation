@@ -9,10 +9,10 @@ import (
 
 	"moodle/config"
 	moodleService "moodle/internal/core/service/moodle"
-	moodleRepo "moodle/internal/repository/moodle"
+	Repo "moodle/internal/repository/moodle"
 	k8sRepo "moodle/pkg/client"
 
-	workercontroller "moodle/worker"
+	"moodle/workers"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -22,9 +22,8 @@ import (
 func initDependencies() *dep.Dep {
 	d := &dep.Dep{}
 
-	d.MongoDB = NewMongoDB()
-	d.MoodleRepository = moodleRepo.NewMongoDB(d.MongoDB)
-	d.MariaRepository = moodleRepo.NewMariaDB(config.MARIAHOSTW, config.MARIAPORT, config.MARIAUSER, config.MARIAPASSWORD)
+	d.MoodleRepository = Repo.NewMongoDB(NewMongoDB())
+	d.MariaRepository = Repo.NewMariaDB(config.MARIAHOSTW, config.MARIAPORT, config.MARIAUSER, config.MARIAPASSWORD)
 	d.K8sRepository = k8sRepo.NewK8sClient()
 	d.MoodleService = moodleService.NewService(d.MoodleRepository, d.MariaRepository, d.K8sRepository)
 	d.MoodleHandler = handler.NewMoodleHandler(d.MoodleService)
@@ -32,7 +31,6 @@ func initDependencies() *dep.Dep {
 	return d
 }
 
-// new MongoDB
 func NewMongoDB() *mongo.Database {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 	client, err := mongo.Connect(context.Background(), clientOptions)
@@ -48,5 +46,5 @@ func NewMongoDB() *mongo.Database {
 }
 
 func RunWorker() {
-	workercontroller.Start(NewMongoDB())
+	workers.Start(NewMongoDB())
 }

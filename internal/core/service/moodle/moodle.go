@@ -7,12 +7,12 @@ import (
 
 
 type Service struct {
-	moodleRepository port.MoodleRepository
+	moodleRepository port.MongoRepository
 	mariaRepository port.MariaRepository
 	k8sRepository port.K8sRepository
 }
 
-func NewService(moodleRepository port.MoodleRepository, mariaRepository port.MariaRepository, k8sRepository port.K8sRepository) *Service {
+func NewService(moodleRepository port.MongoRepository, mariaRepository port.MariaRepository, k8sRepository port.K8sRepository) *Service {
 	return &Service{
 		moodleRepository: moodleRepository,
 		mariaRepository: mariaRepository,

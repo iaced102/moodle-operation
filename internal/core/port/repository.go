@@ -2,7 +2,7 @@ package port
 
 import "moodle/internal/core/domain"
 
-type MoodleRepository interface {
+type MongoRepository interface {
 	InsertOne(domain.Moodle) error
 	Get(moodleID string) (domain.Moodle, error)
 	GetAll(email string) ([]domain.Moodle, error)

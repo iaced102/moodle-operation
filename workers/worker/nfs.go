@@ -1,8 +1,8 @@
 package worker
 
 import (
-	mariaAdapter "moodle/adapter/mariadb"
-	mongoAdapter "moodle/adapter/mongo"
+	maria "moodle/internal/repository/moodle"
+	mongo "moodle/pkg/mongodbiface"
 	"moodle/config"
 	nfs "moodle/pkg/client"
 	nfs4 "moodle/pkg/client/nfs4"
@@ -10,19 +10,19 @@ import (
 
 
 type NFSWorker struct {
-	MariaAdapter *mariaAdapter.MariaAdapter
-	MongoAdapter mongoAdapter.MongoAdapter
+	Maria *maria.MariaDB
+	Mongo mongo.DB
 	NFSClient	 *nfs4.NfsClient
 }
 
 // new mariadb worker
-func NewNFSWorker(adapter mongoAdapter.MongoAdapter) *NFSWorker {
-	mariaclient := mariaAdapter.NewMariaAdapter(config.MARIAHOSTW, 3306, config.MARIAUSER, config.MARIAPASSWORD)
+func NewNFSWorker(mongo mongo.DB) *NFSWorker {
+	mariaclient := maria.NewMariaDB(config.MARIAHOSTW, 3306, config.MARIAUSER, config.MARIAPASSWORD)
 	nfsclient := nfs.NewNFSClient()
 	
 	return &NFSWorker{
-		MariaAdapter: mariaclient,
-		MongoAdapter: adapter,
+		Maria: mariaclient,
+		Mongo: mongo,
 		NFSClient: nfsclient,
 	}
 }

@@ -3,7 +3,7 @@ package worker
 import (
 	"context"
 	"log"
-	adapter "moodle/adapter/mongo"
+	mongo "moodle/pkg/mongodbiface"
 	k8sclient "moodle/pkg/client"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,15 +12,15 @@ import (
 
 // k8s worker
 type K8sWorker struct {
-    adapter adapter.MongoAdapter
+    mongo mongo.DB
 	k8sclient k8sclient.K8sClient
 }
 
-func NewK8sWorker(m adapter.MongoAdapter) *K8sWorker{
+func NewK8sWorker(m mongo.DB) *K8sWorker{
 	k8sclient := k8sclient.NewK8sClient()
 	// clientset := k8sclient.NewClientSet()
     return &K8sWorker{
-		adapter: m,
+		mongo: m,
 		k8sclient: *k8sclient,
     }
 }
@@ -29,7 +29,7 @@ func NewK8sWorker(m adapter.MongoAdapter) *K8sWorker{
 func (k *K8sWorker) ListMariaQueue() ([]string, error) {
 	ctx := context.Background()
 	// collection := mongoClient.Database("moodle").Collection("maria_queue")
-	collection := k.adapter.Collection("maria_queue")
+	collection := k.mongo.Collection("maria_queue")
 	cursor, err := collection.Find(context.Background(), bson.D{})
 	if err != nil {
 		log.Fatal(err)
@@ -50,7 +50,7 @@ func (k *K8sWorker) ListMariaQueue() ([]string, error) {
 // get list of ACTIVE maria instances from maria id list
 func (k *K8sWorker) GetActiveMariaInstances(mariaIds []string) ([]string, error) {
 	ctx := context.Background()
-	collection := k.adapter.Collection("maria_instances")
+	collection := k.mongo.Collection("maria_instances")
 	count, err := collection.CountDocuments(ctx, bson.D{})
 	if err != nil {
 		log.Fatal(err)
@@ -80,7 +80,7 @@ func (k *K8sWorker) GetActiveMariaInstances(mariaIds []string) ([]string, error)
 
 // get theme from moodles collection by moodle id
 func (k *K8sWorker) GetTheme(moodleId string) (string, error) {
-	collection := k.adapter.Collection("moodles")
+	collection := k.mongo.Collection("moodles")
 	filter := bson.M{"name": moodleId}
 	var result bson.M
 	err := collection.FindOne(context.Background(), filter).Decode(&result)
