@@ -7,6 +7,7 @@ import (
 
 func main() {
 	log.SetFormatter(&log.JSONFormatter{})
+	go server.RunWorker()
 	server.Start()
 }
 

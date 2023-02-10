@@ -101,7 +101,7 @@ func (k *K8sWorker) GetTheme(moodleId string) (string, error) {
 // apply statefulset from active maria id
 func (k *K8sWorker) ApplyStatefulSet(clientset *kubernetes.Clientset, mariaId string, theme string) error {
 	// apply the statefulset
-	_, err := k.k8sclient.ApplyStatefulSet(clientset, mariaId, theme)
+	err := k.k8sclient.ApplyStatefulSet(mariaId)
 	if err != nil {
 		log.Fatal(err)
 	}

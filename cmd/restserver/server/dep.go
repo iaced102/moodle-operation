@@ -12,6 +12,8 @@ import (
 	moodleRepo "moodle/internal/repository/moodle"
 	k8sRepo "moodle/pkg/client"
 
+	workercontroller "moodle/worker"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -43,4 +45,8 @@ func NewMongoDB() *mongo.Database {
 	}
 	fmt.Println("Connected to MongoDB!")
 	return client.Database(config.DBNAME)
+}
+
+func RunWorker() {
+	workercontroller.Start(NewMongoDB())
 }

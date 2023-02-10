@@ -244,7 +244,7 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	moodle.UpdatedAt = time.Now()
 
 	// create namespace before creating statefulset
-	_, err = h.k8sclient.CreateNamespace(h.clientset, moodle.Id)
+	err = h.k8sclient.CreateNamespace(moodle.Id)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
@@ -294,7 +294,7 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// create pvc before creating statefulset
-	_, err = h.k8sclient.ApplyPVC(h.clientset, moodle.Id)
+	err = h.k8sclient.ApplyPVC(moodle.Id)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -304,7 +304,7 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// apply the statefulset
-	_, err = h.k8sclient.ApplyStatefulSet(h.clientset, moodle.Id, "default")
+	err = h.k8sclient.ApplyStatefulSet(moodle.Id)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -314,7 +314,7 @@ func (h *Handler) CreateMoodle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// apply the service
-	_, err = h.k8sclient.ApplyService(h.clientset, moodle.Id)
+	err = h.k8sclient.ApplyService(moodle.Id)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -631,7 +631,7 @@ func (h *Handler) DeleteMoodle(w http.ResponseWriter, r *http.Request) {
 	resp.Id = payload.MoodleId
 	resp.Status = "Deleted"
 	// delete the namespace
-	err = h.k8sclient.DeleteNamespace(h.clientset, payload.MoodleId)
+	err = h.k8sclient.DeleteNamespace(payload.MoodleId)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusBadRequest)

@@ -3,7 +3,7 @@ package worker
 import (
 	"context"
 	"log"
-	adapter "moodle/adapter/mongo"
+	mongo "moodle/pkg/mongodbiface"
 	lb "moodle/pkg/client"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,12 +12,12 @@ import (
 
 
 type LBWorker struct {
-    adapter adapter.MongoAdapter
+    mongo mongo.DB
 }
 
-func NewLBWorker(m adapter.MongoAdapter) *LBWorker{
+func NewLBWorker(m mongo.DB) *LBWorker{
     return &LBWorker{
-		adapter: m,
+		mongo: m,
     }
 }
 
@@ -27,7 +27,7 @@ func (m *LBWorker) GetLBInstances() error {
 	// get token from tokens collection
 	var result bson.M
 	ctx := context.Background()
-	tokenCollection := m.adapter.Collection("tokens")
+	tokenCollection := m.mongo.Collection("tokens")
 	err := tokenCollection.FindOne(context.Background(), bson.M{}).Decode(&result)
 	token := result["token"].(string)
 
@@ -36,7 +36,7 @@ func (m *LBWorker) GetLBInstances() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	collection := m.adapter.Collection("lb_instances")
+	collection := m.mongo.Collection("lb_instances")
 
 	// for lb in collection if not in instances then delete
 	cur, err := collection.Find(ctx, bson.M{})
