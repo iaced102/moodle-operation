@@ -3,12 +3,19 @@ package port
 import "moodle/internal/core/domain"
 
 type MongoRepository interface {
-	InsertOne(domain.Moodle) error
-	Get(moodleID string) (domain.Moodle, error)
+	Create(moodle domain.Moodle) error
 	GetAll(email string) ([]domain.Moodle, error)
-	Delete(moodleID string) error
-	GetSiteName(siteName string) ([]domain.Moodle, error)
+	Get(moodleID string) (domain.Moodle, error)
+	Search(email, name string) ([]domain.Moodle, error)
 	ListCourses() ([]domain.Course, error)
+	ListPackages() ([]domain.Package, error)
+	Delete(moodleID string) error
+	GetSiteName(name string) ([]domain.Moodle, error)
+	GetPackage(name string) (domain.Package, error)
+	CreateLbTracking(lbTracking domain.Moodle) error
+	CreateMailTracking(mailTracking domain.Moodle) error
+	CreateMariaTracking(mariaTracking domain.Moodle) error
+	CreateMoodleConfig(moodleconfig domain.Moodle) error
 }
 
 type MariaRepository interface {
@@ -20,9 +27,10 @@ type MariaRepository interface {
 }
 
 type K8sRepository interface {
+	ListNamespaces() ([]string, error)
 	CreateNamespace(namespace string) error
 	ApplyStatefulSet(namespace string) error
 	ApplyService(namespace string) error
-	ApplyPVC(yaml string) error
+	ApplyPVC(namespace string) error
 	DeleteNamespace(namespace string) error
 }

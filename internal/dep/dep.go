@@ -8,7 +8,7 @@ import (
 type Dep struct {
 	MoodleService    port.MoodleService
 	MoodleHandler    *handler.MoodleHandler
-	MoodleRepository port.MongoRepository
+	MongoRepository port.MongoRepository
 	MariaRepository port.MariaRepository
 	K8sRepository port.K8sRepository
 }

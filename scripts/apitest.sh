@@ -3,7 +3,7 @@ token="gAAAAABjvhxZwCj1n8fFu-nFALaMr4KKZ7G3UPI7pAETzVxGa4pYuWdUelC6DcjLSRd8rHXIW
 
 # create moodle
 function moodle-create() {
-	curl -s -i -X POST "http://localhost:5000/api/v1/moodles" \
+	curl -i -X POST "http://localhost:5000/api/v1/moodles" \
 		-H "X-Tenant-Name: admin" \
 		-H "X-Auth-Token: $token" \
 		-H "Content-Type: application/json" \
@@ -19,28 +19,28 @@ function moodle-create() {
 
 # list moodle
 function moodle-list() {
-	curl -s -H "X-Tenant-Name: admin" \
+	curl -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
 		 -iX GET "http://localhost:5000/api/v1/moodles?page=1&limit=10&email=$1"
 }
 
 # get moodle
 function moodle-get() {
-	curl -s -H "X-Tenant-Name: admin" \
+	curl -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
 		 -iX GET "http://localhost:5000/api/v1/moodles?id=$1" 
 }
 
 # search moodle
 function search() {
-	curl -s -X GET "http://localhost:5000/api/v1/moodles?search=$1&page=1&limit=10&email=duynn@bizflycloud.vn" \
+	curl -iX GET "http://localhost:5000/api/v1/moodles?search=$1&page=1&limit=10&email=vctest-qatest-chaupth5-staging@vccloud.vn" \
 		 -H "X-Auth-Token: $token" \
 		 -H "X-Tenant-Name: admin"
 }
 
 # change packages moodle
 function moodle-change-packages() {
-	curl -s -i -X PUT "http://localhost:5000/api/v1/packages" \
+	curl -i -X PUT "http://localhost:5000/api/v1/packages" \
 		 -H "X-Auth-Token: $token" \
 		 -H "X-Tenant-Name: admin" \
 		 -H "Content-Type: application/json" \
@@ -50,10 +50,9 @@ function moodle-change-packages() {
 		}"
 }
 
-
 # change autoscale moodle
 function moodle-change-autoscale() {
-	curl -s -i -X PUT "http://localhost:5000/api/v1/autoscale" \
+	curl -i -X PUT "http://localhost:5000/api/v1/autoscale" \
 		 -H "X-Auth-Token: $token" \
 		 -H "X-Tenant-Name: admin" \
 		 -H "Content-Type: application/json" \
@@ -65,7 +64,7 @@ function moodle-change-autoscale() {
 
 # change documents_storage_extra moodle
 function moodle-change-document-storage-extra() {
-	curl -s -i -X PUT "http://localhost:5000/api/v1/document-storage-extra" \
+	curl -i -X PUT "http://localhost:5000/api/v1/document-storage-extra" \
 		 -H "Content-Type: application/json" \
 		 -H "X-Auth-Token: $token" \
 		 -H "X-Tenant-Name: admin" \
@@ -77,7 +76,7 @@ function moodle-change-document-storage-extra() {
 
 # change pre_installed_course moodle
 function moodle-change-pre-installed-course() {
-	curl -s -i -X PUT "http://localhost:5000/api/v1/pre-installed-course" \
+	curl -i -X PUT "http://localhost:5000/api/v1/pre-installed-course" \
 		 -H "X-Auth-Token: $token" \
 		 -H "X-Tenant-Name: admin" \
 		 -H "Content-Type: application/json" \
@@ -89,7 +88,7 @@ function moodle-change-pre-installed-course() {
 
 # delete moodle
 function moodle-delete() {
-	curl -s -i -X DELETE "http://localhost:5000/api/v1/moodles" \
+	curl -i -X DELETE "http://localhost:5000/api/v1/moodles" \
 		 -H "Content-Type: application/json" \
 		 -H "X-Auth-Token: $token" \
 		 -H "X-Tenant-Name: admin" \
@@ -100,13 +99,13 @@ function moodle-delete() {
 
 # list course
 function course-list() {
-	curl -s -H "X-Tenant-Name: admin" \
+	curl -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
-		 -iX GET "http://localhost:5000/api/v1/courses?page=1&limit=10"
+		 -iX GET "http://localhost:5000/api/v1/courses?page=&limit="
 }
 # list pacakge
 function package-list() {
-	curl -s -H "X-Tenant-Name: admin" \
+	curl -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
 		 -iX GET "http://localhost:5000/api/v1/packages?page=1&limit=10"
 }

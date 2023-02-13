@@ -11,7 +11,7 @@ type LBTracking struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type DBTracking struct {
+type MariaTracking struct {
 	MoodleId string `json:"moodle_id"`
 	DbName string `json:"db_name"`
 	SiteName string `json:"site_name"`
@@ -29,4 +29,3 @@ type MailTracking struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
-

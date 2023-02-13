@@ -13,11 +13,20 @@ func routes(router *gin.Engine, dependencies *dep.Dep) {
 	})
 	v1 := router.Group("/api/v1")
 
+	v1.GET("/moodles",  func(request *gin.Context) {
+		get := request.Query("id")
+		if get != "" {
+			dependencies.MoodleHandler.Get(request)
+			return
+		}
+		search := request.Query("search")
+		if search != "" {
+			dependencies.MoodleHandler.Search(request)
+			return
+		}
+		dependencies.MoodleHandler.List(request)
+	})
+	v1.GET("/packages", dependencies.MoodleHandler.ListPackages)
 	v1.GET("/courses", dependencies.MoodleHandler.ListCourses)
-	v1.GET("/moodles", dependencies.MoodleHandler.List)
-	// router.POST("/users/:user_id/games", dependencies.MoodleHandler.Create)
-	// router.GET("/users/:user_id/games", dependencies.MoodleHandler.GetAll)
-	// router.GET("/users/:user_id/games/:game_id", dependencies.MoodleHandler.Get)
-	// router.PUT("/users/:user_id/games/:game_id/actions/reveal", dependencies.MoodleHandler.Reveal)
-	// router.PUT("/users/:user_id/games/:game_id/actions/mark", dependencies.MoodleHandler.Mark)
+	v1.POST("/moodles", dependencies.MoodleHandler.Create)
 }

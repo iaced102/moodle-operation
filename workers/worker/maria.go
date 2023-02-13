@@ -5,11 +5,21 @@ import (
 	"log"
 	mariaAdapter "moodle/internal/repository/moodle"
 	mongoAdapter "moodle/pkg/mongodbiface"
-	"moodle/handler"
 	"moodle/config"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
+
+type DBTracking struct {
+	MoodleId       string `bson:"moodleid"`
+	DbName         string `bson:"dbname"`
+	SiteName       string `bson:"sitename"`
+	SiteNameUpdate bool   `bson:"sitenameupdate"`
+	DbStatus       string `bson:"dbstatus"`
+	FilePath       string `bson:"filepath"`
+	CreatedAt      string `bson:"createdat"`
+	UpdateAt       string `bson:"updateat"`
+}
 
 type MariaWorker struct {
 	MariaAdapter *mariaAdapter.MariaDB
@@ -38,7 +48,7 @@ func (w *MariaWorker) Restore() error {
 	
 	// for each maria_tracking then restore database and update to maria_tracking
 	for mariaTracking.Next(context.Background()) {
-		var tracking handler.DBTracking
+		var tracking DBTracking
 		err := mariaTracking.Decode(&tracking)
 		if err != nil {
 			log.Println(err)

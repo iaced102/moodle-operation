@@ -1,6 +1,10 @@
 package domain
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Moodle struct {
 	Id  string `json:"id"`
@@ -10,7 +14,8 @@ type Moodle struct {
 	LbName string `json:"lb_name"`
 	WebSiteName string `json:"website_name"`
 	PreInstalledCourse []int `json:"pre_installed_course"`
-	Packages MoodlePackages `json:"packages"`
+	PackageName string `json:"packages_name"`
+	Packages Package `json:"packages"`
 	AutoScale bool `json:"autoscale"`
 	DocumentsStorageExtra int `json:"documents_storage_extra"`
 	Status string `json:"status"`
@@ -18,7 +23,7 @@ type Moodle struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type MoodlePackages struct {
+type Package struct {
 	Price int `json:"price"`
 	Name string `json:"name"`
 	Ccu int `json:"ccu"`
@@ -38,4 +43,29 @@ type Course struct {
 	Highlight []string `json:"highlight"`
 	Routine []string `json:"routine"`
 	Course_Preview []string `json:"course_preview"`
+}
+
+type MoodleConfiguration struct {
+	MoodleId string `json:"moodle_id"`
+	FaviconUrl string `json:"favicon_url"`
+	LogoUrl string `json:"logo_url"`
+	Banner []Banner `json:"banner"`
+	VideoUrl string `json:"video_url"`
+	Vision []Vision
+}
+
+type Banner struct {
+	ImageUrl string `json:"image_url"`
+	Slogan	 string `json:"slogan"`
+}
+
+type Vision struct {
+	ImageUrl string `json:"image_url"`
+	Title string `json:"title"`
+	Content string `json:"content"`
+}
+
+
+func NewMoodleID() string {
+	return uuid.New().String()
 }

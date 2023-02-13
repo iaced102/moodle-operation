@@ -43,6 +43,13 @@ func (p *pagination) GetData() interface{} {
 
 func Paginate(list interface{}, page int, limit int) Pagination {
 	total := reflect.ValueOf(list).Len()
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 1
+	}
+
 	if total == 0 {
 		return &pagination{
 			Page:    1,
