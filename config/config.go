@@ -22,9 +22,9 @@ var (
 	MARIAPASSWORD = "0YU8381WUlk1u9ysVbF4Qb5FigNW8z8uCvPI"
 	MARIAPORT = 3306
 	NFSSEVER = "123.30.234.224:2049"
-	PVC_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle-default/pvc.yaml"
-	SERVICE_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle-default/service.yaml"
-	STATEFULSET_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle"
+	PVC_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/pvc.yaml"
+	SERVICE_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/service.yaml"
+	STATEFULSET_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/statefulset.yaml"
 	KUBECONFIG = "moodle-cluster.kubeconfig"
 	CLUSTERID = "6o0cn9lv42livqek"
 )

@@ -1,11 +1,11 @@
 package worker
 
 import (
+	server "moodle/cmd/restserver/server"
 	maria "moodle/internal/repository/moodle"
-	mongo "moodle/pkg/mongodbiface"
-	"moodle/config"
 	nfs "moodle/pkg/client"
 	nfs4 "moodle/pkg/client/nfs4"
+	mongo "moodle/pkg/mongodbiface"
 )
 
 
@@ -17,7 +17,7 @@ type NFSWorker struct {
 
 // new mariadb worker
 func NewNFSWorker(mongo mongo.DB) *NFSWorker {
-	mariaclient := maria.NewMariaDB(config.MARIAHOSTW, 3306, config.MARIAUSER, config.MARIAPASSWORD)
+	mariaclient := maria.NewMariaDB(server.NewMariaDB())
 	nfsclient := nfs.NewNFSClient()
 	
 	return &NFSWorker{

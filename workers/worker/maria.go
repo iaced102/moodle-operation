@@ -2,45 +2,34 @@ package worker
 
 import (
 	"context"
+	"database/sql"
 	"log"
-	mariaAdapter "moodle/internal/repository/moodle"
-	mongoAdapter "moodle/pkg/mongodbiface"
-	"moodle/config"
+	repo "moodle/internal/repository/moodle"
+	"moodle/pkg/mongodbiface"
 
-	"go.mongodb.org/mongo-driver/bson"
+	"moodle/internal/core/domain"
 )
 
-type DBTracking struct {
-	MoodleId       string `bson:"moodleid"`
-	DbName         string `bson:"dbname"`
-	SiteName       string `bson:"sitename"`
-	SiteNameUpdate bool   `bson:"sitenameupdate"`
-	DbStatus       string `bson:"dbstatus"`
-	FilePath       string `bson:"filepath"`
-	CreatedAt      string `bson:"createdat"`
-	UpdateAt       string `bson:"updateat"`
-}
-
 type MariaWorker struct {
-	MariaAdapter *mariaAdapter.MariaDB
-	MongoAdapter mongoAdapter.DB
+	mariaRepo *repo.MariaDB
+	mongoRepo *repo.MongoDB
 }
 
 // new mariadb worker
-func NewMariaWorker(adapter mongoAdapter.DB ) *MariaWorker {
-	mariaclient := mariaAdapter.NewMariaDB(config.MARIAHOSTW, 3306, config.MARIAUSER, config.MARIAPASSWORD)
+func NewMariaWorker(mongo mongodbiface.DB, maria *sql.DB) *MariaWorker {
+	mariaRepo := repo.NewMariaDB(maria)
+	mongoRepo := repo.NewMongoDB(mongo)
 	
 	return &MariaWorker{
-		MariaAdapter: mariaclient,
-		MongoAdapter: adapter,
+		mariaRepo: mariaRepo,
+		mongoRepo: mongoRepo,
 	}
 }
 
 // restore database then update to maria_tracking collection
 func (w *MariaWorker) Restore() error {
-	mariaTrackingCollection := w.MongoAdapter.Collection("maria_tracking")
 	// get all from maria_tracking
-	mariaTracking, err := mariaTrackingCollection.Find(context.Background(), bson.M{})
+	mariaTracking, err := w.mongoRepo.GetMariaTracking()
 	if err != nil {
 		log.Println(err)
 		return err
@@ -48,7 +37,7 @@ func (w *MariaWorker) Restore() error {
 	
 	// for each maria_tracking then restore database and update to maria_tracking
 	for mariaTracking.Next(context.Background()) {
-		var tracking DBTracking
+		var tracking domain.MariaTracking
 		err := mariaTracking.Decode(&tracking)
 		if err != nil {
 			log.Println(err)
@@ -57,30 +46,30 @@ func (w *MariaWorker) Restore() error {
 		// restore database
 		// check if status is Creating
 		if tracking.DbStatus == "Creating" {
-			err = w.MariaAdapter.RestoreDB(tracking.DbName, tracking.FilePath)
+			err = w.mariaRepo.RestoreDB(tracking.DbName, tracking.FilePath)
 			if err != nil {
 				log.Println(err)
 				return err
 			}
 			// update DbStatus to maria_tracking
-			_, err = mariaTrackingCollection.UpdateOne(context.Background(), bson.M{"dbname": tracking.DbName}, bson.M{"$set": bson.M{"dbstatus": "Online"}})
+			err = w.mongoRepo.UpdateMariaTracking(tracking)
 			if err != nil {
 				log.Println(err)
 				return err
 			}
-			// check if sitenameupdate is false then update shortname, fullname to mdl_course
-			if tracking.SiteNameUpdate == false {
-				err = w.MariaAdapter.UpdateDB(tracking.DbName, tracking.SiteName, tracking.SiteName)
-				if err != nil {
-					log.Println(err)
-					return err
-				}
-				// update sitenameupdate to true
-				_, err = mariaTrackingCollection.UpdateOne(context.Background(), bson.M{"dbname": tracking.DbName}, bson.M{"$set": bson.M{"sitenameupdate": true}})
-				if err != nil {
-					log.Println(err)
-					return err
-				}
+		}
+		// check if sitenameupdate is false then update shortname, fullname to mdl_course
+		if tracking.SiteNameUpdate == false {
+			err = w.mariaRepo.UpdateDB(tracking.DbName, tracking.SiteName, tracking.SiteName)
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+			// update sitenameupdate to true
+			err = w.mongoRepo.UpdateMariaTrackingSiteNameUpdate(tracking)
+			if err != nil {
+				log.Println(err)
+				return err
 			}
 		}
 	}

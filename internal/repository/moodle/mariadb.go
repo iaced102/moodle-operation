@@ -6,44 +6,23 @@ import (
 	"log"
 	"os/exec"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type MariaDB struct {
-	Host     string
-	Port     int
-	Username string
-	Password string
+	db *sql.DB
 }
 
 // new maria adapter
-func NewMariaDB(host string, port int, username string, password string) *MariaDB {
-	return &MariaDB{
-		Host:     host,
-		Port:     port,
-		Username: username,
-		Password: password,
-	}
+func NewMariaDB(db *sql.DB) *MariaDB {
+	return &MariaDB{db: db}
 }
-
-func (m *MariaDB) Connect(dbname string) *sql.DB {
-	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", m.Username, m.Password, m.Host, m.Port, dbname))
-	if err != nil {
-		log.Fatal(err)
-	}
-	db.SetConnMaxLifetime(time.Minute * 3)
-	db.SetMaxOpenConns(100)
-	db.SetMaxIdleConns(100)
-	return db
-}
-
-
 
 // select data from mysql
 func (m *MariaDB) Select(dbname, query string) map[string]string {
-	db := m.Connect(dbname)
-	defer db.Close()
 	queryString := fmt.Sprintf("%s", query)
-	rows, err := db.Query(queryString)
+	rows, err := m.db.Query(queryString)
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -97,10 +76,8 @@ func (m *MariaDB) Select(dbname, query string) map[string]string {
 
 // create new database from existing Database
 func (m *MariaDB) CreateDB(dbname string) error {
-	db := m.Connect("")
-	defer db.Close()
 	queryString := fmt.Sprintf("CREATE DATABASE %s", dbname)
-	_, err := db.Exec(queryString)
+	_, err := m.db.Exec(queryString)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -111,10 +88,8 @@ func (m *MariaDB) CreateDB(dbname string) error {
 
 // drop database 
 func (m *MariaDB) DropDB(dbname string) error {
-	db := m.Connect("")
-	defer db.Close()
 	queryString := fmt.Sprintf("DROP DATABASE %s", dbname)
-	_, err := db.Exec(queryString)
+	_, err := m.db.Exec(queryString)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -125,9 +100,6 @@ func (m *MariaDB) DropDB(dbname string) error {
 
 // restore database from sql filepath
 func (m *MariaDB) RestoreDB(dbname, filepath string) error {
-	db := m.Connect(dbname)
-	defer db.Close()
-
 	comand :=  "mysql -u root -h 45.124.94.112 -p0YU8381WUlk1u9ysVbF4Qb5FigNW8z8uCvPI " + dbname + " < " + filepath
 	// print current time
 	log.Println("restoring databse", dbname, "at:", time.Now())
@@ -145,11 +117,9 @@ func (m *MariaDB) RestoreDB(dbname, filepath string) error {
 
 // update shortname, fullname on mdl_course table
 func (m *MariaDB) UpdateDB(dbname, shortname, fullname string) error {
-	db := m.Connect(dbname)
-	defer db.Close()
 	queryString := fmt.Sprintf("UPDATE mdl_course SET shortname = '%s', fullname = '%s' WHERE id = 1", shortname, fullname)
 
-	update, err := db.Exec(queryString)
+	update, err := m.db.Exec(queryString)
 	if err != nil {
 		log.Println(err)
 		return err

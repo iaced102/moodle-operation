@@ -96,11 +96,11 @@ func (h *MoodleHandler) Create(request *gin.Context) {
 		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	moodle, appErr := h.MoodleService.Create(moodle)
+	moodle_, appErr := h.MoodleService.Create(moodle)
 	if appErr != nil {
 		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
 		return
 	}
-	request.JSON(http.StatusCreated, moodle)
+	request.JSON(http.StatusCreated, moodle_)
 }
 

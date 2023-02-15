@@ -214,7 +214,7 @@ func (client *K8sClient) ApplyService(namespace string) error {
 
 //  apply statefulset from  filepath
 func (client *K8sClient) ApplyStatefulSet(namespace string) error {
-	filepath := config.STATEFULSET_FILEPATH + "/statefulset.yaml"
+	filepath := config.STATEFULSET_FILEPATH
 	fmt.Printf("Applying statefulset from file %q in namespace %q:\n", filepath, namespace)
 	// read file
 	file, err := ioutil.ReadFile(filepath)

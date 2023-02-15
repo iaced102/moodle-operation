@@ -2,7 +2,6 @@ package moodle
 
 import (
 	"errors"
-	"log"
 	"moodle/config"
 	"moodle/internal/core/domain"
 	"moodle/internal/core/port"
@@ -39,13 +38,6 @@ func (s *Service) ValidateSitename(sitename string) bool {
 }
 
 func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppError) {
-	// list all namespaces
-	namespaces, err := s.k8sRepository.ListNamespaces()
-	if err != nil {
-		return moodle, apperrors.Internal("error when list namespaces", err)
-	}
-	log.Println(namespaces)
-	return moodle, nil
 	// check if sitename is exist then return error
 	if !s.ValidateSitename(moodle.WebSiteName) {
 		return moodle, apperrors.Conflict("sitename is already exist", errors.New("sitename is already exist"))
@@ -54,30 +46,31 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 	moodle_.Id = domain.NewMoodleID()
 	moodle_.Email = moodle.Email
 	moodle_.Name = moodle.WebSiteName
-	moodle_.LbName = "kube_service" + "_" + config.CLUSTERID + "_" + moodle.Id + "_moodle-service"
+	moodle_.LbName = "kube_service" + "_" + config.CLUSTERID + "_" + moodle_.Id + "_moodle-service"
 	moodle_.Ip = "Provisioning"
 	moodle_.WebSiteName = moodle.WebSiteName + ".lms.bizflycloud.vn"
 	moodle_.PreInstalledCourse = moodle.PreInstalledCourse
+	moodle_.PackageName = moodle.PackageName
 	moodle_.AutoScale = moodle.AutoScale
 	moodle_.DocumentsStorageExtra = moodle.DocumentsStorageExtra
 	moodle_.Status = "Creating"
 	moodle_.CreatedAt = time.Now()
 	moodle_.UpdatedAt = time.Now()
 	// get package by package name
-	package_, err := s.mongoRepository.GetPackage(moodle.PackageName)
+	package_, err := s.mongoRepository.GetPackage(moodle_.PackageName)
 	if err != nil {
 		return moodle, apperrors.InvalidInput("package name is not exist", err)
 	}
 	moodle_.Packages = package_
-	// create namespace
-	err = s.k8sRepository.CreateNamespace(moodle_.Id)
-	if err != nil {
-		return moodle, apperrors.Internal("create namespace error", err)
-	}
 	// create moodle mariadb
 	err = s.mariaRepository.CreateDB(strings.ReplaceAll(moodle_.Id, "-", "_"))
 	if err != nil {
 		return moodle, apperrors.Internal("create mariadb error", err)
+	}
+	// create namespace
+	err = s.k8sRepository.CreateNamespace(moodle_.Id)
+	if err != nil {
+		return moodle, apperrors.Internal("create namespace error", err)
 	}
 	// Apply pvc
 	err = s.k8sRepository.ApplyPVC(moodle_.Id)
@@ -120,7 +113,7 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 		return moodle, apperrors.Internal("create moodle config error", err)
 	}
 
-	return moodle, nil
+	return moodle_, nil
 }
 
 // List moodles
