@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"moodle/internal/dep"
 	"moodle/internal/handler"
@@ -38,6 +37,6 @@ func NewMongoDB() *mongo.Database {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Connected to MongoDB!")
+	log.Println("Connected to MongoDB!")
 	return client.Database(config.DBNAME)
 }
