@@ -117,7 +117,7 @@ func (m *MariaDB) RestoreDB(dbname, filepath string) error {
 
 // update shortname, fullname on mdl_course table
 func (m *MariaDB) UpdateDB(dbname, shortname, fullname string) error {
-	queryString := fmt.Sprintf("UPDATE mdl_course SET shortname = '%s', fullname = '%s' WHERE id = 1", shortname, fullname)
+	queryString := fmt.Sprintf("UPDATE %s.mdl_course SET shortname = '%s', fullname = '%s' WHERE id = 1", dbname, shortname, fullname)
 
 	update, err := m.db.Exec(queryString)
 	if err != nil {
@@ -129,4 +129,37 @@ func (m *MariaDB) UpdateDB(dbname, shortname, fullname string) error {
 	return err
 }
 
+// clone table from existing database
+func (m *MariaDB) CloneCourseTable(dbname, tablename string) error {
+	queryString := fmt.Sprintf("create table %s.%s as select * from %s.mdl_course;", dbname, tablename, dbname)
+	_, err := m.db.Exec(queryString)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	log.Println("clone course table success")
+	return err
+}
 
+func (m *MariaDB) CloneCourseCategoriesTable(dbname, tablename string) error {
+	queryString := fmt.Sprintf("create table %s.%s as select * from %s.mdl_course_categories;", dbname, tablename, dbname)
+	_, err := m.db.Exec(queryString)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	log.Println("clone course_categories table success")
+	return err
+}
+
+// delete row from table
+func (m *MariaDB) DeleteRow(dbname, tablename string, id int) error {
+	queryString := fmt.Sprintf("DELETE FROM %s.%s WHERE id = %d", dbname, tablename, id)
+	_, err := m.db.Exec(queryString)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	log.Println("delete row success")
+	return err
+}

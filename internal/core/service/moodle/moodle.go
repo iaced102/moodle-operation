@@ -116,6 +116,7 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 	if err != nil {
 		return moodle, apperrors.Internal("create moodle config error", err)
 	}
+	// delete row from 
 
 	return moodle_, nil
 }
