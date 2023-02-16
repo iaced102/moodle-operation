@@ -272,3 +272,22 @@ func (m *MongoDB) UpdateFavicon(favicontracking domain.FaviconTracking) error {
 	}
 	return nil
 }
+
+// update vision image tracking
+func (m *MongoDB) UpdateVisionImage(visionimagetracking domain.VisionImageTracking) error {
+	// check if vision image exist then update else insert
+	var visionimage domain.VisionImageTracking
+	err := m.db.Collection("vision_image_tracking").FindOne(context.Background(), bson.M{"moodleid": visionimagetracking.MoodleId}).Decode(&visionimage)
+	if err != nil {
+		_, err := m.db.Collection("vision_image_tracking").InsertOne(context.Background(), visionimagetracking)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	_, err = m.db.Collection("vision_image_tracking").UpdateOne(context.Background(), bson.M{"moodleid": visionimagetracking.MoodleId}, bson.M{"$set": visionimagetracking})
+	if err != nil {
+		return err
+	}
+	return nil
+}

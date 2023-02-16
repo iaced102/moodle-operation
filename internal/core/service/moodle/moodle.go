@@ -242,3 +242,36 @@ func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *mu
 	return map[string]string{"message": "success"}, nil
 }
 
+// update vision image
+// save image into /tmp/moodle/{moodleID}/vision/{filename}
+// track image into mongodb
+func (s *Service) UpdateVisionImage(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
+	// create folder
+	err := os.MkdirAll("/tmp/moodle/"+moodleID+"/vision", 0755)
+	if err != nil {
+		return nil, apperrors.Internal("create folder error", err)
+	}
+	// create file
+	out, err := os.Create("/tmp/moodle/" + moodleID + "/vision/" + header.Filename)
+	if err != nil {
+		return nil, apperrors.Internal("create file error", err)
+	}
+	defer out.Close()
+	// copy file
+	_, err = io.Copy(out, file)
+	if err != nil {
+		return nil, apperrors.Internal("copy file error", err)
+	}
+	// update vision image
+	var visiontracking domain.VisionImageTracking
+	visiontracking.MoodleId = moodleID
+	visiontracking.FilePath = "/tmp/moodle/" + moodleID + "/vision/" + header.Filename
+	visiontracking.Status = "Pending"
+	visiontracking.CreatedAt = time.Now()
+	visiontracking.UpdatedAt = time.Now()
+	err = s.mongoRepository.UpdateVisionImage(visiontracking)
+	if err != nil {
+		return nil, apperrors.Internal("update vision image error", err)
+	}
+	return map[string]string{"message": "success"}, nil
+}

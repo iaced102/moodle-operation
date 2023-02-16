@@ -16,5 +16,6 @@ type MoodleService interface {
 	Delete(moodleID string) error
 	UpdateLogo(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
 	UpdateFavicon(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
+	UpdateVisionImage(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
 }
 

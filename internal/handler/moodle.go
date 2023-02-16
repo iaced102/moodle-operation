@@ -140,3 +140,21 @@ func (h *MoodleHandler) UpdateFavicon(request *gin.Context) {
 	request.JSON(http.StatusOK, resp)
 }
 
+// update vision image
+func (h *MoodleHandler) UpdateVisionImage(request *gin.Context) {
+	moodleID := request.Query("moodle_id")
+	// get multipart file, multipart file header
+	file, header, err := request.Request.FormFile("file")
+	if err != nil {
+		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// update vision image
+	resp, appErr := h.MoodleService.UpdateVisionImage(moodleID, file, header)
+	if appErr != nil {
+		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
+		return
+	}
+	request.JSON(http.StatusOK, resp)
+}
+
