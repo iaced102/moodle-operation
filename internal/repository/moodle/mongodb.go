@@ -291,3 +291,22 @@ func (m *MongoDB) UpdateVisionImage(visionimagetracking domain.VisionImageTracki
 	}
 	return nil
 }
+
+// update banner image
+func (m *MongoDB) UpdateBannerImage(bannerimagetracking domain.BannerImageTracking) error {
+	// check if banner image exist then update else insert
+	var bannerimage domain.BannerImageTracking
+	err := m.db.Collection("banner_image_tracking").FindOne(context.Background(), bson.M{"moodleid": bannerimagetracking.MoodleId}).Decode(&bannerimage)
+	if err != nil {
+		_, err := m.db.Collection("banner_image_tracking").InsertOne(context.Background(), bannerimagetracking)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	_, err = m.db.Collection("banner_image_tracking").UpdateOne(context.Background(), bson.M{"moodleid": bannerimagetracking.MoodleId}, bson.M{"$set": bannerimagetracking})
+	if err != nil {
+		return err
+	}
+	return nil
+}

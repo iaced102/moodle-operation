@@ -19,6 +19,7 @@ type MongoRepository interface {
 	UpdateLogo(logotracking domain.LogoTracking) error
 	UpdateFavicon(favicontracking domain.FaviconTracking) error
 	UpdateVisionImage(visionimagetracking domain.VisionImageTracking) error
+	UpdateBannerImage(bannerimagetracking domain.BannerImageTracking) error
 }
 
 type MariaRepository interface {

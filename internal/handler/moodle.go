@@ -158,3 +158,19 @@ func (h *MoodleHandler) UpdateVisionImage(request *gin.Context) {
 	request.JSON(http.StatusOK, resp)
 }
 
+// update banner image
+func (h *MoodleHandler) UpdateBannerImage(request *gin.Context) {
+	moodleID := request.Query("moodle_id")
+	form, err := request.MultipartForm()
+	if err != nil {
+		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// update banner UpdateBannerImage
+	resp, appErr := h.MoodleService.UpdateBannerImage(moodleID, form)
+	if appErr != nil {
+		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
+		return
+	}
+	request.JSON(http.StatusOK, resp)
+}

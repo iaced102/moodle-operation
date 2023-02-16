@@ -53,3 +53,11 @@ type VisionImageTracking struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type BannerImageTracking struct {
+	MoodleId string `json:"moodle_id"`
+	FilePath []string `json:"file_path"`
+	Status string `json:"logo_status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}

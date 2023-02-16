@@ -9,6 +9,7 @@ import (
 	"moodle/internal/core/port"
 	"moodle/pkg/apperrors"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -178,29 +179,19 @@ func (s *Service) Delete(moodleID string) error {
 // Save logo into /tmp/moodle/{moodleID}/logo/{filename}
 // Track logo into mongodb
 func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	// create folder
-	err := os.MkdirAll("/tmp/moodle/"+moodleID+"/logo", 0755)
+	var files []multipart.File
+	files = append(files, file)
+	err := SaveFiles("/tmp/moodle/"+moodleID+"/logo", "/tmp/moodle/"+moodleID+"/logo/"+header.Filename, files)
 	if err != nil {
-		return nil, apperrors.Internal("create folder error", err)
+		return nil, apperrors.Internal("save file error", err)
 	}
-	// create file
-	out, err := os.Create("/tmp/moodle/" + moodleID + "/logo/" + header.Filename)
-	if err != nil {
-		return nil, apperrors.Internal("create file error", err)
-	}
-	defer out.Close()
-	// copy file
-	_, err = io.Copy(out, file)
-	if err != nil {
-		return nil, apperrors.Internal("copy file error", err)
-	}
-	// update logo
+	// update UpdateLogo
 	var logotracking domain.LogoTracking
 	logotracking.MoodleId = moodleID
 	logotracking.FilePath = "/tmp/moodle/" + moodleID + "/logo/" + header.Filename
-	logotracking.Status = "Pending"
-	logotracking.CreatedAt = time.Now()
+	logotracking.Status = "pending"
 	logotracking.UpdatedAt = time.Now()
+	logotracking.CreatedAt = time.Now()
 	err = s.mongoRepository.UpdateLogo(logotracking)
 	if err != nil {
 		return nil, apperrors.Internal("update logo error", err)
@@ -212,23 +203,13 @@ func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multi
 // Save logo into /tmp/moodle/{moodleID}/favicon/{filename}
 // Track logo into mongodb
 func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	// create folder
-	err := os.MkdirAll("/tmp/moodle/"+moodleID+"/favicon", 0755)
+	var files []multipart.File
+	files = append(files, file)
+	err := SaveFiles("/tmp/moodle/"+moodleID+"/favicon", "/tmp/moodle/"+moodleID+"/favicon/"+header.Filename, files)
 	if err != nil {
-		return nil, apperrors.Internal("create folder error", err)
+		return nil, apperrors.Internal("save file error", err)
 	}
-	// create file
-	out, err := os.Create("/tmp/moodle/" + moodleID + "/favicon/" + header.Filename)
-	if err != nil {
-		return nil, apperrors.Internal("create file error", err)
-	}
-	defer out.Close()
-	// copy file
-	_, err = io.Copy(out, file)
-	if err != nil {
-		return nil, apperrors.Internal("copy file error", err)
-	}
-	// update favicon
+	// update UpdateFavicon
 	var favicontracking domain.FaviconTracking
 	favicontracking.MoodleId = moodleID
 	favicontracking.FilePath = "/tmp/moodle/" + moodleID + "/favicon/" + header.Filename
@@ -246,23 +227,13 @@ func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *mu
 // save image into /tmp/moodle/{moodleID}/vision/{filename}
 // track image into mongodb
 func (s *Service) UpdateVisionImage(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	// create folder
-	err := os.MkdirAll("/tmp/moodle/"+moodleID+"/vision", 0755)
+	var files []multipart.File
+	files = append(files, file)
+	err := SaveFiles("/tmp/moodle/"+moodleID+"/vision", "/tmp/moodle/"+moodleID+"/vision/"+header.Filename, files)
 	if err != nil {
-		return nil, apperrors.Internal("create folder error", err)
+		return nil, apperrors.Internal("save file error", err)
 	}
-	// create file
-	out, err := os.Create("/tmp/moodle/" + moodleID + "/vision/" + header.Filename)
-	if err != nil {
-		return nil, apperrors.Internal("create file error", err)
-	}
-	defer out.Close()
-	// copy file
-	_, err = io.Copy(out, file)
-	if err != nil {
-		return nil, apperrors.Internal("copy file error", err)
-	}
-	// update vision image
+	// update UpdateVisionImage
 	var visiontracking domain.VisionImageTracking
 	visiontracking.MoodleId = moodleID
 	visiontracking.FilePath = "/tmp/moodle/" + moodleID + "/vision/" + header.Filename
@@ -275,3 +246,77 @@ func (s *Service) UpdateVisionImage(moodleID string, file multipart.File, header
 	}
 	return map[string]string{"message": "success"}, nil
 }
+
+// save multiple files from source to destination
+func SaveFiles(src, dst string, files []multipart.File) error {
+	for _, file := range files {
+		// create folder
+		err := os.MkdirAll(filepath.Dir(dst), 0755)
+		if err != nil {
+			return err
+		}
+		// create file
+		out, err := os.Create(dst)
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+		// copy file
+		_, err = io.Copy(out, file)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// update banner image 
+// save image into /tmp/moodle/{moodleID}/banner/{filename}
+// track image into mongodb
+func (s *Service) UpdateBannerImage(moodleID string, form *multipart.Form) (map[string]string, *apperrors.AppError) {
+	var bannertracking domain.BannerImageTracking
+	for _, files := range form.File {
+		for file := range files {
+			// save file
+			err := SaveUploadedFile(files[file], "/tmp/moodle/"+moodleID+"/banner/"+files[file].Filename)
+			if err != nil {
+				return nil, apperrors.Internal("save file error", err)
+			}
+		// update banner tracking
+		bannertracking.FilePath = append(bannertracking.FilePath, "/tmp/moodle/"+moodleID+"/banner/"+files[file].Filename)
+		}
+	}
+	// update UpdateBannerImage
+	bannertracking.MoodleId = moodleID
+	bannertracking.Status = "Pending"
+	bannertracking.CreatedAt = time.Now()
+	bannertracking.UpdatedAt = time.Now()
+	err := s.mongoRepository.UpdateBannerImage(bannertracking)
+	if err != nil {
+		return nil, apperrors.Internal("update banner image error", err)
+	}
+	return map[string]string{"message": "success"}, nil
+}
+
+func SaveUploadedFile(file *multipart.FileHeader, dst string) error {
+	// create folder
+	err := os.MkdirAll(filepath.Dir(dst), 0755)
+	if err != nil {
+		return err
+	}
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+	// create file
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, src)
+	return err
+}
+
