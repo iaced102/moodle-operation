@@ -8,10 +8,8 @@ import (
 	"moodle/internal/core/domain"
 	"moodle/internal/core/port"
 	"moodle/pkg/apperrors"
-	"moodle/pkg/helpers"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -181,7 +179,7 @@ func (s *Service) Delete(moodleID string) error {
 // Save logo into /tmp/moodle/{moodleID}/logo/{filename}
 // Track logo into mongodb
 func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	err := SaveFiles("/tmp/moodle/"+moodleID+"/logo", "/tmp/moodle/"+moodleID+"/logo/"+header.Filename, file)
+	err := SaveFiles("/tmp/moodle/"+moodleID+"/logo/"+header.Filename, file)
 	if err != nil {
 		return nil, apperrors.Internal("save file error", err)
 	}
@@ -203,7 +201,7 @@ func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multi
 // Save logo into /tmp/moodle/{moodleID}/favicon/{filename}
 // Track logo into mongodb
 func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	err := SaveFiles("/tmp/moodle/"+moodleID+"/favicon", "/tmp/moodle/"+moodleID+"/favicon/"+header.Filename, file)
+	err := SaveFiles("/tmp/moodle/"+moodleID+"/favicon/"+header.Filename, file)
 	if err != nil {
 		return nil, apperrors.Internal("save file error", err)
 	}
@@ -225,7 +223,7 @@ func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *mu
 // save image into /tmp/moodle/{moodleID}/vision/{filename}
 // track image into mongodb
 func (s *Service) UpdateVisionImage(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	err := SaveFiles("/tmp/moodle/"+moodleID+"/vision", "/tmp/moodle/"+moodleID+"/vision/"+header.Filename, file)
+	err := SaveFiles("/tmp/moodle/"+moodleID+"/vision/"+header.Filename, file)
 	if err != nil {
 		return nil, apperrors.Internal("save file error", err)
 	}
@@ -244,7 +242,7 @@ func (s *Service) UpdateVisionImage(moodleID string, file multipart.File, header
 }
 
 // save multiple files from source to destination
-func SaveFiles(src, dst string, file multipart.File) error {
+func SaveFiles(dst string, file multipart.File) error {
 	// create folder
 	err := os.MkdirAll(filepath.Dir(dst), 0755)
 	if err != nil {
@@ -267,36 +265,16 @@ func SaveFiles(src, dst string, file multipart.File) error {
 // update banner image 
 // save image into /tmp/moodle/{moodleID}/banner/{filename}
 // track image into mongodb
-func (s *Service) UpdateBannerImage(moodleID string, bannerID int , file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	var bannertracking domain.BannerImageTracking
-	bannerIDtoStr := strconv.Itoa(bannerID)
-	err := SaveFiles("/tmp/moodle/"+moodleID+"/banner/"+bannerIDtoStr, "/tmp/moodle/"+moodleID+"/banner/"+bannerIDtoStr+"/"+header.Filename, file)
+func (s *Service) UpdateBannerImage(moodleID, bannerID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
+	err := SaveFiles("/tmp/moodle/"+moodleID+"/banner/"+bannerID+"/"+header.Filename, file)
 	if err != nil {
 		return nil, apperrors.Internal("save file error", err)
 	}
-	// get current banner image
-	banner, err := s.mongoRepository.GetBannerImage(moodleID)
-	bannerpaths := banner.FilePath
-	var bannerIDs []int
-	for _, bannerpath := range bannerpaths {
-		bannerIDs = append(bannerIDs, bannerpath.BannerID)
-	}
-	// if bannerID is not exist, add new bannerID
-	if !helpers.Contains(bannerIDs, bannerID) {
-		var bannerpath domain.BannerPath
-		bannerpath.BannerID = bannerID
-		bannerpath.FilePath = "/tmp/moodle/" + moodleID + "/banner/" + bannerIDtoStr + "/" + header.Filename
-		bannerpaths = append(bannerpaths, bannerpath)
-	}
-	// if bannerID is exist, update bannerID
-	for i, bannerpath := range bannerpaths {
-		if bannerpath.BannerID == bannerID {
-			bannerpaths[i].FilePath = "/tmp/moodle/" + moodleID + "/banner/" + bannerIDtoStr + "/" + header.Filename
-		}
-	}
 	// update UpdateBannerImage
-	bannertracking.FilePath = bannerpaths
+	var bannertracking domain.BannerImageTracking
 	bannertracking.MoodleId = moodleID
+	bannertracking.BannerId = bannerID
+	bannertracking.FilePath = "/tmp/moodle/" + moodleID + "/banner/" + bannerID + "/" + header.Filename
 	bannertracking.Status = "Pending"
 	bannertracking.CreatedAt = time.Now()
 	bannertracking.UpdatedAt = time.Now()

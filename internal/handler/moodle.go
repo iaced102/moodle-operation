@@ -180,7 +180,7 @@ func (h *MoodleHandler) UpdateBannerImage(request *gin.Context) {
 	bannerID := request.Query("banner_id")
 	bannerIDInt, err := strconv.Atoi(bannerID)
 	if err != nil {
-		request.JSON(http.StatusBadRequest, gin.H{"error": "banner_id must be a number"})
+		request.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	// validate if banner not in range 1-3
@@ -200,7 +200,7 @@ func (h *MoodleHandler) UpdateBannerImage(request *gin.Context) {
 		return
 	}
 	// update banner image
-	resp, appErr := h.MoodleService.UpdateBannerImage(moodleID, bannerIDInt, file, header)
+	resp, appErr := h.MoodleService.UpdateBannerImage(moodleID,bannerID, file, header)
 	if appErr != nil {
 		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
 		return
@@ -254,6 +254,16 @@ func (h *MoodleHandler) UpdateSlogan(request *gin.Context) {
 	err := request.ShouldBindJSON(&update)
 	if err != nil {
 		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	sloganInt, err := strconv.Atoi(update.SloganId)
+	if err != nil {
+		request.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// validate if banner not in range 1-3
+	if sloganInt < 1 || sloganInt > 3 {
+		request.JSON(http.StatusBadRequest, gin.H{"error": "slogan_id must be in range 1-3"})
 		return
 	}
 	// update slogan

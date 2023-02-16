@@ -143,14 +143,14 @@ function upload-vision-content() {
 		 -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
 		 -d '{
-		 	"moodle_id": "test",
+		 	"moodle_id": "d7ba7a3c-cb4e-4cf7-ab8a-f4eec8a16e33",
 		 	"title": "test",
 		 	"content": "https://www.youtube.com/watch?v=QH2-TGUlwu4"
 		 }'
 }
 
 function upload-banner() {
-	curl -F "file=@/home/duy/Pictures/duydeptrai.txt"  "http://localhost:5000/api/v1/banner?moodle_id=d7ba7a3c-cb4e-4cf7-ab8a-f4eec8a16e33&banner_id=1" \
+	curl -F "file=@/home/duy/Pictures/duydeptrai.jpg"  "http://localhost:5000/api/v1/banner?moodle_id=d7ba7a3c-cb4e-4cf7-ab8a-f4eec8a16e33&banner_id=1" \
 		 -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" 
 }
@@ -160,10 +160,9 @@ function upload-slogan() {
 		 -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
 		 -d '{
-		 	"moodle_id": "test",
-		 	"slogan1": "hahah",
-		 	"slogan2": "aaa",
-		 	"slogan3": "testoioioi"
+		 	"moodle_id": "d7ba7a3c-cb4e-4cf7-ab8a-f4eec8a16e33",
+			"slogan_id": "3",
+		 	"slogan": "hah"
 		 }'
 }
 

@@ -296,7 +296,7 @@ func (m *MongoDB) UpdateVisionImage(visionimagetracking domain.VisionImageTracki
 func (m *MongoDB) UpdateBannerImage(bannerimagetracking domain.BannerImageTracking) error {
 	// check if banner image exist then update else insert
 	var bannerimage domain.BannerImageTracking
-	err := m.db.Collection("banner_image_tracking").FindOne(context.Background(), bson.M{"moodleid": bannerimagetracking.MoodleId}).Decode(&bannerimage)
+	err := m.db.Collection("banner_image_tracking").FindOne(context.Background(), bson.M{"moodleid": bannerimagetracking.MoodleId, "bannerid": bannerimagetracking.BannerId}).Decode(&bannerimage)
 	if err != nil {
 		_, err := m.db.Collection("banner_image_tracking").InsertOne(context.Background(), bannerimagetracking)
 		if err != nil {
@@ -305,7 +305,7 @@ func (m *MongoDB) UpdateBannerImage(bannerimagetracking domain.BannerImageTracki
 		return nil
 	}
 	// patch banner image
-	_, err = m.db.Collection("banner_image_tracking").UpdateOne(context.Background(), bson.M{"moodleid": bannerimagetracking.MoodleId}, bson.M{"$set": bannerimagetracking})
+	_, err = m.db.Collection("banner_image_tracking").UpdateOne(context.Background(), bson.M{"moodleid": bannerimagetracking.MoodleId, "bannerid": bannerimagetracking.BannerId}, bson.M{"$set": bannerimagetracking})
 	if err != nil {
 		return err
 	}
@@ -315,7 +315,7 @@ func (m *MongoDB) UpdateBannerImage(bannerimagetracking domain.BannerImageTracki
 // get banner image
 func (m *MongoDB) GetBannerImage(moodleid string) (domain.BannerImageTracking, error) {
 	var bannerimage domain.BannerImageTracking
-	err := m.db.Collection("banner_image_tracking").FindOne(context.Background(), bson.M{"moodleid": moodleid}).Decode(&bannerimage)
+	err := m.db.Collection("banner_image_tracking").FindOne(context.Background(), bson.M{"moodleid": moodleid, "bannerid": bannerimage.BannerId}).Decode(&bannerimage)
 	if err != nil {
 		return bannerimage, err
 	}
@@ -364,7 +364,7 @@ func (m *MongoDB) UpdateVisionContent(visioncontenttracking domain.VisionContent
 func (m *MongoDB) UpdateBannerSlogan(bannersloganstracking domain.BannerSloganTracking) error {
 	// check if banner slogan exist then update else insert
 	var bannerslogan domain.BannerSloganTracking
-	err := m.db.Collection("banner_slogan_tracking").FindOne(context.Background(), bson.M{"moodleid": bannersloganstracking.MoodleId}).Decode(&bannerslogan)
+	err := m.db.Collection("banner_slogan_tracking").FindOne(context.Background(), bson.M{"moodleid": bannersloganstracking.MoodleId, "sloganid": bannersloganstracking.SloganId}).Decode(&bannerslogan)
 	if err != nil {
 		_, err := m.db.Collection("banner_slogan_tracking").InsertOne(context.Background(), bannersloganstracking)
 		if err != nil {
@@ -372,7 +372,7 @@ func (m *MongoDB) UpdateBannerSlogan(bannersloganstracking domain.BannerSloganTr
 		}
 		return nil
 	}
-	_, err = m.db.Collection("banner_slogan_tracking").UpdateOne(context.Background(), bson.M{"moodleid": bannersloganstracking.MoodleId}, bson.M{"$set": bannersloganstracking})
+	_, err = m.db.Collection("banner_slogan_tracking").UpdateOne(context.Background(), bson.M{"moodleid": bannersloganstracking.MoodleId, "sloganid": bannersloganstracking.SloganId}, bson.M{"$set": bannersloganstracking})
 	if err != nil {
 		return err
 	}
