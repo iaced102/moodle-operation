@@ -171,8 +171,8 @@ function upload-course() {
 		 -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
 		 -d '{
-		 	"id": "e5e5a96f-0f6b-4b65-b083-214c189ec42d",
-			"pre_installed_course": [2,3]
+		 	"id": "d7ba7a3c-cb4e-4cf7-ab8a-f4eec8a16e33",
+			"pre_installed_course": [1,8]
 		 }'
 }
 

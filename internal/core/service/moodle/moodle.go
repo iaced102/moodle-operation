@@ -8,6 +8,7 @@ import (
 	"moodle/internal/core/domain"
 	"moodle/internal/core/port"
 	"moodle/pkg/apperrors"
+	"moodle/pkg/helpers"
 	"os"
 	"path/filepath"
 	"strings"
@@ -334,11 +335,22 @@ func (s *Service) UpdateBannerSlogan(slogan domain.BannerSloganTracking) (map[st
 // update pre_installed_course
 // track pre_installed_course into mongodb
 func (s *Service) UpdatePreInstalledCourse(moodle domain.Moodle) (map[string]string, *apperrors.AppError) {
-	// update UpdatePreInstalledCourse
+	// get current moodle
+	moodle_, err := s.mongoRepository.Get(moodle.Id)
+	if err != nil {
+		return nil, apperrors.Internal("get moodle error", err)
+	}
+	preInstalledCourse_ := moodle_.PreInstalledCourse
+
+	// update UpdatePreInstalledCourse at last
+	moodle.PreInstalledCourse = append(preInstalledCourse_, moodle.PreInstalledCourse...)
+	// set a slice
+	moodle.PreInstalledCourse = helpers.SetInt(moodle.PreInstalledCourse)
+
 	moodle.Status = "Pending"
 	moodle.CreatedAt = time.Now()
 	moodle.UpdatedAt = time.Now()
-	err := s.mongoRepository.UpdatePreInstalledCourse(moodle)
+	err = s.mongoRepository.UpdatePreInstalledCourse(moodle)
 	if err != nil {
 		return nil, apperrors.Internal("update pre_installed_course error", err)
 	}

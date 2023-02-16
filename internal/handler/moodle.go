@@ -283,6 +283,13 @@ func (h *MoodleHandler) UpdatePreInstalledCourse(request *gin.Context) {
 		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	// validate if all of pre_installed_course is in range 1-8
+	for _, course := range update.PreInstalledCourse {
+		if course < 1 || course > 8 {
+			request.JSON(http.StatusBadRequest, gin.H{"error": "pre_installed_course must be in range 1-8"})
+			return
+		}
+	}
 	// update pre_installed course
 	resp, appErr := h.MoodleService.UpdatePreInstalledCourse(update)
 	if appErr != nil {

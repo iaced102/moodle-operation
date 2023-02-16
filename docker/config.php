@@ -25,8 +25,8 @@ $CFG->dboptions['read'] = array(
 	'dbtype' => 'mariadb',
 	'dblibrary' => 'native',
 	'dbhost' => getenv('DB_HOST_READ'),
-	'dbname' => getenv('DB_NAME'),
-	'dbuser' => getenv('DB_NAME'),
+	'dbname' => str_replace('-', '_', getenv('DB_NAME')),
+	'dbuser' => getenv('DB_READ_USER'),
 	'dbpass' => getenv('DB_PASS'),
 );
 

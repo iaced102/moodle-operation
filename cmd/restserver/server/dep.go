@@ -52,6 +52,7 @@ func NewMariaDB() *sql.DB {
 	db.SetConnMaxLifetime(time.Minute * 3)
 	db.SetMaxOpenConns(100)
 	db.SetMaxIdleConns(100)
+	log.Println("Connected to MariaDB!")
 	return db
 
 }

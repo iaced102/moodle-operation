@@ -57,25 +57,25 @@ func (w *MariaWorker) Restore() error {
 				log.Println(err)
 				return err
 			}
-			// clone course table
-			log.Println("cloning mdl_course table")
-			w.mariaRepo.CloneCourseTable(tracking.DbName, "mdl_course_deleted")
-			log.Println("cloned mdl_course table")
-			// clone course_categories table
-			log.Println("cloning mdl_course_categories table")
-			w.mariaRepo.CloneCourseCategoriesTable(tracking.DbName, "mdl_course_categories_deleted")
-			log.Println("cloned mdl_course_categories table")
-			// delte row from mdl_course table where id from 32-71
-			log.Println("deleting row from mdl_course table")
-			for i := 32; i <= 71; i++ {
-				w.mariaRepo.DeleteRow(tracking.DbName, "mdl_course", i)
-			}
-			log.Println("deleted row from mdl_course table")
-			log.Println("deleting row from mdl_course_categories table")
-			for i := 27; i <= 39; i++ {
-				w.mariaRepo.DeleteRow(tracking.DbName, "mdl_course_categories", i)
-			}
-			log.Println("deleted row from mdl_course_categories table")
+			// // clone course table
+			// log.Println("cloning mdl_course table")
+			// w.mariaRepo.CloneCourseTable(tracking.DbName, "mdl_course_deleted")
+			// log.Println("cloned mdl_course table")
+			// // clone course_categories table
+			// log.Println("cloning mdl_course_categories table")
+			// w.mariaRepo.CloneCourseCategoriesTable(tracking.DbName, "mdl_course_categories_deleted")
+			// log.Println("cloned mdl_course_categories table")
+			// // delte row from mdl_course table where id from 32-71
+			// log.Println("deleting row from mdl_course table")
+			// for i := 32; i <= 71; i++ {
+			// 	w.mariaRepo.DeleteRow(tracking.DbName, "mdl_course", i)
+			// }
+			// log.Println("deleted row from mdl_course table")
+			// log.Println("deleting row from mdl_course_categories table")
+			// for i := 27; i <= 39; i++ {
+			// 	w.mariaRepo.DeleteRow(tracking.DbName, "mdl_course_categories", i)
+			// }
+			// log.Println("deleted row from mdl_course_categories table")
 			}
 		// check if sitenameupdate is false then update shortname, fullname to mdl_course
 		if tracking.SiteNameUpdate == false {
