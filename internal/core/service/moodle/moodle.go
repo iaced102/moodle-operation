@@ -8,8 +8,10 @@ import (
 	"moodle/internal/core/domain"
 	"moodle/internal/core/port"
 	"moodle/pkg/apperrors"
+	"moodle/pkg/helpers"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -179,9 +181,7 @@ func (s *Service) Delete(moodleID string) error {
 // Save logo into /tmp/moodle/{moodleID}/logo/{filename}
 // Track logo into mongodb
 func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	var files []multipart.File
-	files = append(files, file)
-	err := SaveFiles("/tmp/moodle/"+moodleID+"/logo", "/tmp/moodle/"+moodleID+"/logo/"+header.Filename, files)
+	err := SaveFiles("/tmp/moodle/"+moodleID+"/logo", "/tmp/moodle/"+moodleID+"/logo/"+header.Filename, file)
 	if err != nil {
 		return nil, apperrors.Internal("save file error", err)
 	}
@@ -203,9 +203,7 @@ func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multi
 // Save logo into /tmp/moodle/{moodleID}/favicon/{filename}
 // Track logo into mongodb
 func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	var files []multipart.File
-	files = append(files, file)
-	err := SaveFiles("/tmp/moodle/"+moodleID+"/favicon", "/tmp/moodle/"+moodleID+"/favicon/"+header.Filename, files)
+	err := SaveFiles("/tmp/moodle/"+moodleID+"/favicon", "/tmp/moodle/"+moodleID+"/favicon/"+header.Filename, file)
 	if err != nil {
 		return nil, apperrors.Internal("save file error", err)
 	}
@@ -227,9 +225,7 @@ func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *mu
 // save image into /tmp/moodle/{moodleID}/vision/{filename}
 // track image into mongodb
 func (s *Service) UpdateVisionImage(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	var files []multipart.File
-	files = append(files, file)
-	err := SaveFiles("/tmp/moodle/"+moodleID+"/vision", "/tmp/moodle/"+moodleID+"/vision/"+header.Filename, files)
+	err := SaveFiles("/tmp/moodle/"+moodleID+"/vision", "/tmp/moodle/"+moodleID+"/vision/"+header.Filename, file)
 	if err != nil {
 		return nil, apperrors.Internal("save file error", err)
 	}
@@ -248,24 +244,22 @@ func (s *Service) UpdateVisionImage(moodleID string, file multipart.File, header
 }
 
 // save multiple files from source to destination
-func SaveFiles(src, dst string, files []multipart.File) error {
-	for _, file := range files {
-		// create folder
-		err := os.MkdirAll(filepath.Dir(dst), 0755)
-		if err != nil {
-			return err
-		}
-		// create file
-		out, err := os.Create(dst)
-		if err != nil {
-			return err
-		}
-		defer out.Close()
-		// copy file
-		_, err = io.Copy(out, file)
-		if err != nil {
-			return err
-		}
+func SaveFiles(src, dst string, file multipart.File) error {
+	// create folder
+	err := os.MkdirAll(filepath.Dir(dst), 0755)
+	if err != nil {
+		return err
+	}
+	// create file
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	// copy file
+	_, err = io.Copy(out, file)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -273,50 +267,59 @@ func SaveFiles(src, dst string, files []multipart.File) error {
 // update banner image 
 // save image into /tmp/moodle/{moodleID}/banner/{filename}
 // track image into mongodb
-func (s *Service) UpdateBannerImage(moodleID string, form *multipart.Form) (map[string]string, *apperrors.AppError) {
+func (s *Service) UpdateBannerImage(moodleID string, bannerID int , file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
 	var bannertracking domain.BannerImageTracking
-	for _, files := range form.File {
-		for file := range files {
-			// save file
-			err := SaveUploadedFile(files[file], "/tmp/moodle/"+moodleID+"/banner/"+files[file].Filename)
-			if err != nil {
-				return nil, apperrors.Internal("save file error", err)
-			}
-		// update banner tracking
-		bannertracking.FilePath = append(bannertracking.FilePath, "/tmp/moodle/"+moodleID+"/banner/"+files[file].Filename)
+	bannerIDtoStr := strconv.Itoa(bannerID)
+	err := SaveFiles("/tmp/moodle/"+moodleID+"/banner/"+bannerIDtoStr, "/tmp/moodle/"+moodleID+"/banner/"+bannerIDtoStr+"/"+header.Filename, file)
+	if err != nil {
+		return nil, apperrors.Internal("save file error", err)
+	}
+	// get current banner image
+	banner, err := s.mongoRepository.GetBannerImage(moodleID)
+	bannerpaths := banner.FilePath
+	var bannerIDs []int
+	for _, bannerpath := range bannerpaths {
+		bannerIDs = append(bannerIDs, bannerpath.BannerID)
+	}
+	// if bannerID is not exist, add new bannerID
+	if !helpers.Contains(bannerIDs, bannerID) {
+		var bannerpath domain.BannerPath
+		bannerpath.BannerID = bannerID
+		bannerpath.FilePath = "/tmp/moodle/" + moodleID + "/banner/" + bannerIDtoStr + "/" + header.Filename
+		bannerpaths = append(bannerpaths, bannerpath)
+	}
+	// if bannerID is exist, update bannerID
+	for i, bannerpath := range bannerpaths {
+		if bannerpath.BannerID == bannerID {
+			bannerpaths[i].FilePath = "/tmp/moodle/" + moodleID + "/banner/" + bannerIDtoStr + "/" + header.Filename
 		}
 	}
 	// update UpdateBannerImage
+	bannertracking.FilePath = bannerpaths
 	bannertracking.MoodleId = moodleID
 	bannertracking.Status = "Pending"
 	bannertracking.CreatedAt = time.Now()
 	bannertracking.UpdatedAt = time.Now()
-	err := s.mongoRepository.UpdateBannerImage(bannertracking)
+	err = s.mongoRepository.UpdateBannerImage(bannertracking)
 	if err != nil {
 		return nil, apperrors.Internal("update banner image error", err)
 	}
 	return map[string]string{"message": "success"}, nil
 }
 
-func SaveUploadedFile(file *multipart.FileHeader, dst string) error {
-	// create folder
-	err := os.MkdirAll(filepath.Dir(dst), 0755)
+// update video url
+// track video url into mongodb
+func (s *Service) UpdateVideoURL(moodleID, url string) (map[string]string, *apperrors.AppError) {
+	// update UpdateVideoUrl
+	var videotracking domain.VideoURLTracking
+	videotracking.MoodleId = moodleID
+	videotracking.VideoURL = url
+	videotracking.Status = "Pending"
+	videotracking.CreatedAt = time.Now()
+	videotracking.UpdatedAt = time.Now()
+	err := s.mongoRepository.UpdateVideoURL(videotracking)
 	if err != nil {
-		return err
+		return nil, apperrors.Internal("update video url error", err)
 	}
-	src, err := file.Open()
-	if err != nil {
-		return err
-	}
-	defer src.Close()
-	// create file
-	out, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, src)
-	return err
+	return map[string]string{"message": "success"}, nil
 }
-

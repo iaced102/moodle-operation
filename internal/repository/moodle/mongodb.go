@@ -304,7 +304,37 @@ func (m *MongoDB) UpdateBannerImage(bannerimagetracking domain.BannerImageTracki
 		}
 		return nil
 	}
+	// patch banner image
 	_, err = m.db.Collection("banner_image_tracking").UpdateOne(context.Background(), bson.M{"moodleid": bannerimagetracking.MoodleId}, bson.M{"$set": bannerimagetracking})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// get banner image
+func (m *MongoDB) GetBannerImage(moodleid string) (domain.BannerImageTracking, error) {
+	var bannerimage domain.BannerImageTracking
+	err := m.db.Collection("banner_image_tracking").FindOne(context.Background(), bson.M{"moodleid": moodleid}).Decode(&bannerimage)
+	if err != nil {
+		return bannerimage, err
+	}
+	return bannerimage, nil
+}
+
+// update video url
+func (m *MongoDB) UpdateVideoURL(videourltracking domain.VideoURLTracking) error {
+	// check if video url exist then update else insert
+	var videourl domain.VideoURLTracking
+	err := m.db.Collection("video_url_tracking").FindOne(context.Background(), bson.M{"moodleid": videourltracking.MoodleId}).Decode(&videourl)
+	if err != nil {
+		_, err := m.db.Collection("video_url_tracking").InsertOne(context.Background(), videourltracking)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	_, err = m.db.Collection("video_url_tracking").UpdateOne(context.Background(), bson.M{"moodleid": videourltracking.MoodleId}, bson.M{"$set": videourltracking})
 	if err != nil {
 		return err
 	}

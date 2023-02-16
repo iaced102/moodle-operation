@@ -20,6 +20,8 @@ type MongoRepository interface {
 	UpdateFavicon(favicontracking domain.FaviconTracking) error
 	UpdateVisionImage(visionimagetracking domain.VisionImageTracking) error
 	UpdateBannerImage(bannerimagetracking domain.BannerImageTracking) error
+	GetBannerImage(moodleid string) (domain.BannerImageTracking, error)
+	UpdateVideoURL(videourltracking domain.VideoURLTracking) error
 }
 
 type MariaRepository interface {

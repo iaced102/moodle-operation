@@ -4,6 +4,7 @@ import (
 	"moodle/internal/core/domain"
 	"moodle/internal/core/port"
 	"net/http"
+	"strconv"
 
 	"moodle/pkg/helpers"
 
@@ -109,6 +110,11 @@ func (h *MoodleHandler) UpdateLogo(request *gin.Context) {
 	moodleID := request.Query("moodle_id")
 	// get multipart file, multipart file header
 	file, header, err := request.Request.FormFile("file")
+	isValid := helpers.IsImage(file)
+	if !isValid {
+		request.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image: jpg, png"})
+		return
+	}
 	if err != nil {
 		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -127,6 +133,11 @@ func (h *MoodleHandler) UpdateFavicon(request *gin.Context) {
 	moodleID := request.Query("moodle_id")
 	// get multipart file, multipart file header
 	file, header, err := request.Request.FormFile("file")
+	isValid := helpers.IsImage(file)
+	if !isValid {
+		request.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image: jpg, png"})
+		return
+	}
 	if err != nil {
 		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -145,6 +156,11 @@ func (h *MoodleHandler) UpdateVisionImage(request *gin.Context) {
 	moodleID := request.Query("moodle_id")
 	// get multipart file, multipart file header
 	file, header, err := request.Request.FormFile("file")
+	isValid := helpers.IsImage(file)
+	if !isValid {
+		request.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image: jpg, png"})
+		return
+	}
 	if err != nil {
 		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -161,13 +177,53 @@ func (h *MoodleHandler) UpdateVisionImage(request *gin.Context) {
 // update banner image
 func (h *MoodleHandler) UpdateBannerImage(request *gin.Context) {
 	moodleID := request.Query("moodle_id")
-	form, err := request.MultipartForm()
+	bannerID := request.Query("banner_id")
+	bannerIDInt, err := strconv.Atoi(bannerID)
+	if err != nil {
+		request.JSON(http.StatusBadRequest, gin.H{"error": "banner_id must be a number"})
+		return
+	}
+	// validate if banner not in range 1-3
+	if bannerIDInt < 1 || bannerIDInt > 3 {
+		request.JSON(http.StatusBadRequest, gin.H{"error": "banner_id must be in range 1-3"})
+		return
+	}
+	// get multipart file, multipart file header
+	file, header, err := request.Request.FormFile("file")
+	isValid := helpers.IsImage(file)
+	if !isValid {
+		request.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image: jpg, png"})
+		return
+	}
 	if err != nil {
 		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// update banner UpdateBannerImage
-	resp, appErr := h.MoodleService.UpdateBannerImage(moodleID, form)
+	// update banner image
+	resp, appErr := h.MoodleService.UpdateBannerImage(moodleID, bannerIDInt, file, header)
+	if appErr != nil {
+		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
+		return
+	}
+	request.JSON(http.StatusOK, resp)
+}
+
+// update video url
+func (h *MoodleHandler) UpdateVideoURL(request *gin.Context) {
+	var  update domain.VideoURLTracking
+	err := request.ShouldBindJSON(&update)
+	if err != nil {
+		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// chekc if video url is valid
+	isValid := helpers.IsURL(update.VideoURL)
+	if !isValid {
+		request.JSON(http.StatusBadRequest, gin.H{"error": "video url is not valid"})
+		return
+	}
+	// update video url
+	resp, appErr := h.MoodleService.UpdateVideoURL(update.MoodleId, update.VideoURL)
 	if appErr != nil {
 		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
 		return

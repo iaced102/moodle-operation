@@ -56,7 +56,20 @@ type VisionImageTracking struct {
 
 type BannerImageTracking struct {
 	MoodleId string `json:"moodle_id"`
-	FilePath []string `json:"file_path"`
+	FilePath []BannerPath `json:"file_path"`
+	Status string `json:"logo_status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type BannerPath struct {
+	BannerID int `json:"banner_id"`
+	FilePath string `json:"file_path"`
+}
+
+type VideoURLTracking struct {
+	MoodleId string `json:"moodle_id"`
+	VideoURL string `json:"video_url"`
 	Status string `json:"logo_status"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
