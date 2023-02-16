@@ -359,3 +359,22 @@ func (m *MongoDB) UpdateVisionContent(visioncontenttracking domain.VisionContent
 	}
 	return nil
 }
+
+// update banner slogan
+func (m *MongoDB) UpdateBannerSlogan(bannersloganstracking domain.BannerSloganTracking) error {
+	// check if banner slogan exist then update else insert
+	var bannerslogan domain.BannerSloganTracking
+	err := m.db.Collection("banner_slogan_tracking").FindOne(context.Background(), bson.M{"moodleid": bannersloganstracking.MoodleId}).Decode(&bannerslogan)
+	if err != nil {
+		_, err := m.db.Collection("banner_slogan_tracking").InsertOne(context.Background(), bannersloganstracking)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	_, err = m.db.Collection("banner_slogan_tracking").UpdateOne(context.Background(), bson.M{"moodleid": bannersloganstracking.MoodleId}, bson.M{"$set": bannersloganstracking})
+	if err != nil {
+		return err
+	}
+	return nil
+}

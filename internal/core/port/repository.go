@@ -23,6 +23,7 @@ type MongoRepository interface {
 	GetBannerImage(moodleid string) (domain.BannerImageTracking, error)
 	UpdateVideoURL(videourltracking domain.VideoURLTracking) error
 	UpdateVisionContent(visioncontenttracking domain.VisionContentTracking) error
+	UpdateBannerSlogan(bannerslogantracking domain.BannerSloganTracking) error
 }
 
 type MariaRepository interface {

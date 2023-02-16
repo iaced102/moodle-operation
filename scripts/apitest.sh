@@ -161,9 +161,9 @@ function upload-slogan() {
 		 -H "X-Auth-Token: $token" \
 		 -d '{
 		 	"moodle_id": "test",
-		 	"slogan1": "test1",
-		 	"slogan2": "test2",
-		 	"slogan3": "test3"
+		 	"slogan1": "hahah",
+		 	"slogan2": "aaa",
+		 	"slogan3": "testoioioi"
 		 }'
 }
 

@@ -247,3 +247,20 @@ func (h *MoodleHandler) UpdateVisionContent(request *gin.Context) {
 	}
 	request.JSON(http.StatusOK, resp)
 }
+
+// update slogan
+func (h *MoodleHandler) UpdateSlogan(request *gin.Context) {
+	var  update domain.BannerSloganTracking
+	err := request.ShouldBindJSON(&update)
+	if err != nil {
+		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// update slogan
+	resp, appErr := h.MoodleService.UpdateBannerSlogan(update)
+	if appErr != nil {
+		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
+		return
+	}
+	request.JSON(http.StatusOK, resp)
+}

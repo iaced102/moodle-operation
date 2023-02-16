@@ -338,3 +338,16 @@ func (s *Service) UpdateVisionContent(content domain.VisionContentTracking) (map
 	return map[string]string{"message": "success"}, nil
 }
 
+// update banner slogan
+// track banner slogan into mongodb
+func (s *Service) UpdateBannerSlogan(slogan domain.BannerSloganTracking) (map[string]string, *apperrors.AppError) {
+	// update UpdateBannerSlogan
+	slogan.Status = "Pending"
+	slogan.CreatedAt = time.Now()
+	slogan.UpdatedAt = time.Now()
+	err := s.mongoRepository.UpdateBannerSlogan(slogan)
+	if err != nil {
+		return nil, apperrors.Internal("update banner slogan error", err)
+	}
+	return map[string]string{"message": "success"}, nil
+}
