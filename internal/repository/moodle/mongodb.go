@@ -234,3 +234,22 @@ func (m *MongoDB) UpdateMariaTrackingSiteNameUpdate(mariaTracking domain.MariaTr
 	}
 	return nil
 }
+
+// upload logotracking
+func (m *MongoDB) UpdateLogo(logotracking domain.LogoTracking) error {
+	// check if logo exist then update else insert
+	var logo domain.LogoTracking
+	err := m.db.Collection("logo_tracking").FindOne(context.Background(), bson.M{"moodleid": logotracking.MoodleId}).Decode(&logo)
+	if err != nil {
+		_, err := m.db.Collection("logo_tracking").InsertOne(context.Background(), logotracking)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	_, err = m.db.Collection("logo_tracking").UpdateOne(context.Background(), bson.M{"moodleid": logotracking.MoodleId}, logotracking)
+	if err != nil {
+		return err
+	}
+	return nil
+}

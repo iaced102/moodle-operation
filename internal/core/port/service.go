@@ -1,6 +1,7 @@
 package port
 
 import (
+	"mime/multipart"
 	"moodle/internal/core/domain"
 	"moodle/pkg/apperrors"
 )
@@ -13,5 +14,6 @@ type MoodleService interface {
 	ListCourses() ([]domain.Course, error)
 	ListPackages() ([]domain.Package, error)
 	Delete(moodleID string) error
+	UpdateLogo(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
 }
 

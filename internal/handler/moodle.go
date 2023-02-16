@@ -104,3 +104,21 @@ func (h *MoodleHandler) Create(request *gin.Context) {
 	request.JSON(http.StatusCreated, moodle_)
 }
 
+// Update logo
+func (h *MoodleHandler) UpdateLogo(request *gin.Context) {
+	moodleID := request.Query("moodle_id")
+	// get multipart file, multipart file header
+	file, header, err := request.Request.FormFile("file")
+	if err != nil {
+		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// update logo
+	resp, appErr := h.MoodleService.UpdateLogo(moodleID, file, header)
+	if appErr != nil {
+		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
+		return
+	}
+	request.JSON(http.StatusOK, resp)
+}
+

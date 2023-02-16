@@ -29,4 +29,5 @@ func routes(router *gin.Engine, dependencies *dep.Dep) {
 	v1.GET("/packages", dependencies.MoodleHandler.ListPackages)
 	v1.GET("/courses", dependencies.MoodleHandler.ListCourses)
 	v1.POST("/moodles", dependencies.MoodleHandler.Create)
+	v1.POST("/logo", dependencies.MoodleHandler.UpdateLogo)
 }

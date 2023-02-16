@@ -2,10 +2,13 @@ package moodle
 
 import (
 	"errors"
+	"io"
+	"mime/multipart"
 	"moodle/config"
 	"moodle/internal/core/domain"
 	"moodle/internal/core/port"
 	"moodle/pkg/apperrors"
+	"os"
 	"strings"
 	"time"
 )
@@ -170,4 +173,40 @@ func (s *Service) Delete(moodleID string) error {
 	}
 	return nil
 }
+
+// Update logo
+// Save logo into /tmp/moodle/{moodleID}/logo/{filename}
+// Track logo into mongodb
+func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
+	// create folder
+	err := os.MkdirAll("/tmp/moodle/"+moodleID+"/logo", 0755)
+	if err != nil {
+		return nil, apperrors.Internal("create folder error", err)
+	}
+	// create file
+	out, err := os.Create("/tmp/moodle/" + moodleID + "/logo/" + header.Filename)
+	if err != nil {
+		return nil, apperrors.Internal("create file error", err)
+	}
+	defer out.Close()
+	// copy file
+	_, err = io.Copy(out, file)
+	if err != nil {
+		return nil, apperrors.Internal("copy file error", err)
+	}
+	// update logo
+	var logotracking domain.LogoTracking
+	logotracking.MoodleId = moodleID
+	logotracking.FilePath = "/tmp/moodle/" + moodleID + "/logo/" + header.Filename
+	logotracking.Status = "Pending"
+	logotracking.CreatedAt = time.Now()
+	logotracking.UpdatedAt = time.Now()
+	err = s.mongoRepository.UpdateLogo(logotracking)
+	if err != nil {
+		return nil, apperrors.Internal("update logo error", err)
+	}
+	return map[string]string{"message": "success"}, nil
+}
+
+
 

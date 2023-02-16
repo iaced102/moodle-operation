@@ -110,9 +110,9 @@ function package-list() {
 		 -iX GET "http://localhost:5000/api/v1/packages?page=1&limit=10"
 }
 
-# upload file
+# upload logo
 function upload-logo() {
-	curl -F "file=@/home/duy/Pictures/duydeptrai.jpg" "http://localhost:5000/api/v1/logo?moodle_id=testid" \
+	curl -F "file=@/home/duy/Pictures/duydeptrai.jpg" "http://localhost:5000/api/v1/logo?moodle_id=d7ba7a3c-cb4e-4cf7-ab8a-f4eec8a16e33" \
 		 -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" 
 }
