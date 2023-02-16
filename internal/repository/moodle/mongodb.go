@@ -378,3 +378,18 @@ func (m *MongoDB) UpdateBannerSlogan(bannersloganstracking domain.BannerSloganTr
 	}
 	return nil
 }
+
+// update pre_installed_course
+func (m *MongoDB) UpdatePreInstalledCourse(moodle domain.Moodle) error {
+	currentMoodle, err := m.Get(moodle.Id)
+	if err != nil {
+		return err
+	}
+	currentMoodle.PreInstalledCourse = moodle.PreInstalledCourse
+	// update pre_installed_course in moodle
+	_, err = m.db.Collection("moodles").UpdateOne(context.Background(), bson.M{"id": moodle.Id}, bson.M{"$set": currentMoodle})
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -21,5 +21,6 @@ type MoodleService interface {
 	UpdateVideoURL(moodleID, url string) (map[string]string, *apperrors.AppError)
 	UpdateVisionContent(content domain.VisionContentTracking) (map[string]string, *apperrors.AppError)
 	UpdateBannerSlogan(slogan domain.BannerSloganTracking) (map[string]string, *apperrors.AppError)
+	UpdatePreInstalledCourse(moodle domain.Moodle) (map[string]string, *apperrors.AppError)
 }
 

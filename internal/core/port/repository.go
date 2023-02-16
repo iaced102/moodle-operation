@@ -24,6 +24,7 @@ type MongoRepository interface {
 	UpdateVideoURL(videourltracking domain.VideoURLTracking) error
 	UpdateVisionContent(visioncontenttracking domain.VisionContentTracking) error
 	UpdateBannerSlogan(bannerslogantracking domain.BannerSloganTracking) error
+	UpdatePreInstalledCourse(moodle domain.Moodle) error
 }
 
 type MariaRepository interface {

@@ -166,4 +166,16 @@ function upload-slogan() {
 		 }'
 }
 
+function upload-course() {
+	curl -X POST "http://localhost:5000/api/v1/pre-installed-course" \
+		 -H "X-Tenant-Name: admin" \
+		 -H "X-Auth-Token: $token" \
+		 -d '{
+		 	"id": "e5e5a96f-0f6b-4b65-b083-214c189ec42d",
+			"pre_installed_course": [2,3]
+		 }'
+}
+
+
+
 $*

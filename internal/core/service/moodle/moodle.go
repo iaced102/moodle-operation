@@ -329,3 +329,17 @@ func (s *Service) UpdateBannerSlogan(slogan domain.BannerSloganTracking) (map[st
 	}
 	return map[string]string{"message": "success"}, nil
 }
+
+// update pre_installed_course
+// track pre_installed_course into mongodb
+func (s *Service) UpdatePreInstalledCourse(moodle domain.Moodle) (map[string]string, *apperrors.AppError) {
+	// update UpdatePreInstalledCourse
+	moodle.Status = "Pending"
+	moodle.CreatedAt = time.Now()
+	moodle.UpdatedAt = time.Now()
+	err := s.mongoRepository.UpdatePreInstalledCourse(moodle)
+	if err != nil {
+		return nil, apperrors.Internal("update pre_installed_course error", err)
+	}
+	return map[string]string{"message": "success"}, nil
+}

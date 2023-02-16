@@ -274,3 +274,20 @@ func (h *MoodleHandler) UpdateSlogan(request *gin.Context) {
 	}
 	request.JSON(http.StatusOK, resp)
 }
+
+// update pre_installed course
+func (h *MoodleHandler) UpdatePreInstalledCourse(request *gin.Context) {
+	var  update domain.Moodle
+	err := request.ShouldBindJSON(&update)
+	if err != nil {
+		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// update pre_installed course
+	resp, appErr := h.MoodleService.UpdatePreInstalledCourse(update)
+	if appErr != nil {
+		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
+		return
+	}
+	request.JSON(http.StatusOK, resp)
+}
