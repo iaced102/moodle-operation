@@ -230,3 +230,20 @@ func (h *MoodleHandler) UpdateVideoURL(request *gin.Context) {
 	}
 	request.JSON(http.StatusOK, resp)
 }
+
+// update vision content
+func (h *MoodleHandler) UpdateVisionContent(request *gin.Context) {
+	var  update domain.VisionContentTracking
+	err := request.ShouldBindJSON(&update)
+	if err != nil {
+		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// update vision content
+	resp, appErr := h.MoodleService.UpdateVisionContent(update)
+	if appErr != nil {
+		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
+		return
+	}
+	request.JSON(http.StatusOK, resp)
+}

@@ -34,4 +34,5 @@ func routes(router *gin.Engine, dependencies *dep.Dep) {
 	v1.POST("/vision-image", dependencies.MoodleHandler.UpdateVisionImage)
 	v1.POST("/banner", dependencies.MoodleHandler.UpdateBannerImage)
 	v1.POST("/video", dependencies.MoodleHandler.UpdateVideoURL)
+	v1.POST("/vision-content", dependencies.MoodleHandler.UpdateVisionContent)
 }

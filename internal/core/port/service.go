@@ -19,5 +19,6 @@ type MoodleService interface {
 	UpdateVisionImage(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
 	UpdateBannerImage(moodleID string, bannerID int, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
 	UpdateVideoURL(moodleID, url string) (map[string]string, *apperrors.AppError)
+	UpdateVisionContent(content domain.VisionContentTracking) (map[string]string, *apperrors.AppError)
 }
 

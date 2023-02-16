@@ -74,3 +74,12 @@ type VideoURLTracking struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type VisionContentTracking struct {
+	MoodleId string `json:"moodle_id"`
+	Title string `json:"title"`
+	Content string `json:"content"`
+	Status string `json:"logo_status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}

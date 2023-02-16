@@ -323,3 +323,18 @@ func (s *Service) UpdateVideoURL(moodleID, url string) (map[string]string, *appe
 	}
 	return map[string]string{"message": "success"}, nil
 }
+
+// update vision content
+// track vision content into mongodb
+func (s *Service) UpdateVisionContent(content domain.VisionContentTracking) (map[string]string, *apperrors.AppError) {
+	// update UpdateVisionContent
+	content.Status = "Pending"
+	content.CreatedAt = time.Now()
+	content.UpdatedAt = time.Now()
+	err := s.mongoRepository.UpdateVisionContent(content)
+	if err != nil {
+		return nil, apperrors.Internal("update vision content error", err)
+	}
+	return map[string]string{"message": "success"}, nil
+}
+

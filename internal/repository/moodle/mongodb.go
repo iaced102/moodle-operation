@@ -340,3 +340,22 @@ func (m *MongoDB) UpdateVideoURL(videourltracking domain.VideoURLTracking) error
 	}
 	return nil
 }
+
+// update vision content
+func (m *MongoDB) UpdateVisionContent(visioncontenttracking domain.VisionContentTracking) error {
+	// check if vision content exist then update else insert
+	var visioncontent domain.VisionContentTracking
+	err := m.db.Collection("vision_content_tracking").FindOne(context.Background(), bson.M{"moodleid": visioncontenttracking.MoodleId}).Decode(&visioncontent)
+	if err != nil {
+		_, err := m.db.Collection("vision_content_tracking").InsertOne(context.Background(), visioncontenttracking)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	_, err = m.db.Collection("vision_content_tracking").UpdateOne(context.Background(), bson.M{"moodleid": visioncontenttracking.MoodleId}, bson.M{"$set": visioncontenttracking})
+	if err != nil {
+		return err
+	}
+	return nil
+}
