@@ -235,7 +235,7 @@ func (m *MongoDB) UpdateMariaTrackingSiteNameUpdate(mariaTracking domain.MariaTr
 	return nil
 }
 
-// upload logotracking
+// update logotracking
 func (m *MongoDB) UpdateLogo(logotracking domain.LogoTracking) error {
 	// check if logo exist then update else insert
 	var logo domain.LogoTracking
@@ -247,7 +247,26 @@ func (m *MongoDB) UpdateLogo(logotracking domain.LogoTracking) error {
 		}
 		return nil
 	}
-	_, err = m.db.Collection("logo_tracking").UpdateOne(context.Background(), bson.M{"moodleid": logotracking.MoodleId}, logotracking)
+	_, err = m.db.Collection("logo_tracking").UpdateOne(context.Background(), bson.M{"moodleid": logotracking.MoodleId}, bson.M{"$set": logotracking})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// update favicontracking
+func (m *MongoDB) UpdateFavicon(favicontracking domain.FaviconTracking) error {
+	// check if favicon exist then update else insert
+	var favicon domain.FaviconTracking
+	err := m.db.Collection("favicon_tracking").FindOne(context.Background(), bson.M{"moodleid": favicontracking.MoodleId}).Decode(&favicon)
+	if err != nil {
+		_, err := m.db.Collection("favicon_tracking").InsertOne(context.Background(), favicontracking)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	_, err = m.db.Collection("favicon_tracking").UpdateOne(context.Background(), bson.M{"moodleid": favicontracking.MoodleId}, bson.M{"$set": favicontracking})
 	if err != nil {
 		return err
 	}

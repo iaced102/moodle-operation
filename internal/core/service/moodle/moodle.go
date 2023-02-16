@@ -208,5 +208,37 @@ func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multi
 	return map[string]string{"message": "success"}, nil
 }
 
-
+// Update favicon
+// Save logo into /tmp/moodle/{moodleID}/favicon/{filename}
+// Track logo into mongodb
+func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
+	// create folder
+	err := os.MkdirAll("/tmp/moodle/"+moodleID+"/favicon", 0755)
+	if err != nil {
+		return nil, apperrors.Internal("create folder error", err)
+	}
+	// create file
+	out, err := os.Create("/tmp/moodle/" + moodleID + "/favicon/" + header.Filename)
+	if err != nil {
+		return nil, apperrors.Internal("create file error", err)
+	}
+	defer out.Close()
+	// copy file
+	_, err = io.Copy(out, file)
+	if err != nil {
+		return nil, apperrors.Internal("copy file error", err)
+	}
+	// update favicon
+	var favicontracking domain.FaviconTracking
+	favicontracking.MoodleId = moodleID
+	favicontracking.FilePath = "/tmp/moodle/" + moodleID + "/favicon/" + header.Filename
+	favicontracking.Status = "Pending"
+	favicontracking.CreatedAt = time.Now()
+	favicontracking.UpdatedAt = time.Now()
+	err = s.mongoRepository.UpdateFavicon(favicontracking)
+	if err != nil {
+		return nil, apperrors.Internal("update favicon error", err)
+	}
+	return map[string]string{"message": "success"}, nil
+}
 

@@ -116,5 +116,55 @@ function upload-logo() {
 		 -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" 
 }
+function upload-favicon() {
+	curl -F "file=@/home/duy/Pictures/duydeptrai.jpg" -i "http://localhost:5000/api/v1/favicon?moodle_id=d7ba7a3c-cb4e-4cf7-ab8a-f4eec8a16e33" \
+		 -H "X-Tenant-Name: admin" \
+		 -H "X-Auth-Token: $token" 
+}
+
+function upload-video() {
+	curl -X POST "http://localhost:5000/api/v1/video" \
+		 -H "X-Tenant-Name: admin" \
+		 -H "X-Auth-Token: $token" \
+		 -d '{
+		 	"moodle_id": "test",
+		 	"video_url": "https://www.youtube.com/watch?v=QH2-TGUlwu4"
+		 }'
+}
+
+function upload-vision-image() {
+	curl -F "file=@/home/duy/Pictures/duydeptrai.jpg" "http://localhost:5000/api/v1/vision-image?moodle_id=testid" \
+		 -H "X-Tenant-Name: admin" \
+		 -H "X-Auth-Token: $token" 
+}
+
+function upload-vision-content() {
+	curl -X POST "http://localhost:5000/api/v1/vision-content" \
+		 -H "X-Tenant-Name: admin" \
+		 -H "X-Auth-Token: $token" \
+		 -d '{
+		 	"moodle_id": "test",
+		 	"title": "test",
+		 	"content": "https://www.youtube.com/watch?v=QH2-TGUlwu4"
+		 }'
+}
+
+function upload-banner() {
+	curl -F "file=@/home/duy/Pictures/duydeptrai.jpg" -F "file=@/home/duy/Pictures/duydeptrai1.jpg" -F "file=@/home/duy/Pictures/duydeptrai2.jpg" "http://localhost:5000/api/v1/banner?moodle_id=testid" \
+		 -H "X-Tenant-Name: admin" \
+		 -H "X-Auth-Token: $token" 
+}
+
+function upload-slogan() {
+	curl -X POST "http://localhost:5000/api/v1/slogan" \
+		 -H "X-Tenant-Name: admin" \
+		 -H "X-Auth-Token: $token" \
+		 -d '{
+		 	"moodle_id": "test",
+		 	"slogan1": "test1",
+		 	"slogan2": "test2",
+		 	"slogan3": "test3"
+		 }'
+}
 
 $*

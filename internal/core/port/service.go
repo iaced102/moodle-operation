@@ -15,5 +15,6 @@ type MoodleService interface {
 	ListPackages() ([]domain.Package, error)
 	Delete(moodleID string) error
 	UpdateLogo(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
+	UpdateFavicon(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
 }
 

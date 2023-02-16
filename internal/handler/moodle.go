@@ -122,3 +122,21 @@ func (h *MoodleHandler) UpdateLogo(request *gin.Context) {
 	request.JSON(http.StatusOK, resp)
 }
 
+// Update favicon
+func (h *MoodleHandler) UpdateFavicon(request *gin.Context) {
+	moodleID := request.Query("moodle_id")
+	// get multipart file, multipart file header
+	file, header, err := request.Request.FormFile("file")
+	if err != nil {
+		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// update favicon
+	resp, appErr := h.MoodleService.UpdateFavicon(moodleID, file, header)
+	if appErr != nil {
+		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
+		return
+	}
+	request.JSON(http.StatusOK, resp)
+}
+

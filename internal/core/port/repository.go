@@ -17,6 +17,7 @@ type MongoRepository interface {
 	CreateMariaTracking(mariaTracking domain.Moodle) error
 	CreateMoodleConfig(moodleconfig domain.Moodle) error
 	UpdateLogo(logotracking domain.LogoTracking) error
+	UpdateFavicon(favicontracking domain.FaviconTracking) error
 }
 
 type MariaRepository interface {
