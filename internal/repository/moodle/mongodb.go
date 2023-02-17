@@ -49,7 +49,7 @@ func (m *MongoDB) GetAll(email string) ([]domain.Moodle, error) {
 
 // delete moodle
 func (m *MongoDB) Delete(moodleID string) error {
-	_, err := m.db.Collection("moodles").DeleteOne(context.Background(), bson.M{"moodleid": moodleID})
+	_, err := m.db.Collection("moodles").DeleteOne(context.Background(), bson.M{"id": moodleID})
 	if err != nil {
 		return err
 	}
@@ -209,7 +209,7 @@ func (m *MongoDB) CreateMoodleConfig(moodle domain.Moodle) error {
 }
 
 // Get all maria tracking return cursor
-func (m *MongoDB) GetMariaTracking() (*mongo.Cursor, error) {
+func (m *MongoDB) GetAllMariaTracking() (*mongo.Cursor, error) {
 	cursor, err := m.db.Collection("maria_tracking").Find(context.Background(), bson.M{})
 	if err != nil {
 		return nil, err
@@ -219,7 +219,7 @@ func (m *MongoDB) GetMariaTracking() (*mongo.Cursor, error) {
 
 // update maria tracking filter by dbname and update dbstatus
 func (m *MongoDB) UpdateMariaTracking(mariaTracking domain.MariaTracking) error {
-	_, err := m.db.Collection("maria_tracking").UpdateOne(context.Background(), bson.M{"dbname": mariaTracking.DbName}, bson.M{"$set": bson.M{"dbstatus": "Online"}})
+	_, err := m.db.Collection("maria_tracking").UpdateOne(context.Background(), bson.M{"dbname": mariaTracking.DbName}, bson.M{"$set": bson.M{"dbstatus": mariaTracking.DbStatus}})
 	if err != nil {
 		return err
 	}
@@ -273,112 +273,6 @@ func (m *MongoDB) UpdateFavicon(favicontracking domain.FaviconTracking) error {
 	return nil
 }
 
-// update vision image tracking
-func (m *MongoDB) UpdateVisionImage(visionimagetracking domain.VisionImageTracking) error {
-	// check if vision image exist then update else insert
-	var visionimage domain.VisionImageTracking
-	err := m.db.Collection("vision_image_tracking").FindOne(context.Background(), bson.M{"moodleid": visionimagetracking.MoodleId}).Decode(&visionimage)
-	if err != nil {
-		_, err := m.db.Collection("vision_image_tracking").InsertOne(context.Background(), visionimagetracking)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-	_, err = m.db.Collection("vision_image_tracking").UpdateOne(context.Background(), bson.M{"moodleid": visionimagetracking.MoodleId}, bson.M{"$set": visionimagetracking})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// update banner image
-func (m *MongoDB) UpdateBannerImage(bannerimagetracking domain.BannerImageTracking) error {
-	// check if banner image exist then update else insert
-	var bannerimage domain.BannerImageTracking
-	err := m.db.Collection("banner_image_tracking").FindOne(context.Background(), bson.M{"moodleid": bannerimagetracking.MoodleId, "bannerid": bannerimagetracking.BannerId}).Decode(&bannerimage)
-	if err != nil {
-		_, err := m.db.Collection("banner_image_tracking").InsertOne(context.Background(), bannerimagetracking)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-	// patch banner image
-	_, err = m.db.Collection("banner_image_tracking").UpdateOne(context.Background(), bson.M{"moodleid": bannerimagetracking.MoodleId, "bannerid": bannerimagetracking.BannerId}, bson.M{"$set": bannerimagetracking})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// get banner image
-func (m *MongoDB) GetBannerImage(moodleid string) (domain.BannerImageTracking, error) {
-	var bannerimage domain.BannerImageTracking
-	err := m.db.Collection("banner_image_tracking").FindOne(context.Background(), bson.M{"moodleid": moodleid, "bannerid": bannerimage.BannerId}).Decode(&bannerimage)
-	if err != nil {
-		return bannerimage, err
-	}
-	return bannerimage, nil
-}
-
-// update video url
-func (m *MongoDB) UpdateVideoURL(videourltracking domain.VideoURLTracking) error {
-	// check if video url exist then update else insert
-	var videourl domain.VideoURLTracking
-	err := m.db.Collection("video_url_tracking").FindOne(context.Background(), bson.M{"moodleid": videourltracking.MoodleId}).Decode(&videourl)
-	if err != nil {
-		_, err := m.db.Collection("video_url_tracking").InsertOne(context.Background(), videourltracking)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-	_, err = m.db.Collection("video_url_tracking").UpdateOne(context.Background(), bson.M{"moodleid": videourltracking.MoodleId}, bson.M{"$set": videourltracking})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// update vision content
-func (m *MongoDB) UpdateVisionContent(visioncontenttracking domain.VisionContentTracking) error {
-	// check if vision content exist then update else insert
-	var visioncontent domain.VisionContentTracking
-	err := m.db.Collection("vision_content_tracking").FindOne(context.Background(), bson.M{"moodleid": visioncontenttracking.MoodleId}).Decode(&visioncontent)
-	if err != nil {
-		_, err := m.db.Collection("vision_content_tracking").InsertOne(context.Background(), visioncontenttracking)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-	_, err = m.db.Collection("vision_content_tracking").UpdateOne(context.Background(), bson.M{"moodleid": visioncontenttracking.MoodleId}, bson.M{"$set": visioncontenttracking})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// update banner slogan
-func (m *MongoDB) UpdateBannerSlogan(bannersloganstracking domain.BannerSloganTracking) error {
-	// check if banner slogan exist then update else insert
-	var bannerslogan domain.BannerSloganTracking
-	err := m.db.Collection("banner_slogan_tracking").FindOne(context.Background(), bson.M{"moodleid": bannersloganstracking.MoodleId, "sloganid": bannersloganstracking.SloganId}).Decode(&bannerslogan)
-	if err != nil {
-		_, err := m.db.Collection("banner_slogan_tracking").InsertOne(context.Background(), bannersloganstracking)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-	_, err = m.db.Collection("banner_slogan_tracking").UpdateOne(context.Background(), bson.M{"moodleid": bannersloganstracking.MoodleId, "sloganid": bannersloganstracking.SloganId}, bson.M{"$set": bannersloganstracking})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // update pre_installed_course
 func (m *MongoDB) UpdatePreInstalledCourse(moodle domain.Moodle) error {
 	currentMoodle, err := m.Get(moodle.Id)
@@ -392,4 +286,14 @@ func (m *MongoDB) UpdatePreInstalledCourse(moodle domain.Moodle) error {
 		return err
 	}
 	return nil
+}
+
+// get maria_tracking
+func (m *MongoDB) GetMariaTracking(moodleid string) (domain.MariaTracking, error) {
+	var mariatracking domain.MariaTracking
+	err := m.db.Collection("maria_tracking").FindOne(context.Background(), bson.M{"moodleid": moodleid}).Decode(&mariatracking)
+	if err != nil {
+		return mariatracking, err
+	}
+	return mariatracking, nil
 }

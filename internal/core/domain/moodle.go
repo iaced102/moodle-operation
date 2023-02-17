@@ -65,6 +65,13 @@ type Vision struct {
 	Content string `json:"content"`
 }
 
+type PreInstalledCourseTracking struct {
+	MoodleId string `json:"moodle_id"`
+	CourseId []int `json:"course_id"`
+	Status string `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
 
 func NewMoodleID() string {
 	return uuid.New().String()

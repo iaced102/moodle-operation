@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"moodle/config"
 	"path/filepath"
 	"strings"
@@ -143,11 +142,11 @@ func (client *K8sClient) CreateNamespace(namespace string) error {
 
 // delete namespace
 func (client *K8sClient) DeleteNamespace(namespace string) error {
-	fmt.Printf("Deleting namespace %q:\n", namespace)
+	fmt.Printf("Deleting namespace: %q\n", namespace)
 	err := client.clientset.CoreV1().Namespaces().Delete(context.Background(), namespace, metav1.DeleteOptions{})
 	// ignore if namespace not found
 	if err != nil && !strings.Contains(err.Error(), "not found") {
-		log.Fatal(err)
+		panic(err.Error())
 	}
 	return nil
 }

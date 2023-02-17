@@ -16,11 +16,6 @@ type MoodleService interface {
 	Delete(moodleID string) error
 	UpdateLogo(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
 	UpdateFavicon(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
-	UpdateVisionImage(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
-	UpdateBannerImage(moodleID,  bannerID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
-	UpdateVideoURL(moodleID, url string) (map[string]string, *apperrors.AppError)
-	UpdateVisionContent(content domain.VisionContentTracking) (map[string]string, *apperrors.AppError)
-	UpdateBannerSlogan(slogan domain.BannerSloganTracking) (map[string]string, *apperrors.AppError)
 	UpdatePreInstalledCourse(moodle domain.Moodle) (map[string]string, *apperrors.AppError)
 }
 

@@ -29,12 +29,8 @@ func routes(router *gin.Engine, dependencies *dep.Dep) {
 	v1.GET("/packages", dependencies.MoodleHandler.ListPackages)
 	v1.GET("/courses", dependencies.MoodleHandler.ListCourses)
 	v1.POST("/moodles", dependencies.MoodleHandler.Create)
+	v1.DELETE("/moodles", dependencies.MoodleHandler.Delete)
 	v1.POST("/logo", dependencies.MoodleHandler.UpdateLogo)
 	v1.POST("/favicon", dependencies.MoodleHandler.UpdateFavicon)
-	v1.POST("/vision-image", dependencies.MoodleHandler.UpdateVisionImage)
-	v1.POST("/banner", dependencies.MoodleHandler.UpdateBannerImage)
-	v1.POST("/video", dependencies.MoodleHandler.UpdateVideoURL)
-	v1.POST("/vision-content", dependencies.MoodleHandler.UpdateVisionContent)
-	v1.POST("/slogan", dependencies.MoodleHandler.UpdateSlogan)
 	v1.POST("/pre-installed-course", dependencies.MoodleHandler.UpdatePreInstalledCourse)
 }

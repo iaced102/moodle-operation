@@ -16,7 +16,7 @@ type MariaTracking struct {
 	DbName string `json:"db_name"`
 	SiteName string `json:"site_name"`
 	SiteNameUpdate bool `json:"site_name_update"`
-	DbStatus string `json:"lb_status"`
+	DbStatus string `json:"db_status"`
 	FilePath string `json:"file_path"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -41,7 +41,7 @@ type LogoTracking struct {
 type FaviconTracking struct {
 	MoodleId string `json:"moodle_id"`
 	FilePath string `json:"file_path"`
-	Status string `json:"logo_status"`
+	Status string `json:"favicon_status"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -49,7 +49,7 @@ type FaviconTracking struct {
 type VisionImageTracking struct {
 	MoodleId string `json:"moodle_id"`
 	FilePath string `json:"file_path"`
-	Status string `json:"logo_status"`
+	Status string `json:"vision_status"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -58,7 +58,7 @@ type BannerImageTracking struct {
 	MoodleId string `json:"moodle_id"`
 	BannerId string `json:"banner_id"`
 	FilePath string `json:"file_path"`
-	Status string `json:"logo_status"`
+	Status string `json:"banner_status"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -67,7 +67,7 @@ type BannerSloganTracking struct {
 	MoodleId string `json:"moodle_id"`
 	SloganId string `json:"slogan_id"`
 	Slogan string `json:"slogan"`
-	Status string `json:"logo_status"`
+	Status string `json:"slogan_status"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -75,7 +75,7 @@ type BannerSloganTracking struct {
 type VideoURLTracking struct {
 	MoodleId string `json:"moodle_id"`
 	VideoURL string `json:"video_url"`
-	Status string `json:"logo_status"`
+	Status string `json:"url_status"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -84,7 +84,7 @@ type VisionContentTracking struct {
 	MoodleId string `json:"moodle_id"`
 	Title string `json:"title"`
 	Content string `json:"content"`
-	Status string `json:"logo_status"`
+	Status string `json:"content_status"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

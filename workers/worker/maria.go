@@ -29,7 +29,7 @@ func NewMariaWorker(mongo mongodbiface.DB, maria *sql.DB) *MariaWorker {
 // restore database then update to maria_tracking collection
 func (w *MariaWorker) Restore() error {
 	// get all from maria_tracking
-	mariaTracking, err := w.mongoRepo.GetMariaTracking()
+	mariaTracking, err := w.mongoRepo.GetAllMariaTracking()
 	if err != nil {
 		log.Println(err)
 		return err
@@ -52,6 +52,7 @@ func (w *MariaWorker) Restore() error {
 				return err
 			}
 			// update DbStatus to maria_tracking
+			tracking.DbStatus = "Online"
 			err = w.mongoRepo.UpdateMariaTracking(tracking)
 			if err != nil {
 				log.Println(err)

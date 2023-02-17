@@ -18,13 +18,9 @@ type MongoRepository interface {
 	CreateMoodleConfig(moodleconfig domain.Moodle) error
 	UpdateLogo(logotracking domain.LogoTracking) error
 	UpdateFavicon(favicontracking domain.FaviconTracking) error
-	UpdateVisionImage(visionimagetracking domain.VisionImageTracking) error
-	UpdateBannerImage(bannerimagetracking domain.BannerImageTracking) error
-	GetBannerImage(moodleid string) (domain.BannerImageTracking, error)
-	UpdateVideoURL(videourltracking domain.VideoURLTracking) error
-	UpdateVisionContent(visioncontenttracking domain.VisionContentTracking) error
-	UpdateBannerSlogan(bannerslogantracking domain.BannerSloganTracking) error
 	UpdatePreInstalledCourse(moodle domain.Moodle) error
+	UpdateMariaTracking(mariaTracking domain.MariaTracking) error
+	GetMariaTracking(moodleid string) (domain.MariaTracking, error)
 }
 
 type MariaRepository interface {

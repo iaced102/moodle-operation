@@ -170,7 +170,20 @@ func (s *Service) ListPackages() ([]domain.Package, error) {
 
 // Delete moodle
 func (s *Service) Delete(moodleID string) error {
-	err := s.mongoRepository.Delete(moodleID)
+	// delete namespace
+	err := s.k8sRepository.DeleteNamespace(moodleID)
+	if err != nil {
+		return err
+	}
+	err = s.mongoRepository.Delete(moodleID)
+	if err != nil {
+		return err
+	}
+	// get current maria tracking
+	mariaTracking, err := s.mongoRepository.GetMariaTracking(moodleID)
+	// update status in maria_tracing to "deleting"
+	mariaTracking.DbStatus = "Deleting"
+	err = s.mongoRepository.UpdateMariaTracking(mariaTracking)
 	if err != nil {
 		return err
 	}
@@ -221,28 +234,6 @@ func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *mu
 	return map[string]string{"message": "success"}, nil
 }
 
-// update vision image
-// save image into /tmp/moodle/{moodleID}/vision/{filename}
-// track image into mongodb
-func (s *Service) UpdateVisionImage(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	err := SaveFiles("/tmp/moodle/"+moodleID+"/vision/"+header.Filename, file)
-	if err != nil {
-		return nil, apperrors.Internal("save file error", err)
-	}
-	// update UpdateVisionImage
-	var visiontracking domain.VisionImageTracking
-	visiontracking.MoodleId = moodleID
-	visiontracking.FilePath = "/tmp/moodle/" + moodleID + "/vision/" + header.Filename
-	visiontracking.Status = "Pending"
-	visiontracking.CreatedAt = time.Now()
-	visiontracking.UpdatedAt = time.Now()
-	err = s.mongoRepository.UpdateVisionImage(visiontracking)
-	if err != nil {
-		return nil, apperrors.Internal("update vision image error", err)
-	}
-	return map[string]string{"message": "success"}, nil
-}
-
 // save multiple files from source to destination
 func SaveFiles(dst string, file multipart.File) error {
 	// create folder
@@ -264,74 +255,6 @@ func SaveFiles(dst string, file multipart.File) error {
 	return nil
 }
 
-// update banner image 
-// save image into /tmp/moodle/{moodleID}/banner/{filename}
-// track image into mongodb
-func (s *Service) UpdateBannerImage(moodleID, bannerID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	err := SaveFiles("/tmp/moodle/"+moodleID+"/banner/"+bannerID+"/"+header.Filename, file)
-	if err != nil {
-		return nil, apperrors.Internal("save file error", err)
-	}
-	// update UpdateBannerImage
-	var bannertracking domain.BannerImageTracking
-	bannertracking.MoodleId = moodleID
-	bannertracking.BannerId = bannerID
-	bannertracking.FilePath = "/tmp/moodle/" + moodleID + "/banner/" + bannerID + "/" + header.Filename
-	bannertracking.Status = "Pending"
-	bannertracking.CreatedAt = time.Now()
-	bannertracking.UpdatedAt = time.Now()
-	err = s.mongoRepository.UpdateBannerImage(bannertracking)
-	if err != nil {
-		return nil, apperrors.Internal("update banner image error", err)
-	}
-	return map[string]string{"message": "success"}, nil
-}
-
-// update video url
-// track video url into mongodb
-func (s *Service) UpdateVideoURL(moodleID, url string) (map[string]string, *apperrors.AppError) {
-	// update UpdateVideoUrl
-	var videotracking domain.VideoURLTracking
-	videotracking.MoodleId = moodleID
-	videotracking.VideoURL = url
-	videotracking.Status = "Pending"
-	videotracking.CreatedAt = time.Now()
-	videotracking.UpdatedAt = time.Now()
-	err := s.mongoRepository.UpdateVideoURL(videotracking)
-	if err != nil {
-		return nil, apperrors.Internal("update video url error", err)
-	}
-	return map[string]string{"message": "success"}, nil
-}
-
-// update vision content
-// track vision content into mongodb
-func (s *Service) UpdateVisionContent(content domain.VisionContentTracking) (map[string]string, *apperrors.AppError) {
-	// update UpdateVisionContent
-	content.Status = "Pending"
-	content.CreatedAt = time.Now()
-	content.UpdatedAt = time.Now()
-	err := s.mongoRepository.UpdateVisionContent(content)
-	if err != nil {
-		return nil, apperrors.Internal("update vision content error", err)
-	}
-	return map[string]string{"message": "success"}, nil
-}
-
-// update banner slogan
-// track banner slogan into mongodb
-func (s *Service) UpdateBannerSlogan(slogan domain.BannerSloganTracking) (map[string]string, *apperrors.AppError) {
-	// update UpdateBannerSlogan
-	slogan.Status = "Pending"
-	slogan.CreatedAt = time.Now()
-	slogan.UpdatedAt = time.Now()
-	err := s.mongoRepository.UpdateBannerSlogan(slogan)
-	if err != nil {
-		return nil, apperrors.Internal("update banner slogan error", err)
-	}
-	return map[string]string{"message": "success"}, nil
-}
-
 // update pre_installed_course
 // track pre_installed_course into mongodb
 func (s *Service) UpdatePreInstalledCourse(moodle domain.Moodle) (map[string]string, *apperrors.AppError) {
@@ -347,12 +270,12 @@ func (s *Service) UpdatePreInstalledCourse(moodle domain.Moodle) (map[string]str
 	// set a slice
 	moodle.PreInstalledCourse = helpers.SetInt(moodle.PreInstalledCourse)
 
-	moodle.Status = "Pending"
 	moodle.CreatedAt = time.Now()
 	moodle.UpdatedAt = time.Now()
 	err = s.mongoRepository.UpdatePreInstalledCourse(moodle)
 	if err != nil {
 		return nil, apperrors.Internal("update pre_installed_course error", err)
 	}
+	// TODO update course to mariadb
 	return map[string]string{"message": "success"}, nil
 }
