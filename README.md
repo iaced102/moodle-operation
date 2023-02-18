@@ -17,3 +17,14 @@ go run main.go COMMAND
 ### path : /9b/f7/9bf7dca13c73a844c338cd16d1253c82b4bebfe8
 ### url: http://123.31.39.253/pluginfile.php/1/theme_edumy/favicon/1676349393/favicon.ico
 
+
+
+# adapt db before restore from backup files
+```
+mysqldump -u root -p moodle > moodle01112022.sql
+mysql -u duy -p5Yk7741J2JVWPTQkT9eKkcbAaTUs5XzTvIFL moodle < moodle01112022
+sed -i 's/utf8mb4_0900_ai_ci/utf8_unicode_ci/g' moodle.sql
+sed -i 's/utf8mb4/utf8/g' moodle.sql
+sed -i 's/utf8_unicode_520_ci/utf8_unicode_ci/g' moodle.sql
+```
+

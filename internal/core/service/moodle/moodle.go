@@ -92,25 +92,35 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 	if err != nil {
 		return moodle, apperrors.Internal("apply service error", err)
 	}
+	// apply ingress
+	err = s.k8sRepository.ApplyIngress(moodle_.Id, moodle_.WebSiteName)
+	if err != nil {
+		return moodle, apperrors.Internal("apply ingress error", err)
+	}
 	// Insert moodle to mongodb
 	err = s.mongoRepository.Create(moodle_)
 	if err != nil {
 		return moodle, apperrors.Internal("create moodle error", err)
-	}
-	// lb tracking
-	err = s.mongoRepository.CreateLbTracking(moodle_)
-	if err != nil {
-		return moodle, apperrors.Internal("create lb tracking error", err)
 	}
 	// maria tracking
 	err = s.mongoRepository.CreateMariaTracking(moodle_)
 	if err != nil {
 		return moodle, apperrors.Internal("create maria tracking error", err)
 	}
+	// create sitename tracking
+	err = s.mongoRepository.CreateSiteNameTracking(moodle_)
+	if err != nil {
+		return moodle, apperrors.Internal("create sitename tracking error", err)
+	}
 	// mail tracking
 	err = s.mongoRepository.CreateMailTracking(moodle_)
 	if err != nil {
 		return moodle, apperrors.Internal("create mail tracking error", err)
+	}
+	// create moodle tracking
+	err = s.mongoRepository.CreateMoodleTracking(moodle_)
+	if err != nil {
+		return moodle, apperrors.Internal("create moodle tracking error", err)
 	}
 	// moodle config
 	err = s.mongoRepository.CreateMoodleConfig(moodle_)
@@ -230,6 +240,31 @@ func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *mu
 	err = s.mongoRepository.UpdateFavicon(favicontracking)
 	if err != nil {
 		return nil, apperrors.Internal("update favicon error", err)
+	}
+	return map[string]string{"message": "success"}, nil
+}
+
+// update sitename
+func (s *Service) UpdateSiteName(sitenametracking domain.SitenameTracking) (map[string]string, *apperrors.AppError) {
+	// check if sitename is exist
+	if !s.ValidateSitename(sitenametracking.SiteName) {
+		return nil, apperrors.Conflict("sitename is already exist", errors.New("sitename is already exist"))
+	}
+	// udpate sitename tracking
+	var sitenametracking_ domain.SitenameTracking
+	sitenametracking_.IsUpdate = false
+	sitenametracking_.SiteName = sitenametracking.SiteName
+	sitenametracking_.MoodleId = sitenametracking.MoodleId
+	sitenametracking_.UpdatedAt = time.Now()
+	sitenametracking_.DbName = strings.ReplaceAll(sitenametracking.MoodleId, "-", "_")
+	err := s.mongoRepository.UpdateSitenameTracking(sitenametracking_)
+	if err != nil {
+		return nil, apperrors.Internal("update sitename tracking error", err)
+	}
+	// update ingress
+	err = s.k8sRepository.UpdateIngress(sitenametracking.MoodleId, sitenametracking.SiteName+".lms.bizflycloud.vn")
+	if err != nil {
+		return nil, apperrors.Internal("update ingress error", err)
 	}
 	return map[string]string{"message": "success"}, nil
 }

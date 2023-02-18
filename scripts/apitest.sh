@@ -176,6 +176,16 @@ function upload-course() {
 		 }'
 }
 
+function update-sitename() {
+	curl -X POST "http://localhost:5000/api/v1/sitename" \
+		 -H "X-Tenant-Name: admin" \
+		 -H "X-Auth-Token: $token" \
+		 -d '{
+		 	"moodle_id": "2796701e-27c3-45d5-9746-aec55fc82360",
+			"site_name": "gg"
+		 }'
+}
+
 
 
 $*

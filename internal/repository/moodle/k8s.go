@@ -17,6 +17,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
+	networkingv1 "k8s.io/client-go/applyconfigurations/networking/v1"
+	networkv1 "k8s.io/api/networking/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
@@ -204,6 +206,56 @@ func (client *K8sClient) ApplyService(namespace string) error {
 	}
 	// apply service
 	_, err = client.clientset.CoreV1().Services(namespace).Apply(context.Background(), &service, metav1.ApplyOptions{FieldManager: "kubectl-client-side-apply"})
+	if err != nil {
+		panic(err.Error())
+	}
+	return nil
+}
+
+// apply ingress
+func (client *K8sClient) ApplyIngress(namespace, sitename string) error {
+	filepath := config.INGRESS_FILEPATH
+	fmt.Printf("Applying ingress from file %q in namespace %q:\n", filepath, namespace)
+	// read file
+	file, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		panic(err.Error())
+	}
+	// unmarshal file
+	var ingress networkingv1.IngressApplyConfiguration
+	err = yaml.Unmarshal(file, &ingress)
+	if err != nil {
+		panic(err.Error())
+	}
+	// replace host with sitename
+	ingress.Spec.Rules[0].Host = &sitename
+	// apply ingress
+	_, err = client.clientset.NetworkingV1().Ingresses(namespace).Apply(context.Background(), &ingress, metav1.ApplyOptions{FieldManager: "kubectl-client-side-apply"})
+	if err != nil {
+		panic(err.Error())
+	}
+	return nil
+}
+
+// update ingress
+func (client *K8sClient) UpdateIngress(namespace, sitename string) error {
+	filepath := config.INGRESS_FILEPATH
+	fmt.Printf("Updating ingress from file %q in namespace %q:\n", filepath, namespace)
+	// read file
+	file, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		panic(err.Error())
+	}
+	// unmarshal file
+	var ingress networkv1.Ingress
+	err = yaml.Unmarshal(file, &ingress)
+	if err != nil {
+		panic(err.Error())
+	}
+	// replace host with sitename
+	ingress.Spec.Rules[0].Host = sitename
+	// apply ingress
+	_, err = client.clientset.NetworkingV1().Ingresses(namespace).Update(context.Background(), &ingress, metav1.UpdateOptions{})
 	if err != nil {
 		panic(err.Error())
 	}

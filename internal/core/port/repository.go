@@ -12,7 +12,6 @@ type MongoRepository interface {
 	Delete(moodleID string) error
 	GetSiteName(name string) ([]domain.Moodle, error)
 	GetPackage(name string) (domain.Package, error)
-	CreateLbTracking(lbTracking domain.Moodle) error
 	CreateMailTracking(mailTracking domain.Moodle) error
 	CreateMariaTracking(mariaTracking domain.Moodle) error
 	CreateMoodleConfig(moodleconfig domain.Moodle) error
@@ -21,6 +20,10 @@ type MongoRepository interface {
 	UpdatePreInstalledCourse(moodle domain.Moodle) error
 	UpdateMariaTracking(mariaTracking domain.MariaTracking) error
 	GetMariaTracking(moodleid string) (domain.MariaTracking, error)
+	CreateMoodleTracking(moodleTracking domain.Moodle) error
+	CreateSiteNameTracking(moodle domain.Moodle) error
+	UpdateSitename(sitenameTracking domain.SitenameTracking) error
+	UpdateSitenameTracking(sitenameTracking domain.SitenameTracking) error
 }
 
 type MariaRepository interface {
@@ -37,5 +40,7 @@ type K8sRepository interface {
 	ApplyStatefulSet(namespace string) error
 	ApplyService(namespace string) error
 	ApplyPVC(namespace string) error
+	ApplyIngress(namespace, sitename string) error
 	DeleteNamespace(namespace string) error
+	UpdateIngress(namespace, sitename string) error
 }

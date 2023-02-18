@@ -16,18 +16,10 @@ import (
 
 func Start(mongo mongodbiface.DB) {
 	maria := NewMariaDB()
-	go LBWorker(mongo)
 	go SendmailWorker(mongo)
 	go TrackingWorker(mongo)
 	go MariaWorker(mongo, maria)
-}
-
-func LBWorker(mongo mongodbiface.DB) {
-	log.Println("Starting LB worker")
-	for {
-		time.Sleep(5 * time.Second)
-		worker.NewLBWorker(mongo).GetLBInstances()
-	}
+	go SitenameWorker(mongo, maria)
 }
 
 func SendmailWorker(mongo mongodbiface.DB) {
@@ -42,7 +34,7 @@ func TrackingWorker(mongo mongodbiface.DB) {
 	log.Println("Starting Tracking worker")
 	for {
 		time.Sleep(5 * time.Second)
-		worker.NewTrackingWorker(mongo).UpdateLbStatus()
+		worker.NewTrackingWorker(mongo).UpdateMoodleStatus()
 	}
 }
 
@@ -51,6 +43,14 @@ func MariaWorker(mongo mongodbiface.DB, maria *sql.DB) {
 	for {
 		time.Sleep(5 * time.Second)
 		worker.NewMariaWorker(mongo, maria).Restore()
+	}
+}
+
+func SitenameWorker(mongo mongodbiface.DB, maria *sql.DB) {
+	log.Println("Starting Sitname worker")
+	for {
+		time.Sleep(5 * time.Second)
+		worker.NewSitenameWorker(mongo, maria).UpdateSitename()
 	}
 }
 

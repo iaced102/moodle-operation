@@ -38,6 +38,7 @@ delete from mdl_course where id=68;
 delete from mdl_course where id=69;
 delete from mdl_course where id=70;
 delete from mdl_course where id=71;
+delete from mdl_course where id=72;
 
 
 delete from mdl_course_categories where id=27;

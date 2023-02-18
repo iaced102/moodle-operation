@@ -1,63 +1,54 @@
 package worker
 
 import (
-	"context"
 	"log"
+	repo "moodle/internal/repository/moodle"
 	mongo "moodle/pkg/mongodbiface"
-	lbclient "moodle/pkg/client"
-	"time"
-
-	"go.mongodb.org/mongo-driver/bson"
+	"net/http"
 )
 
-
 type TrackingWorker struct {
-    mongo mongo.DB
+    mongo *repo.MongoDB
 }
 
 func NewTrackingWorker(m mongo.DB) *TrackingWorker{
-    return &TrackingWorker{
-		mongo: m,
-    }
+	return &TrackingWorker{
+		mongo: repo.NewMongoDB(m),
+	}
 }
 
-
-// update lbstatus and vipaddress from lb_instances collection to lb_tracking colection
-func (w *TrackingWorker) UpdateLbStatus() error {
-	lbInstancesCollection := w.mongo.Collection("lb_instances")
-	lbTrackingCollection := w.mongo.Collection("lb_tracking")
-	moodlesCollection := w.mongo.Collection("moodles")
-
-	// get all lb instances
-	lbInstances, err := lbInstancesCollection.Find(context.Background(), bson.M{})
+func (w *TrackingWorker) UpdateMoodleStatus() error {
+	// get all moodle from moodletracking collection where isupdate = false
+	moodles, err := w.mongo.GetAllMoodleTracking(false)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
-
-	// update lbstatus and vipaddress from lb_instances collection to lb_tracking colection
-	for lbInstances.Next(context.Background()) {
-		var lbInstance lbclient.LoadBalancer
-		err := lbInstances.Decode(&lbInstance)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-
-		filter := bson.M{"lbname": lbInstance.Name}
-		update1 := bson.M{"$set": bson.M{"lbstatus": lbInstance.ProvisioningStatus, "vipaddress": lbInstance.VipAddress, "updatedat": time.Now()}}
-		update2 := bson.M{"$set": bson.M{"status": lbInstance.ProvisioningStatus, "ip": lbInstance.VipAddress, "updatedat": time.Now()}}
-		_, err = lbTrackingCollection.UpdateOne(context.Background(), filter, update1)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		_, err = moodlesCollection.UpdateOne(context.Background(), filter, update2)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
+	for _, moodle := range moodles {
+		go w.checkMoodleStatus(moodle.MoodleId, "http://" + moodle.SiteName+".lms.bizflycloud.vn/login/index.php")
 	}
-
 	return nil
 }
+
+// check status code from website
+func (w * TrackingWorker) checkMoodleStatus(moodleid, url string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	log.Println("health: ", url, " status code: ", resp.StatusCode)
+	defer resp.Body.Close()
+	if resp.StatusCode == 200 {
+		// update status to Online and isupdate to true
+		err := w.mongo.UpdateMoodleStatus(moodleid, "Online")
+		if err != nil {
+			return err
+		}
+		err = w.mongo.UpdateMoodleTracking(moodleid, true)
+		if err != nil {
+			return err
+		}
+	} 
+	// log status code for site
+	return nil
+}
+

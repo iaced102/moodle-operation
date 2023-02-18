@@ -48,10 +48,9 @@ type Course struct {
 type MoodleConfiguration struct {
 	MoodleId string `json:"moodle_id"`
 	FaviconUrl string `json:"favicon_url"`
+	FaviconPath string `json:"favicon_path"`
 	LogoUrl string `json:"logo_url"`
-	Banner []Banner `json:"banner"`
-	VideoUrl string `json:"video_url"`
-	Vision []Vision
+	LogoPath string `json:"logo_path"`
 }
 
 type Banner struct {

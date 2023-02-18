@@ -17,5 +17,6 @@ type MoodleService interface {
 	UpdateLogo(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
 	UpdateFavicon(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError)
 	UpdatePreInstalledCourse(moodle domain.Moodle) (map[string]string, *apperrors.AppError)
+	UpdateSiteName(moodle domain.SitenameTracking) (map[string]string, *apperrors.AppError)
 }
 

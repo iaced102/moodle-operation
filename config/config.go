@@ -25,6 +25,7 @@ var (
 	PVC_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/pvc.yaml"
 	SERVICE_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/service.yaml"
 	STATEFULSET_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/statefulset.yaml"
+	INGRESS_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/ingress.yaml"
 	KUBECONFIG = "moodle-cluster.kubeconfig"
 	CLUSTERID = "6o0cn9lv42livqek"
 )

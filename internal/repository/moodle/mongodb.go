@@ -148,20 +148,54 @@ func (m *MongoDB) Create(moodle domain.Moodle) error {
 	return nil
 }
 
-// create lbtracking
-func (m *MongoDB) CreateLbTracking(moodle domain.Moodle) error {
-	var lbTracking domain.LBTracking
-	lbTracking.MoodleId = moodle.Id
-	lbTracking.LbName = moodle.LbName
-	lbTracking.VipAddress = ""
-	lbTracking.LbStatus = "Creating"
-	lbTracking.CreatedAt = time.Now()
-	lbTracking.UpdatedAt = time.Now()
-	_, err := m.db.Collection("lb_tracking").InsertOne(context.Background(), lbTracking)
+// create moodle tracking
+func (m *MongoDB) CreateMoodleTracking(moodle domain.Moodle) error {
+	var moodleTracking domain.MoodleTracking
+	moodleTracking.MoodleId = moodle.Id
+	moodleTracking.SiteName = moodle.Name
+	moodleTracking.IsUpdate = false
+	moodleTracking.UpdatedAt = time.Now()
+	_, err := m.db.Collection("moodle_tracking").InsertOne(context.Background(), moodleTracking)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// update moodle status 
+func (m *MongoDB) UpdateMoodleStatus(moodleid, status string) error {
+	_, err := m.db.Collection("moodles").UpdateOne(context.Background(), bson.M{"id": moodleid}, bson.M{"$set": bson.M{"status": status}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// update moodle tracking
+func (m *MongoDB) UpdateMoodleTracking(moodleid string, isupdate bool) error {
+	_, err := m.db.Collection("moodle_tracking").UpdateOne(context.Background(), bson.M{"moodleid": moodleid}, bson.M{"$set": bson.M{"isupdate": isupdate, "updatedat": time.Now()}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// get all moodle tracking
+func (m *MongoDB) GetAllMoodleTracking(isupdate bool) ([]domain.MoodleTracking, error) {
+	var moodleTrackings []domain.MoodleTracking
+	cursor, err := m.db.Collection("moodle_tracking").Find(context.Background(), bson.M{"isupdate": isupdate})
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.Background()) {
+		var moodleTracking domain.MoodleTracking
+		err := cursor.Decode(&moodleTracking)
+		if err != nil {
+			return nil, err
+		}
+		moodleTrackings = append(moodleTrackings, moodleTracking)
+	}
+	return moodleTrackings, nil
 }
 
 // create maria tracking
@@ -169,8 +203,6 @@ func (m *MongoDB) CreateMariaTracking(moodle domain.Moodle) error {
 	var mariaTracking domain.MariaTracking
 	mariaTracking.MoodleId = moodle.Id
 	mariaTracking.DbName = strings.ReplaceAll(moodle.Id, "-", "_")
-	mariaTracking.SiteName = moodle.Name
-	mariaTracking.SiteNameUpdate = false
 	mariaTracking.DbStatus = "Creating"
 	mariaTracking.FilePath = "$HOME/gits/moodle-operator/docker/moodle_seded.sql"
 	mariaTracking.CreatedAt = time.Now()
@@ -208,9 +240,34 @@ func (m *MongoDB) CreateMoodleConfig(moodle domain.Moodle) error {
 	return nil
 }
 
-// Get all maria tracking return cursor
+// Get all maria tracking where dbstatus is creating
 func (m *MongoDB) GetAllMariaTracking() (*mongo.Cursor, error) {
-	cursor, err := m.db.Collection("maria_tracking").Find(context.Background(), bson.M{})
+	cursor, err := m.db.Collection("maria_tracking").Find(context.Background(), bson.M{"dbstatus": "Creating"})
+	if err != nil {
+		return nil, err
+	}
+	return cursor, nil
+}
+
+// create sitename tracking
+func (m *MongoDB) CreateSiteNameTracking(moodle domain.Moodle) error {
+	var sitenameTracking domain.SitenameTracking
+	sitenameTracking.MoodleId = moodle.Id
+	sitenameTracking.DbName = strings.ReplaceAll(moodle.Id, "-", "_")
+	sitenameTracking.SiteName = moodle.Name
+	sitenameTracking.IsUpdate = false
+	sitenameTracking.CreatedAt = time.Now()
+	sitenameTracking.UpdatedAt = time.Now()
+	_, err := m.db.Collection("sitename_tracking").InsertOne(context.Background(), sitenameTracking)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// get all sitename tracking where isupdate is false
+func (m *MongoDB) GetAllSiteNameTracking() (*mongo.Cursor, error) {
+	cursor, err := m.db.Collection("sitename_tracking").Find(context.Background(), bson.M{"isupdate": false})
 	if err != nil {
 		return nil, err
 	}
@@ -227,8 +284,17 @@ func (m *MongoDB) UpdateMariaTracking(mariaTracking domain.MariaTracking) error 
 }
 
 // update site_name_update filter by dbname and update site_name_update
-func (m *MongoDB) UpdateMariaTrackingSiteNameUpdate(mariaTracking domain.MariaTracking) error {
-	_, err := m.db.Collection("maria_tracking").UpdateOne(context.Background(), bson.M{"dbname": mariaTracking.DbName}, bson.M{"$set": bson.M{"sitenameupdate": true}})
+func (m *MongoDB) UpdateSitenameTracking(mariaTracking domain.SitenameTracking) error {
+	_, err := m.db.Collection("sitename_tracking").UpdateOne(context.Background(), bson.M{"moodleid": mariaTracking.MoodleId}, bson.M{"$set": mariaTracking})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// update sitename
+func (m *MongoDB) UpdateSitename(sitenametracking domain.SitenameTracking) error {
+	_, err := m.db.Collection("moodles").UpdateOne(context.Background(), bson.M{"id": sitenametracking.MoodleId}, bson.M{"$set": bson.M{"name": sitenametracking.SiteName, "websitename": sitenametracking.SiteName + ".lms.bizflycloud.vn", "updatedat": time.Now()}})
 	if err != nil {
 		return err
 	}

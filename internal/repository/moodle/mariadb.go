@@ -119,13 +119,11 @@ func (m *MariaDB) RestoreDB(dbname, filepath string) error {
 func (m *MariaDB) UpdateDB(dbname, shortname, fullname string) error {
 	queryString := fmt.Sprintf("UPDATE %s.mdl_course SET shortname = '%s', fullname = '%s' WHERE id = 1", dbname, shortname, fullname)
 
-	update, err := m.db.Exec(queryString)
+	_, err := m.db.Exec(queryString)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	log.Println("update success")
-	log.Println(update)
 	return err
 }
 

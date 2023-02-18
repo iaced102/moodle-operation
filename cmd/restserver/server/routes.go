@@ -33,4 +33,5 @@ func routes(router *gin.Engine, dependencies *dep.Dep) {
 	v1.POST("/logo", dependencies.MoodleHandler.UpdateLogo)
 	v1.POST("/favicon", dependencies.MoodleHandler.UpdateFavicon)
 	v1.POST("/pre-installed-course", dependencies.MoodleHandler.UpdatePreInstalledCourse)
+	v1.POST("/sitename", dependencies.MoodleHandler.UpdateSiteName)
 }

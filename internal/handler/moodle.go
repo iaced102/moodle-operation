@@ -190,3 +190,20 @@ func (h *MoodleHandler) UpdatePreInstalledCourse(request *gin.Context) {
 	}
 	request.JSON(http.StatusOK, resp)
 }
+
+// update sitename
+func (h *MoodleHandler) UpdateSiteName(request *gin.Context) {
+	var update domain.SitenameTracking
+	err := request.ShouldBindJSON(&update)
+	if err != nil {
+		request.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// update sitename
+	resp, appErr := h.MoodleService.UpdateSiteName(update)
+	if appErr != nil {
+		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
+		return
+	}
+	request.JSON(http.StatusOK, resp)
+}
