@@ -262,10 +262,10 @@ func (s *Service) UpdateSiteName(sitenametracking domain.SitenameTracking) (map[
 		return nil, apperrors.Internal("update sitename tracking error", err)
 	}
 	// update ingress
-	err = s.k8sRepository.UpdateIngress(sitenametracking.MoodleId, sitenametracking.SiteName+".lms.bizflycloud.vn")
-	if err != nil {
-		return nil, apperrors.Internal("update ingress error", err)
-	}
+	// err = s.k8sRepository.UpdateIngress(sitenametracking.MoodleId, sitenametracking.SiteName+".lms.bizflycloud.vn")
+	// if err != nil {
+	// 	return nil, apperrors.Internal("update ingress error", err)
+	// }
 	return map[string]string{"message": "success"}, nil
 }
 

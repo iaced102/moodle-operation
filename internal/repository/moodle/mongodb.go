@@ -294,7 +294,7 @@ func (m *MongoDB) UpdateSitenameTracking(mariaTracking domain.SitenameTracking) 
 
 // update sitename
 func (m *MongoDB) UpdateSitename(sitenametracking domain.SitenameTracking) error {
-	_, err := m.db.Collection("moodles").UpdateOne(context.Background(), bson.M{"id": sitenametracking.MoodleId}, bson.M{"$set": bson.M{"name": sitenametracking.SiteName, "websitename": sitenametracking.SiteName + ".lms.bizflycloud.vn", "updatedat": time.Now()}})
+	_, err := m.db.Collection("moodles").UpdateOne(context.Background(), bson.M{"id": sitenametracking.MoodleId}, bson.M{"$set": bson.M{"name": sitenametracking.SiteName, "updatedat": time.Now()}})
 	if err != nil {
 		return err
 	}
