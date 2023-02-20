@@ -363,3 +363,40 @@ func (m *MongoDB) GetMariaTracking(moodleid string) (domain.MariaTracking, error
 	}
 	return mariatracking, nil
 }
+
+// get filepath
+func (m *MongoDB) GetFilePath(moodleid, repo string) (string, error) {
+	var tracking domain.LogoTracking
+	err := m.db.Collection(repo).FindOne(context.Background(), bson.M{"moodleid": moodleid}).Decode(&tracking)
+	if err != nil {
+		return "", err
+	}
+	return tracking.FilePath, nil
+}
+
+// get all logo_tracking
+func (m *MongoDB) GetAllLogoTracking() (*mongo.Cursor, error) {
+	cursor, err := m.db.Collection("logo_tracking").Find(context.Background(), bson.M{"status": "pending"})
+	if err != nil {
+		return nil, err
+	}
+	return cursor, nil
+}
+
+// get all favicon_tracking
+func (m *MongoDB) GetAllFaviconTracking() (*mongo.Cursor, error) {
+	cursor, err := m.db.Collection("favicon_tracking").Find(context.Background(), bson.M{"status": "Pending"})
+	if err != nil {
+		return nil, err
+	}
+	return cursor, nil
+}
+
+// update logo_tracking
+func (m *MongoDB) UpdateLogoTracking(logoTracking domain.LogoTracking) error {
+	_, err := m.db.Collection("logo_tracking").UpdateOne(context.Background(), bson.M{"moodleid": logoTracking.MoodleId}, bson.M{"$set": bson.M{"status": logoTracking.Status}})
+	if err != nil {
+		return err
+	}
+	return nil
+}

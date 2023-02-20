@@ -2,6 +2,7 @@ package moodle
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"moodle/config"
@@ -204,7 +205,13 @@ func (s *Service) Delete(moodleID string) error {
 // Save logo into /tmp/moodle/{moodleID}/logo/{filename}
 // Track logo into mongodb
 func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multipart.FileHeader) (map[string]string, *apperrors.AppError) {
-	err := SaveFiles("/tmp/moodle/"+moodleID+"/logo/"+header.Filename, file)
+	// get sitename
+	moodle, err := s.mongoRepository.Get(moodleID)
+	if err != nil {
+		return nil, apperrors.Internal("get moodle error", err)
+	}
+	sitename := moodle.Name
+	err = SaveFiles("/tmp/moodle/"+moodleID+"/logo/"+header.Filename, file)
 	if err != nil {
 		return nil, apperrors.Internal("save file error", err)
 	}
@@ -212,7 +219,8 @@ func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multi
 	var logotracking domain.LogoTracking
 	logotracking.MoodleId = moodleID
 	logotracking.FilePath = "/tmp/moodle/" + moodleID + "/logo/" + header.Filename
-	logotracking.Status = "pending"
+	logotracking.Status = "Pending"
+	logotracking.URL = fmt.Sprintf("http://%s.lms.bizflycloud.vn/pluginfile.php/1/theme_edumy/headerlogo1/1676573021/Logo mới Bizfly Cloud-01.png", sitename)
 	logotracking.UpdatedAt = time.Now()
 	logotracking.CreatedAt = time.Now()
 	err = s.mongoRepository.UpdateLogo(logotracking)

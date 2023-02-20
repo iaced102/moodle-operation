@@ -15,11 +15,12 @@ import (
 )
 
 func Start(mongo mongodbiface.DB) {
-	maria := NewMariaDB()
-	go SendmailWorker(mongo)
-	go TrackingWorker(mongo)
-	go MariaWorker(mongo, maria)
-	go SitenameWorker(mongo, maria)
+	// maria := NewMariaDB()
+	// go SendmailWorker(mongo)
+	// go TrackingWorker(mongo)
+	// go MariaWorker(mongo, maria)
+	// go SitenameWorker(mongo, maria)
+	go NFSWorker(mongo)
 }
 
 func SendmailWorker(mongo mongodbiface.DB) {
@@ -54,6 +55,14 @@ func SitenameWorker(mongo mongodbiface.DB, maria *sql.DB) {
 	}
 }
 
+func NFSWorker(mongo mongodbiface.DB) {
+	log.Println("Starting NFS worker")
+	for {
+		time.Sleep(5 * time.Second)
+		worker.NewNFSWorker(mongo).UpdateLogo()
+	}
+}
+
 func NewMongoDB() *mongo.Database {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 	client, err := mongo.Connect(context.Background(), clientOptions)
@@ -80,7 +89,6 @@ func NewMariaDB() *sql.DB {
 	return db
 
 }
-
 
 // run worker forever
 func main() {

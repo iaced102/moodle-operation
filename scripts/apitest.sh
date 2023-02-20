@@ -21,7 +21,7 @@ function moodle-create() {
 function moodle-list() {
 	curl -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
-		 -iX GET "http://localhost:5000/api/v1/moodles?page=1&limit=10&email=$1"
+		 -iX GET "http://lms-service:5000/api/v1/moodles?page=1&limit=10&email=$1"
 }
 
 # get moodle
@@ -167,12 +167,12 @@ function upload-slogan() {
 }
 
 function upload-course() {
-	curl -X POST "http://localhost:5000/api/v1/pre-installed-course" \
+	curl -X POST "http://lms-service:5000/api/v1/pre-installed-course" \
 		 -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
 		 -d '{
-		 	"id": "d7ba7a3c-cb4e-4cf7-ab8a-f4eec8a16e33",
-			"pre_installed_course": [1,8]
+		 	"id": "ffd90bce-5d60-4130-8c4b-b20b584cf2c1",
+			"pre_installed_course": [1,2,3,4,5,6,7,8]
 		 }'
 }
 
