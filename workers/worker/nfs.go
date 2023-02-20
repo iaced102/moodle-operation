@@ -30,7 +30,7 @@ func NewNFSWorker(mongo mongo.DB) *NFSWorker {
 }
 
 // GetFileList get file list from nfs server
-func (n *NFSWorker) ValidateFilePath(moodleid string) (string, error) {
+func (n *NFSWorker) ValidateFilePathLogo(moodleid string) (string, error) {
 	// moodleid := "3f952434-112c-45fc-b141-84a0ffdd3c85"
 	files, err := n.NFSClient.GetFileList("/moodle")
 	if err != nil {
@@ -46,8 +46,23 @@ func (n *NFSWorker) ValidateFilePath(moodleid string) (string, error) {
 	return filePath, nil
 }
 
+func (n *NFSWorker) ValidateFilePathFavicon(moodleid string) (string, error) {
+	files, err := n.NFSClient.GetFileList("/moodle")
+	if err != nil {
+		return "", err
+	}
+	filePath := ""
+	for _, file := range files {
+		if helpers.ContainsString(file.Name, moodleid) {
+			filePath = fmt.Sprintf("/moodle/%s/filedir/35/1d/351d302a3d094fdde4638e7dbdde86af3199be7e", file.Name)
+		}
+	}
+	log.Printf("File path: %s", filePath)
+	return filePath, nil
+}
+
 // get filepath from logo_tracking collection
-func (n *NFSWorker) UpdateLogo() error {
+func (n *NFSWorker) Update() error {
 	// get all logo_tracking
 	logoTrackings, err := n.mongoRepo.GetAllLogoTracking()
 	if err != nil {
@@ -59,16 +74,29 @@ func (n *NFSWorker) UpdateLogo() error {
 		if err != nil {
 			return err
 		}
-		n.Update(logoTracking.MoodleId, logoTracking.FilePath)
+		go n.UpdateLogo(logoTracking.MoodleId, logoTracking.FilePath)
+	}
+	// get all favicon_tracking
+	faviconTrackings, err := n.mongoRepo.GetAllFaviconTracking()
+	if err != nil {
+		return err
+	}
+	for faviconTrackings.Next(context.Background()) {
+		var faviconTracking domain.FaviconTracking
+		err := faviconTrackings.Decode(&faviconTracking)
+		if err != nil {
+			return err
+		}
+		go n.UpdateFavicon(faviconTracking.MoodleId, faviconTracking.FilePath)
 	}
 	return nil
 }
 
 // update
-func (n *NFSWorker) Update(moodleid, src string) error {
+func (n *NFSWorker) UpdateLogo(moodleid, src string) error {
 	var logoTracking domain.LogoTracking
 	// get file path
-	filePath, err := n.ValidateFilePath(moodleid)
+	filePath, err := n.ValidateFilePathLogo(moodleid)
 	if err != nil {
 		return err
 	}
@@ -89,7 +117,7 @@ func (n *NFSWorker) Update(moodleid, src string) error {
 	_, err = n.NFSClient.WriteFile(filePath, false , 0, reader)
 
 	// update logo_tracking
-	log.Println("Updating logo")
+	log.Printf("Updating logo for: %s", moodleid)
 	logoTracking.FilePath = filePath
 	logoTracking.MoodleId = moodleid
 	logoTracking.Status = "updated"
@@ -97,5 +125,42 @@ func (n *NFSWorker) Update(moodleid, src string) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+// update
+func (n *NFSWorker) UpdateFavicon(moodleid, src string) error {
+	var faviconTracking domain.FaviconTracking
+	// get file path
+	filePath, err := n.ValidateFilePathFavicon(moodleid)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.Open(src)
+	if err != nil {
+		// handle error
+	}
+	defer file.Close()
+
+	reader := bufio.NewReader(file)
+
+	// read file from src then write to filePath
+	// offset, err := getFileSize(src)
+	if err != nil {
+		return err
+	}
+	_, err = n.NFSClient.WriteFile(filePath, false , 0, reader)
+
+	// update logo_tracking
+	faviconTracking.MoodleId = moodleid
+	log.Printf("Updating favicon for: %s", moodleid)
+	faviconTracking.FilePath = filePath
+	faviconTracking.Status = "updated"
+	err = n.mongoRepo.UpdateFaviconTracking(faviconTracking)
+	if err != nil {
+		return err
+	}
+	log.Printf("Updated favicon for: %s", moodleid)
 	return nil
 }

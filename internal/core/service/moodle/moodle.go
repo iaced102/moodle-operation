@@ -238,11 +238,21 @@ func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *mu
 	if err != nil {
 		return nil, apperrors.Internal("save file error", err)
 	}
+	// get sitename
+	moodle, err := s.mongoRepository.Get(moodleID)
+	if err != nil {
+		return nil, apperrors.Internal("get moodle error", err)
+	}
+	sitename := moodle.Name
+	if err != nil {
+		return nil, apperrors.Internal("save file error", err)
+	}
 	// update UpdateFavicon
 	var favicontracking domain.FaviconTracking
 	favicontracking.MoodleId = moodleID
 	favicontracking.FilePath = "/tmp/moodle/" + moodleID + "/favicon/" + header.Filename
 	favicontracking.Status = "Pending"
+	favicontracking.URL = fmt.Sprintf("http://%s.lms.bizflycloud.vn/pluginfile.php/1/theme_edumy/favicon/1676573021/z3665638475480_d6dab64f97b26f1c73cd539411ae9990.jpg", sitename)
 	favicontracking.CreatedAt = time.Now()
 	favicontracking.UpdatedAt = time.Now()
 	err = s.mongoRepository.UpdateFavicon(favicontracking)

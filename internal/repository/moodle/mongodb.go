@@ -400,3 +400,12 @@ func (m *MongoDB) UpdateLogoTracking(logoTracking domain.LogoTracking) error {
 	}
 	return nil
 }
+
+// update favicon_tracking
+func (m *MongoDB) UpdateFaviconTracking(faviconTracking domain.FaviconTracking) error {
+	_, err := m.db.Collection("favicon_tracking").UpdateOne(context.Background(), bson.M{"moodleid": faviconTracking.MoodleId}, bson.M{"$set": bson.M{"status": faviconTracking.Status}})
+	if err != nil {
+		return err
+	}
+	return nil
+}

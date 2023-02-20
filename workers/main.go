@@ -59,7 +59,7 @@ func NFSWorker(mongo mongodbiface.DB) {
 	log.Println("Starting NFS worker")
 	for {
 		time.Sleep(5 * time.Second)
-		worker.NewNFSWorker(mongo).UpdateLogo()
+		worker.NewNFSWorker(mongo).Update()
 	}
 }
 
