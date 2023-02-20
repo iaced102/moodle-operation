@@ -125,6 +125,7 @@ func (n *NFSWorker) UpdateLogo(moodleid, src string) error {
 	if err != nil {
 		return err
 	}
+	log.Printf("Updated logo for: %s", moodleid)
 	return nil
 }
 

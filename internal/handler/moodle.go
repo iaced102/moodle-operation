@@ -128,7 +128,7 @@ func (h *MoodleHandler) UpdateLogo(request *gin.Context) {
 	file, header, err := request.Request.FormFile("file")
 	isValid := helpers.IsImage(file)
 	if !isValid {
-		request.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image: jpg, png"})
+		request.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image: png"})
 		return
 	}
 	if err != nil {
@@ -149,9 +149,9 @@ func (h *MoodleHandler) UpdateFavicon(request *gin.Context) {
 	moodleID := request.Query("moodle_id")
 	// get multipart file, multipart file header
 	file, header, err := request.Request.FormFile("file")
-	isValid := helpers.IsImage(file)
+	isValid := helpers.IsJpeg(file)
 	if !isValid {
-		request.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image: jpg, png"})
+		request.JSON(http.StatusBadRequest, gin.H{"error": "file must be an image: jpeg"})
 		return
 	}
 	if err != nil {
