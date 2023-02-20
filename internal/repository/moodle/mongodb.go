@@ -376,7 +376,7 @@ func (m *MongoDB) GetFilePath(moodleid, repo string) (string, error) {
 
 // get all logo_tracking
 func (m *MongoDB) GetAllLogoTracking() (*mongo.Cursor, error) {
-	cursor, err := m.db.Collection("logo_tracking").Find(context.Background(), bson.M{"status": "pending"})
+	cursor, err := m.db.Collection("logo_tracking").Find(context.Background(), bson.M{"status": "Pending"})
 	if err != nil {
 		return nil, err
 	}

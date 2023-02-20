@@ -82,28 +82,20 @@ func (n *NFSWorker) Update(moodleid, src string) error {
 	reader := bufio.NewReader(file)
 
 	// read file from src then write to filePath
-	offset, err := getFileSize(src)
+	// offset, err := getFileSize(src)
 	if err != nil {
 		return err
 	}
-	_, err = n.NFSClient.WriteFile(filePath, false, uint64(offset), reader)
+	_, err = n.NFSClient.WriteFile(filePath, false , 0, reader)
 
 	// update logo_tracking
 	log.Println("Updating logo")
 	logoTracking.FilePath = filePath
+	logoTracking.MoodleId = moodleid
 	logoTracking.Status = "updated"
 	err = n.mongoRepo.UpdateLogoTracking(logoTracking)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-// get filesize
-func getFileSize(path string) (int64, error) {
-    fileInfo, err := os.Stat(path)
-    if err != nil {
-        return 0, err
-    }
-    return fileInfo.Size(), nil
 }

@@ -15,11 +15,11 @@ import (
 )
 
 func Start(mongo mongodbiface.DB) {
-	// maria := NewMariaDB()
-	// go SendmailWorker(mongo)
-	// go TrackingWorker(mongo)
-	// go MariaWorker(mongo, maria)
-	// go SitenameWorker(mongo, maria)
+	maria := NewMariaDB()
+	go SendmailWorker(mongo)
+	go TrackingWorker(mongo)
+	go MariaWorker(mongo, maria)
+	go SitenameWorker(mongo, maria)
 	go NFSWorker(mongo)
 }
 
