@@ -332,3 +332,21 @@ func (s *Service) UpdatePreInstalledCourse(moodle domain.Moodle) (map[string]str
 	// TODO update course to mariadb
 	return map[string]string{"message": "success"}, nil
 }
+
+// get logo url from logo tracking
+func (s *Service) GetLogo(moodleID string) (map[string]string, *apperrors.AppError) {
+	logo, err := s.mongoRepository.GetLogoTracking(moodleID)
+	if err != nil {
+		return nil, apperrors.Internal("get logo error", err)
+	}
+	return map[string]string{"url": logo.URL}, nil
+}
+
+// get favicon url from favicon tracking
+func (s *Service) GetFavicon(moodleID string) (map[string]string, *apperrors.AppError) {
+	favicon, err := s.mongoRepository.GetFaviconTracking(moodleID)
+	if err != nil {
+		return nil, apperrors.Internal("get favicon error", err)
+	}
+	return map[string]string{"url": favicon.URL}, nil
+}

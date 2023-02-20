@@ -24,6 +24,8 @@ type MongoRepository interface {
 	CreateSiteNameTracking(moodle domain.Moodle) error
 	UpdateSitename(sitenameTracking domain.SitenameTracking) error
 	UpdateSitenameTracking(sitenameTracking domain.SitenameTracking) error
+	GetLogoTracking(moodleid string) (domain.LogoTracking, error)
+	GetFaviconTracking(moodleid string) (domain.FaviconTracking, error)
 }
 
 type MariaRepository interface {

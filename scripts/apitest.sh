@@ -30,6 +30,19 @@ function moodle-get() {
 		 -H "X-Auth-Token: $token" \
 		 -iX GET "http://localhost:5000/api/v1/moodles?id=$1" 
 }
+# get logo
+function logo-get() {
+	curl -H "X-Tenant-Name: admin" \
+		 -H "X-Auth-Token: $token" \
+		 -iX GET "http://localhost:5000/api/v1/logo?moodle_id=$1" 
+}
+
+# get favicon
+function favicon-get() {
+	curl -H "X-Tenant-Name: admin" \
+		 -H "X-Auth-Token: $token" \
+		 -iX GET "http://localhost:5000/api/v1/favicon?moodle_id=$1" 
+}
 
 # search moodle
 function search() {
@@ -185,7 +198,6 @@ function update-sitename() {
 			"site_name": "gg"
 		 }'
 }
-
 
 
 $*

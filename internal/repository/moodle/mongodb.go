@@ -409,3 +409,23 @@ func (m *MongoDB) UpdateFaviconTracking(faviconTracking domain.FaviconTracking) 
 	}
 	return nil
 }
+
+// get logo_tracking
+func (m *MongoDB) GetLogoTracking(moodleid string) (domain.LogoTracking, error) {
+	var logoTracking domain.LogoTracking
+	err := m.db.Collection("logo_tracking").FindOne(context.Background(), bson.M{"moodleid": moodleid}).Decode(&logoTracking)
+	if err != nil {
+		return logoTracking, err
+	}
+	return logoTracking, nil
+}
+
+// get favicon_tracking
+func (m *MongoDB) GetFaviconTracking(moodleid string) (domain.FaviconTracking, error) {
+	var faviconTracking domain.FaviconTracking
+	err := m.db.Collection("favicon_tracking").FindOne(context.Background(), bson.M{"moodleid": moodleid}).Decode(&faviconTracking)
+	if err != nil {
+		return faviconTracking, err
+	}
+	return faviconTracking, nil
+}

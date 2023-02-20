@@ -207,3 +207,27 @@ func (h *MoodleHandler) UpdateSiteName(request *gin.Context) {
 	}
 	request.JSON(http.StatusOK, resp)
 }
+
+// get logo
+func (h *MoodleHandler) GetLogo(request *gin.Context) {
+	moodleID := request.Query("moodle_id")
+	// get logo
+	resp, appErr := h.MoodleService.GetLogo(moodleID)
+	if appErr != nil {
+		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
+		return
+	}
+	request.JSON(http.StatusOK, resp)
+}
+
+// get favicon
+func (h *MoodleHandler) GetFavicon(request *gin.Context) {
+	moodleID := request.Query("moodle_id")
+	// get favicon
+	resp, appErr := h.MoodleService.GetFavicon(moodleID)
+	if appErr != nil {
+		request.JSON(appErr.StatusCode(), gin.H{"error": appErr.Message})
+		return
+	}
+	request.JSON(http.StatusOK, resp)
+}
