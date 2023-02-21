@@ -230,6 +230,22 @@ func (m *MongoDB) CreateMailTracking(moodle domain.Moodle) error {
 	return nil
 }
 
+// delete mail tracking
+func (m *MongoDB) DeleteMailTracking(tracking domain.MailTracking) error {
+	var mailTracking domain.MailTracking
+	mailTracking.MoodleId = tracking.MoodleId
+	mailTracking.Email = tracking.Email
+	mailTracking.IsSent = false
+	mailTracking.Type = "Delete"
+	mailTracking.CreatedAt = time.Now()
+	mailTracking.UpdatedAt = time.Now()
+	_, err := m.db.Collection("mail_tracking").InsertOne(context.Background(), mailTracking)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // get all mail_tracking type create is not sent
 func (m *MongoDB) GetAllMailCreateTracking() ([]domain.MailTracking, error) {
 	var mailTrackings []domain.MailTracking
@@ -248,9 +264,36 @@ func (m *MongoDB) GetAllMailCreateTracking() ([]domain.MailTracking, error) {
 	return mailTrackings, nil
 }
 
-// update issent mail tracking
-func (m *MongoDB) UpdateMailTracking(moodleid string, isSent bool) error {
-	_, err := m.db.Collection("mail_tracking").UpdateOne(context.Background(), bson.M{"moodleid": moodleid}, bson.M{"$set": bson.M{"issent": isSent, "updatedat": time.Now()}})
+// get all mail_tracking type create is not sent
+func (m *MongoDB) GetAllMailDeleteTracking() ([]domain.MailTracking, error) {
+	var mailTrackings []domain.MailTracking
+	cursor, err := m.db.Collection("mail_tracking").Find(context.Background(), bson.M{"type": "Delete", "issent": false})
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.Background()) {
+		var mailTracking domain.MailTracking
+		err := cursor.Decode(&mailTracking)
+		if err != nil {
+			return nil, err
+		}
+		mailTrackings = append(mailTrackings, mailTracking)
+	}
+	return mailTrackings, nil
+}
+
+// update issent create mail tracking
+func (m *MongoDB) UpdateDeleteMailTracking(moodleid string, isSent bool) error {
+	_, err := m.db.Collection("mail_tracking").UpdateOne(context.Background(), bson.M{"moodleid": moodleid, "type":"Delete"}, bson.M{"$set": bson.M{"issent": isSent, "updatedat": time.Now()}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// update issent create mail tracking
+func (m *MongoDB) UpdateCreateMailTracking(moodleid string, isSent bool) error {
+	_, err := m.db.Collection("mail_tracking").UpdateOne(context.Background(), bson.M{"moodleid": moodleid, "type":"Create"}, bson.M{"$set": bson.M{"issent": isSent, "updatedat": time.Now()}})
 	if err != nil {
 		return err
 	}

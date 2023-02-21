@@ -74,7 +74,7 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 	moodle_.Email = moodle.Email
 	moodle_.Name = moodle.WebSiteName
 	moodle_.LbName = "kube_service" + "_" + config.CLUSTERID + "_" + moodle_.Id + "_moodle-service"
-	moodle_.Ip = "Provisioning"
+	moodle_.Ip = "14.225.36.146"
 	moodle_.WebSiteName = moodle.WebSiteName + ".lms.bizflycloud.vn"
 	moodle_.PreInstalledCourse = moodle.PreInstalledCourse
 	moodle_.PackageName = moodle.PackageName
@@ -207,10 +207,23 @@ func (s *Service) Delete(moodleID string) error {
 	if err != nil {
 		return err
 	}
-	err = s.mongoRepository.Delete(moodleID)
+	// mail tracking
+	moodle, err := s.mongoRepository.Get(moodleID)
+	var mailTracking domain.MailTracking
+	mailTracking.MoodleId = moodle.Id
+	mailTracking.Email = moodle.Email
+	mailTracking.IsSent = false
+	mailTracking.Type = "Delete"
+	mailTracking.CreatedAt = time.Now()
+	mailTracking.UpdatedAt = time.Now()
+	err = s.mongoRepository.DeleteMailTracking(mailTracking)
 	if err != nil {
 		return err
 	}
+	// err = s.mongoRepository.Delete(moodleID)
+	// if err != nil {
+	// 	return err
+	// }
 	// get current maria tracking
 	mariaTracking, err := s.mongoRepository.GetMariaTracking(moodleID)
 	// update status in maria_tracing to "deleting"

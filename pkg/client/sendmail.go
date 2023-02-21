@@ -59,7 +59,7 @@ func SendMailDelete(mail, websiteName, ipAddress, packageInfo, createdat string)
 			"deleted_at": "` + createdat + `",
 			"bcc": []
 		}`)
-	req, err := http.NewRequest("POST", config.SENDMAILDOMAIN + "/v1/lms/create_success", data)
+	req, err := http.NewRequest("POST", config.SENDMAILDOMAIN + "/v1/lms/delete_success", data)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -13,6 +13,7 @@ type MongoRepository interface {
 	GetSiteName(name string) ([]domain.Moodle, error)
 	GetPackage(name string) (domain.Package, error)
 	CreateMailTracking(mailTracking domain.Moodle) error
+	DeleteMailTracking(mailTracking domain.MailTracking) error
 	CreateMariaTracking(mariaTracking domain.Moodle) error
 	CreateMoodleConfig(moodleconfig domain.Moodle) error
 	UpdateLogo(logotracking domain.LogoTracking) error
@@ -26,6 +27,7 @@ type MongoRepository interface {
 	UpdateSitenameTracking(sitenameTracking domain.SitenameTracking) error
 	GetLogoTracking(moodleid string) (domain.LogoTracking, error)
 	GetFaviconTracking(moodleid string) (domain.FaviconTracking, error)
+
 }
 
 type MariaRepository interface {

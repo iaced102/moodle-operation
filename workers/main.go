@@ -15,19 +15,28 @@ import (
 )
 
 func Start(mongo mongodbiface.DB) {
-	// maria := NewMariaDB()
-	// go TrackingWorker(mongo)
-	// go MariaWorker(mongo, maria)
-	// go SitenameWorker(mongo, maria)
-	// go NFSWorker(mongo)
-	go SendmailWorker(mongo)
+	maria := NewMariaDB()
+	go TrackingWorker(mongo)
+	go MariaWorker(mongo, maria)
+	go SitenameWorker(mongo, maria)
+	go NFSWorker(mongo)
+	go SendmailCreateWorker(mongo)
+	go SendmailDeleteWorker(mongo)
 }
 
-func SendmailWorker(mongo mongodbiface.DB) {
-	log.Println("Starting Sendmail worker")
+func SendmailCreateWorker(mongo mongodbiface.DB) {
+	log.Println("Starting create Sendmail worker")
 	for {
 		time.Sleep(5 * time.Second)
-		worker.NewSendmailWorker(mongo).SendMailWorkerPool()
+		worker.NewSendmailWorker(mongo).SendMailCreateWorkerPool()
+	}
+}
+
+func SendmailDeleteWorker(mongo mongodbiface.DB) {
+	log.Println("Starting delete Sendmail worker")
+	for {
+		time.Sleep(5 * time.Second)
+		worker.NewSendmailWorker(mongo).SendMailDeleteWorkerPool()
 	}
 }
 
@@ -48,7 +57,7 @@ func MariaWorker(mongo mongodbiface.DB, maria *sql.DB) {
 }
 
 func SitenameWorker(mongo mongodbiface.DB, maria *sql.DB) {
-	log.Println("Starting Sitname worker")
+	log.Println("Starting Sitename worker")
 	for {
 		time.Sleep(5 * time.Second)
 		worker.NewSitenameWorker(mongo, maria).UpdateSitename()
