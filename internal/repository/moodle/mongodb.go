@@ -220,9 +220,37 @@ func (m *MongoDB) CreateMailTracking(moodle domain.Moodle) error {
 	mailTracking.MoodleId = moodle.Id
 	mailTracking.Email = moodle.Email
 	mailTracking.IsSent = false
+	mailTracking.Type = "Create"
 	mailTracking.CreatedAt = time.Now()
 	mailTracking.UpdatedAt = time.Now()
 	_, err := m.db.Collection("mail_tracking").InsertOne(context.Background(), mailTracking)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// get all mail_tracking type create is not sent
+func (m *MongoDB) GetAllMailCreateTracking() ([]domain.MailTracking, error) {
+	var mailTrackings []domain.MailTracking
+	cursor, err := m.db.Collection("mail_tracking").Find(context.Background(), bson.M{"type": "Create", "issent": false})
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.Background()) {
+		var mailTracking domain.MailTracking
+		err := cursor.Decode(&mailTracking)
+		if err != nil {
+			return nil, err
+		}
+		mailTrackings = append(mailTrackings, mailTracking)
+	}
+	return mailTrackings, nil
+}
+
+// update issent mail tracking
+func (m *MongoDB) UpdateMailTracking(moodleid string, isSent bool) error {
+	_, err := m.db.Collection("mail_tracking").UpdateOne(context.Background(), bson.M{"moodleid": moodleid}, bson.M{"$set": bson.M{"issent": isSent, "updatedat": time.Now()}})
 	if err != nil {
 		return err
 	}

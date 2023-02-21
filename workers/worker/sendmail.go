@@ -1,87 +1,77 @@
 package worker
 
 import (
-	"context"
 	"log"
+	"moodle/internal/core/domain"
+	repo "moodle/internal/repository/moodle"
 	mongo "moodle/pkg/mongodbiface"
-	sendmailclient "moodle/pkg/client"
-
-	"go.mongodb.org/mongo-driver/bson"
+	"moodle/pkg/client"
 )
 
 
 type SendmailWorker struct {
-    mongo mongo.DB
-	sendmailclient sendmailclient.SendmailClient
+    mongoRepo *repo.MongoDB
 }
 
 func NewSendmailWorker(m mongo.DB) *SendmailWorker{
+	mongoRepo := repo.NewMongoDB(m)
     return &SendmailWorker{
-		mongo: m,
-		sendmailclient: *sendmailclient.NewSendmailClient(),
+		mongoRepo: mongoRepo,
     }
 }
 
-type MailTracking struct {
-	MoodleId 	  string `json:"moodle_id"`
-	Email 		  string `json:"email"`
-	LbStatus string `json:"lb_status"`
-	K8sStatus string `json:"k8s_status"`
-	MariadbStatus string `json:"mariadb_status"`
-}
-
-// get mail from mailtracking collection where isSent is false
-func (worker *SendmailWorker) GetMailQueue() ([]MailTracking, error) {
-	ctx := context.Background()
-	var mails []MailTracking
-	collection := worker.mongo.Collection("mail_tracking")
-	filter := bson.M{"issent": false}
-	cursor, err := collection.Find(ctx, filter)
+func (worker *SendmailWorker) GetMailCreateQueue() ([]domain.MailTracking, error) {
+	mails, err := worker.mongoRepo.GetAllMailCreateTracking()
 	if err != nil {
 		return mails, err
-	}
-	defer cursor.Close(ctx)
-	for cursor.Next(ctx) {
-		var mail MailTracking
-		err := cursor.Decode(&mail)
-		if err != nil {
-			return mails, err
-		}
-		mails = append(mails, mail)
 	}
 	return mails, nil
 }
 
-func (worker *SendmailWorker) SendMail(mailTracking MailTracking) error {
-	to := []string{mailTracking.Email}
-	subject := "Moodle Deployed"
-	body := "Moodle Deployed"
-	err := worker.sendmailclient.SendMail(to, subject, body)
+func (worker *SendmailWorker) SendMail(mailTracking domain.MailTracking) error {
+	// get moodle info
+	var moodle domain.Moodle
+	moodle, err := worker.mongoRepo.Get(mailTracking.MoodleId)
 	if err != nil {
 		return err
 	}
-	log.Println("Mail sent to: ", mailTracking.Email)
-	worker.UpdateIsSent(mailTracking.MoodleId)
+	packages := moodle.Packages
+
+	email := moodle.Email
+	webSiteName := moodle.WebSiteName
+	ip := moodle.Ip
+	packageName := packages.Name
+	username := "manager"
+	password := "Z}6a@7Dybf<l"
+	err = worker.UpdateIsSent(mailTracking.MoodleId, true)
+	if err != nil {
+		return err
+	}
+	err = client.SendMail(email, webSiteName, ip, packageName, username, password)
+	if err != nil {
+		err = worker.UpdateIsSent(mailTracking.MoodleId, false)
+		if err != nil {
+			return err
+		}
+		return err
+	}
 	return nil
 }
 
-func (worker *SendmailWorker) UpdateIsSent(moodleId string) {
-	ctx := context.Background()
-	collection := worker.mongo.Collection("mail_tracking")
-	filter := bson.M{"moodleid": moodleId}
-	update := bson.M{"$set": bson.M{"issent": true}}
-	_, err := collection.UpdateOne(ctx, filter, update)
+func (worker *SendmailWorker) UpdateIsSent(moodleId string, isSent bool) error {
+	err := worker.mongoRepo.UpdateMailTracking(moodleId, isSent)
 	if err != nil {
 		log.Println(err)
 	}
+	return nil
 }
 
 func (worker *SendmailWorker) SendMailWorkerPool() {
-	mails, err := worker.GetMailQueue()
+	createQueue, err := worker.GetMailCreateQueue()
 	if err != nil {
 		return
 	}
-	for _, mail := range mails {
+	for _, mail := range createQueue{
 		go worker.SendMail(mail)
 	}
 }

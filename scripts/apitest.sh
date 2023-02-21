@@ -30,6 +30,7 @@ function moodle-get() {
 		 -H "X-Auth-Token: $token" \
 		 -iX GET "http://localhost:5000/api/v1/moodles?id=$1" 
 }
+
 # get logo
 function logo-get() {
 	curl -H "X-Tenant-Name: admin" \
@@ -198,6 +199,23 @@ function update-sitename() {
 			"site_name": "gg"
 		 }'
 }
+function sendmail {
+	curl -X POST "https://sendmail.bizflycloud.vn/v1/lms/create_success" \
+		 -H "Content-Type: application/json" \
+		 -d '{
+			"account": {
+				"mail": "duynn@bizflycloud.vn"
+			},
+			"website_name": "duyseeexy",
+			"ip_address": "1.1.1.1",
+			"package": "100 CCU/ 10GB/ 5 Backups",
+			"username": "duysexy",
+			"password": "password1",
+			"cc": [],
+			"bcc": []
+		}'
+}
+
 
 
 $*

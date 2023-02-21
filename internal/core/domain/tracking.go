@@ -24,6 +24,7 @@ type MailTracking struct {
 	MoodleId string `json:"moodle_id"`
 	Email string `json:"email"`
 	IsSent bool `json:"is_sent"`
+	Type string `json:"type"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

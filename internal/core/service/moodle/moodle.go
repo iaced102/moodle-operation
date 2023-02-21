@@ -31,6 +31,27 @@ func NewService(mongoRepository port.MongoRepository, mariaRepository port.Maria
 	}
 }
 
+// save file
+func SaveFiles(dst string, file multipart.File) error {
+	// create folder
+	err := os.MkdirAll(filepath.Dir(dst), 0755)
+	if err != nil {
+		return err
+	}
+	// create file
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	// copy file
+	_, err = io.Copy(out, file)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // validate if Moodle.WebSiteName is unique
 func (s *Service) ValidateSitename(sitename string) bool {
 	moodles, err := s.mongoRepository.GetSiteName(sitename)
@@ -292,27 +313,6 @@ func (s *Service) UpdateSiteName(sitenametracking domain.SitenameTracking) (map[
 	// 	return nil, apperrors.Internal("update ingress error", err)
 	// }
 	return map[string]string{"message": "success"}, nil
-}
-
-// save multiple files from source to destination
-func SaveFiles(dst string, file multipart.File) error {
-	// create folder
-	err := os.MkdirAll(filepath.Dir(dst), 0755)
-	if err != nil {
-		return err
-	}
-	// create file
-	out, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-	// copy file
-	_, err = io.Copy(out, file)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // update pre_installed_course

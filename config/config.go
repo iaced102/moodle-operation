@@ -10,10 +10,6 @@ var (
 	PASSWORD = "MzU2ZmE3ZDM5MmUwMDFkYThiMzkwMmE3"
 	BIZFLYCLOUD_TOKEN = "gAAAAABjxQHVqjvryJlPvrm15_OdlNDk6RxhYwl291ivFlP78rdgLCv4M7HgX8IB2hUZV3Ge-qBVvFNl37nnptxsLoIs_uWTLshlLO__woefRpfwydU23oUF4Oxj1iT7ZsxgyOP278D4As6g35qG-geGhgdkEGZhgsythyuWh44qdz9ux22bK5U"
 	INTERVAL = 10
-	EMAIL = "duynn@bizflycloud.vn"
-	EMAIL_PASSWORD = "MzU2ZmE3ZDM5MmUwMDFkYThiMzkwMmE3"
-	SMTP = "smtp.bizflycloud.vn"
-	SMTP_PORT = "587"
 	MOODLE_TOKEN = "gAAAAABjvhxZwCj1n8fFu-nFALaMr4KKZ7G3UPI7pAETzVxGa4pYuWdUelC6DcjLSRd8rHXIWVsya4q0qijXmOiwPbJzfNOSxBthvRZmGBxfc46rHefbWpwXq-EqFAsxO5MDFPYjUsBocTwCtb6UFdP8ruEdAWxWQ9YQl2KPAuyP_bprvmZwUkI"
 	USER = "admin"
 	MARIAHOSTR = "45.124.94.39"
@@ -28,4 +24,5 @@ var (
 	INGRESS_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/ingress.yaml"
 	KUBECONFIG = "moodle-cluster.kubeconfig"
 	CLUSTERID = "6o0cn9lv42livqek"
+	SENDMAILDOMAIN = "https://sendmail.bizflycloud.vn"
 )
