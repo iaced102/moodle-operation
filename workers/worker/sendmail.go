@@ -4,8 +4,9 @@ import (
 	"log"
 	"moodle/internal/core/domain"
 	repo "moodle/internal/repository/moodle"
-	mongo "moodle/pkg/mongodbiface"
 	"moodle/pkg/client"
+	mongo "moodle/pkg/mongodbiface"
+	"time"
 )
 
 
@@ -43,11 +44,14 @@ func (worker *SendmailWorker) SendMail(mailTracking domain.MailTracking) error {
 	packageName := packages.Name
 	username := "manager"
 	password := "Z}6a@7Dybf<l"
+	createdat := mailTracking.CreatedAt.Format(time.RFC3339)
+	
 	err = worker.UpdateIsSent(mailTracking.MoodleId, true)
 	if err != nil {
 		return err
 	}
-	err = client.SendMail(email, webSiteName, ip, packageName, username, password)
+	log.Println("Send mail to: ", email)
+	err = client.SendMailCreate(email, webSiteName, ip, packageName, username, password, createdat)
 	if err != nil {
 		err = worker.UpdateIsSent(mailTracking.MoodleId, false)
 		if err != nil {
@@ -55,6 +59,7 @@ func (worker *SendmailWorker) SendMail(mailTracking domain.MailTracking) error {
 		}
 		return err
 	}
+	log.Println("Send mail to: ", email, " success")
 	return nil
 }
 

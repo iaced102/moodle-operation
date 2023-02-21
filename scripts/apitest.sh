@@ -199,6 +199,7 @@ function update-sitename() {
 			"site_name": "gg"
 		 }'
 }
+
 function sendmail {
 	curl -X POST "https://sendmail.bizflycloud.vn/v1/lms/create_success" \
 		 -H "Content-Type: application/json" \
@@ -212,10 +213,28 @@ function sendmail {
 			"username": "duysexy",
 			"password": "password1",
 			"cc": [],
-			"bcc": []
+			"created_at": "2023-02-21T04:00:30.747Z",
+			"bcc": ["duynn@bizflycloud.vn"]
+		}'
+}
+
+function deletemail {
+	curl -X POST "https://sendmail.bizflycloud.vn/v1/lms/delete_success" \
+		 -H "Content-Type: application/json" \
+		 -d '{
+			"account": {
+				"mail": "duynn@bizflycloud.vn"
+			},
+			"website_name": "duyseeexy",
+			"ip_address": "1.1.1.1",
+			"package": "100 CCU/ 10GB/ 5 Backups",
+			"cc": [],
+			"deleted_at": "2023-02-21T04:00:30.747Z",
+			"bcc": ["duynn@bizflycloud.vn"]
 		}'
 }
 
 
 
 $*
+
