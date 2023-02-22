@@ -48,7 +48,8 @@ func (worker *SendmailWorker) SendMailCreate(mailTracking domain.MailTracking) e
 	packages := moodle.Packages
 
 	email := moodle.Email
-	webSiteName := moodle.WebSiteName
+	webSiteName := moodle.Name
+	webSiteNameAddress := moodle.WebSiteName
 	ip := moodle.Ip
 	packageName := packages.Name + " / " + strconv.Itoa(packages.DocumentStorage) + "GB" + " / " + strconv.Itoa(packages.BackupNum) + " backups"
 	username := "manager"
@@ -60,7 +61,7 @@ func (worker *SendmailWorker) SendMailCreate(mailTracking domain.MailTracking) e
 		return err
 	}
 	log.Println("Sending create mail to: ", email)
-	err = client.SendMailCreate(email, webSiteName, ip, packageName, username, password, createdat)
+	err = client.SendMailCreate(email, webSiteName, webSiteNameAddress , ip, packageName, username, password, createdat)
 	if err != nil {
 		log.Println(err)
 		err = worker.UpdateIsSentCreate(mailTracking.MoodleId, false)
@@ -82,7 +83,8 @@ func (worker *SendmailWorker) SendMailDelete(mailTracking domain.MailTracking) e
 	packages := moodle.Packages
 
 	email := moodle.Email
-	webSiteName := moodle.WebSiteName
+	webSiteName := moodle.Name
+	webSiteNameAddress := moodle.WebSiteName
 	ip := moodle.Ip
 	packageName := packages.Name + " / " + strconv.Itoa(packages.DocumentStorage) + "GB" + " / " + strconv.Itoa(packages.BackupNum) + " backups"
 	createdat := mailTracking.CreatedAt.Format(time.RFC3339)
@@ -92,7 +94,7 @@ func (worker *SendmailWorker) SendMailDelete(mailTracking domain.MailTracking) e
 		return err
 	}
 	log.Println("Sending delete mail to: ", email)
-	err = client.SendMailDelete(email, webSiteName, ip, packageName,createdat)
+	err = client.SendMailDelete(email, webSiteName, webSiteNameAddress, ip, packageName,createdat)
 	if err != nil {
 		log.Println(err)
 		err = worker.UpdateIsSentDelete(mailTracking.MoodleId,false)

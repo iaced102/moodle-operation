@@ -9,13 +9,14 @@ import (
 	"strings"
 )
 
-func SendMailCreate(mail, websiteName, ipAddress, packageInfo, username, password, createdat string) error {
+func SendMailCreate(mail, websiteName, websiteNameAddress, ipAddress, packageInfo, username, password, createdat string) error {
 	client := &http.Client{}
 	var data = strings.NewReader(`{
 			"account": {
 				"mail": "` + mail + `"
 			},
 			"website_name": "` + websiteName + `",
+			"website_address": "` + websiteNameAddress + `",
 			"ip_address": "` + ipAddress + `",
 			"package": "` + packageInfo + `",
 			"username": "` + username + `",
@@ -46,13 +47,14 @@ func SendMailCreate(mail, websiteName, ipAddress, packageInfo, username, passwor
 }
 
 
-func SendMailDelete(mail, websiteName, ipAddress, packageInfo, createdat string) error {
+func SendMailDelete(mail, websiteName, websiteNameAddress, ipAddress, packageInfo, createdat string) error {
 	client := &http.Client{}
 	var data = strings.NewReader(`{
 			"account": {
 				"mail": "` + mail + `"
 			},
 			"website_name": "` + websiteName + `",
+			"website_address": "` + websiteNameAddress + `",
 			"ip_address": "` + ipAddress + `",
 			"package": "` + packageInfo + `",
 			"cc": [],
