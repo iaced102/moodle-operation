@@ -29,6 +29,7 @@ type MongoRepository interface {
 	GetFaviconTracking(moodleid string) (domain.FaviconTracking, error)
 	CreateLogoTracking(moodle domain.Moodle, url string) error
 	CreateFaviconTracking(moodle domain.Moodle, url string) error
+	UpdateMoodleStatus(moodleid, status string) error
 
 }
 

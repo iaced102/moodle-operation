@@ -232,10 +232,12 @@ func (s *Service) Delete(moodleID string) error {
 	if err != nil {
 		return err
 	}
-	// err = s.mongoRepository.Delete(moodleID)
-	// if err != nil {
-	// 	return err
-	// }
+	// update status deleting on moodles collection
+	err = s.mongoRepository.UpdateMoodleStatus(moodleID, "Deleting")
+	if err != nil {
+		return err
+	}
+
 	// get current maria tracking
 	mariaTracking, err := s.mongoRepository.GetMariaTracking(moodleID)
 	// update status in maria_tracing to "deleting"
