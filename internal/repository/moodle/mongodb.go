@@ -59,7 +59,7 @@ func (m *MongoDB) Delete(moodleID string) error {
 // get all sitename
 func (m *MongoDB) GetSiteName(name string) ([]domain.Moodle, error) {
 	var moodles []domain.Moodle
-	cursor, err := m.db.Collection("moodles").Find(context.Background(), bson.M{"name": name})
+	cursor, err := m.db.Collection("moodles").Find(context.Background(), bson.M{"websitename": name})
 	if err != nil {
 		return nil, err
 	}

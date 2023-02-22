@@ -195,7 +195,7 @@ function update-sitename() {
 		 -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
 		 -d '{
-		 	"moodle_id": "2796701e-27c3-45d5-9746-aec55fc82360",
+		 	"moodle_id": "6b25eddc-0fb6-4525-924d-d933bd0de6c3",
 			"site_name": "gg"
 		 }'
 }

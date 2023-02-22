@@ -53,8 +53,8 @@ func SaveFiles(dst string, file multipart.File) error {
 }
 
 // validate if Moodle.WebSiteName is unique
-func (s *Service) ValidateSitename(sitename string) bool {
-	moodles, err := s.mongoRepository.GetSiteName(sitename)
+func (s *Service) ValidateSitename(websitename string) bool {
+	moodles, err := s.mongoRepository.GetSiteName(websitename)
 	if err != nil {
 		return false
 	}
@@ -66,9 +66,6 @@ func (s *Service) ValidateSitename(sitename string) bool {
 
 func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppError) {
 	// check if sitename is exist then return error
-	if !s.ValidateSitename(moodle.WebSiteName) {
-		return moodle, apperrors.Conflict("sitename is already exist", errors.New("sitename is already exist"))
-	}
 	var moodle_ domain.Moodle
 	moodle_.Id = domain.NewMoodleID()
 	moodle_.Email = moodle.Email
@@ -76,6 +73,9 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 	moodle_.LbName = "kube_service" + "_" + config.CLUSTERID + "_" + moodle_.Id + "_moodle-service"
 	moodle_.Ip = "14.225.36.146"
 	moodle_.WebSiteName = moodle.WebSiteName + ".lms.bizflycloud.vn"
+	if !s.ValidateSitename(moodle_.WebSiteName) {
+		return moodle, apperrors.Conflict("websitename is already exist", errors.New("websitename is already exist"))
+	}
 	moodle_.PreInstalledCourse = moodle.PreInstalledCourse
 	moodle_.PackageName = moodle.PackageName
 	moodle_.AutoScale = moodle.AutoScale
