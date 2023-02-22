@@ -65,7 +65,14 @@ func (s *Service) ValidateSitename(websitename string) bool {
 }
 
 func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppError) {
-	// check if sitename is exist then return error
+	// check if email have one moodle then block to create new moodle
+	moodles, err := s.mongoRepository.GetAll(moodle.Email)
+	if err != nil {
+		return moodle, apperrors.Internal("get all moodle by email error", err)
+	}
+	if len(moodles) > 0 {
+		return moodle, apperrors.Conflict("your account allowed to create 1 moodle site only", errors.New("your account allowed to create 1 moodle site only"))
+	}
 	var moodle_ domain.Moodle
 	moodle_.Id = domain.NewMoodleID()
 	moodle_.Email = moodle.Email
@@ -73,6 +80,7 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 	moodle_.LbName = "kube_service" + "_" + config.CLUSTERID + "_" + moodle_.Id + "_moodle-service"
 	moodle_.Ip = "14.225.36.146"
 	moodle_.WebSiteName = moodle.WebSiteName + ".lms.bizflycloud.vn"
+	// check if websitename is exist then return error
 	if !s.ValidateSitename(moodle_.WebSiteName) {
 		return moodle, apperrors.Conflict("websitename is already exist", errors.New("websitename is already exist"))
 	}
