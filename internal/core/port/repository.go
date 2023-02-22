@@ -27,6 +27,8 @@ type MongoRepository interface {
 	UpdateSitenameTracking(sitenameTracking domain.SitenameTracking) error
 	GetLogoTracking(moodleid string) (domain.LogoTracking, error)
 	GetFaviconTracking(moodleid string) (domain.FaviconTracking, error)
+	CreateLogoTracking(moodle domain.Moodle, url string) error
+	CreateFaviconTracking(moodle domain.Moodle, url string) error
 
 }
 

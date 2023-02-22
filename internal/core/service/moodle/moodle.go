@@ -144,6 +144,18 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 	if err != nil {
 		return moodle, apperrors.Internal("create moodle tracking error", err)
 	}
+	// create logo tracking
+	defaultLogoUrl := fmt.Sprintf("http://%s.lms.bizflycloud.vn/pluginfile.php/1/theme_edumy/headerlogo1/1676573021/Logo mới Bizfly Cloud-01.png", moodle_.Name)
+	err = s.mongoRepository.CreateLogoTracking(moodle_, defaultLogoUrl)
+	if err != nil {
+		return moodle, apperrors.Internal("create logo tracking error", err)
+	}
+	// create favicon tracking
+	defaultFaviconUrl := fmt.Sprintf("http://%s.lms.bizflycloud.vn/pluginfile.php/1/theme_edumy/favicon/1676573021/z3665638475480_d6dab64f97b26f1c73cd539411ae9990.jpg", moodle_.Name)
+	err = s.mongoRepository.CreateFaviconTracking(moodle_, defaultFaviconUrl)
+	if err != nil {
+		return moodle, apperrors.Internal("create favicon tracking error", err)
+	}
 	// moodle config
 	err = s.mongoRepository.CreateMoodleConfig(moodle_)
 	if err != nil {

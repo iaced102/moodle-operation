@@ -372,6 +372,38 @@ func (m *MongoDB) UpdateSitename(sitenametracking domain.SitenameTracking) error
 	return nil
 }
 
+// create logo tracking
+func (m *MongoDB) CreateLogoTracking(moodle domain.Moodle, defaulturl string) error {
+	var logoTracking domain.LogoTracking
+	logoTracking.MoodleId = moodle.Id
+	logoTracking.FilePath = ""
+	logoTracking.URL = defaulturl
+	logoTracking.Status = "updated"
+	logoTracking.CreatedAt = time.Now()
+	logoTracking.UpdatedAt = time.Now()
+	_, err := m.db.Collection("logo_tracking").InsertOne(context.Background(), logoTracking)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// create logo tracking
+func (m *MongoDB) CreateFaviconTracking(moodle domain.Moodle, defaulturl string) error {
+	var faviconTracking domain.LogoTracking
+	faviconTracking.MoodleId = moodle.Id
+	faviconTracking.FilePath = ""
+	faviconTracking.URL = defaulturl
+	faviconTracking.Status = "updated"
+	faviconTracking.CreatedAt = time.Now()
+	faviconTracking.UpdatedAt = time.Now()
+	_, err := m.db.Collection("favicon_tracking").InsertOne(context.Background(), faviconTracking)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // update logotracking
 func (m *MongoDB) UpdateLogo(logotracking domain.LogoTracking) error {
 	// check if logo exist then update else insert
