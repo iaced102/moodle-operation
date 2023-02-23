@@ -114,10 +114,6 @@ func (n *NFSWorker) UpdateLogo(moodleid, src string) error {
 	if err != nil {
 		return err
 	}
-	_, err = n.NFSClient.WriteFile(filePath, false , 0, reader)
-	if err != nil {
-		return err
-	}
 	// update logo_tracking
 	log.Printf("Updating logo for: %s", moodleid)
 	logoTracking.FilePath = filePath
@@ -125,6 +121,15 @@ func (n *NFSWorker) UpdateLogo(moodleid, src string) error {
 	logoTracking.Status = "updated"
 	err = n.mongoRepo.UpdateLogoTracking(logoTracking)
 	if err != nil {
+		return err
+	}
+	_, err = n.NFSClient.WriteFile(filePath, false , 0, reader)
+	if err != nil {
+		logoTracking.Status = "Pending"
+		err = n.mongoRepo.UpdateLogoTracking(logoTracking)
+		if err != nil {
+			return err
+		}
 		return err
 	}
 	log.Printf("Updated logo for: %s", moodleid)
@@ -153,10 +158,6 @@ func (n *NFSWorker) UpdateFavicon(moodleid, src string) error {
 	if err != nil {
 		return err
 	}
-	_, err = n.NFSClient.WriteFile(filePath, false , 0, reader)
-	if err != nil {
-		return err
-	}
 	// update logo_tracking
 	faviconTracking.MoodleId = moodleid
 	log.Printf("Updating favicon for: %s", moodleid)
@@ -164,6 +165,15 @@ func (n *NFSWorker) UpdateFavicon(moodleid, src string) error {
 	faviconTracking.Status = "updated"
 	err = n.mongoRepo.UpdateFaviconTracking(faviconTracking)
 	if err != nil {
+		return err
+	}
+	_, err = n.NFSClient.WriteFile(filePath, false , 0, reader)
+	if err != nil {
+		faviconTracking.Status = "Pending"
+		err = n.mongoRepo.UpdateFaviconTracking(faviconTracking)
+		if err != nil {
+			return err
+		}
 		return err
 	}
 	log.Printf("Updated favicon for: %s", moodleid)
