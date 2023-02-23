@@ -27,7 +27,7 @@ func Start(mongo mongodbiface.DB) {
 func SendmailCreateWorker(mongo mongodbiface.DB) {
 	log.Println("Starting create Sendmail worker")
 	for {
-		time.Sleep(5 * time.Second)
+		time.Sleep(3 * time.Second)
 		worker.NewSendmailWorker(mongo).SendMailCreateWorkerPool()
 	}
 }
@@ -35,7 +35,7 @@ func SendmailCreateWorker(mongo mongodbiface.DB) {
 func SendmailDeleteWorker(mongo mongodbiface.DB) {
 	log.Println("Starting delete Sendmail worker")
 	for {
-		time.Sleep(5 * time.Second)
+		time.Sleep(3 * time.Second)
 		worker.NewSendmailWorker(mongo).SendMailDeleteWorkerPool()
 	}
 }
@@ -43,7 +43,7 @@ func SendmailDeleteWorker(mongo mongodbiface.DB) {
 func TrackingWorker(mongo mongodbiface.DB) {
 	log.Println("Starting Tracking worker")
 	for {
-		time.Sleep(5 * time.Second)
+		time.Sleep(3 * time.Second)
 		worker.NewTrackingWorker(mongo).UpdateMoodleStatus()
 	}
 }
@@ -51,7 +51,7 @@ func TrackingWorker(mongo mongodbiface.DB) {
 func MariaWorker(mongo mongodbiface.DB, maria *sql.DB) {
 	log.Println("Starting Maria worker")
 	for {
-		time.Sleep(5 * time.Second)
+		time.Sleep(3 * time.Second)
 		worker.NewMariaWorker(mongo, maria).Restore()
 	}
 }
@@ -59,7 +59,7 @@ func MariaWorker(mongo mongodbiface.DB, maria *sql.DB) {
 func SitenameWorker(mongo mongodbiface.DB, maria *sql.DB) {
 	log.Println("Starting Sitename worker")
 	for {
-		time.Sleep(5 * time.Second)
+		time.Sleep(3 * time.Second)
 		worker.NewSitenameWorker(mongo, maria).UpdateSitename()
 	}
 }
@@ -67,7 +67,7 @@ func SitenameWorker(mongo mongodbiface.DB, maria *sql.DB) {
 func NFSWorker(mongo mongodbiface.DB) {
 	log.Println("Starting NFS worker")
 	for {
-		time.Sleep(5 * time.Second)
+		time.Sleep(3 * time.Second)
 		worker.NewNFSWorker(mongo).Update()
 	}
 }
