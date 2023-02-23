@@ -18,8 +18,8 @@ func IsImage(file multipart.File) bool {
 	if err != nil {
 		return false
 	}
-	// validate if file is image
-	return http.DetectContentType(header) == "image/jpg" || http.DetectContentType(header) == "image/png"
+	// validate if file is image png jpg ico
+	return http.DetectContentType(header) == "image/jpeg" || http.DetectContentType(header) == "image/png" || http.DetectContentType(header) == "image/x-icon"
 }
 
 // is jpeg

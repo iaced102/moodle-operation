@@ -115,7 +115,9 @@ func (n *NFSWorker) UpdateLogo(moodleid, src string) error {
 		return err
 	}
 	_, err = n.NFSClient.WriteFile(filePath, false , 0, reader)
-
+	if err != nil {
+		return err
+	}
 	// update logo_tracking
 	log.Printf("Updating logo for: %s", moodleid)
 	logoTracking.FilePath = filePath
@@ -152,7 +154,9 @@ func (n *NFSWorker) UpdateFavicon(moodleid, src string) error {
 		return err
 	}
 	_, err = n.NFSClient.WriteFile(filePath, false , 0, reader)
-
+	if err != nil {
+		return err
+	}
 	// update logo_tracking
 	faviconTracking.MoodleId = moodleid
 	log.Printf("Updating favicon for: %s", moodleid)
