@@ -153,13 +153,13 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 		return moodle, apperrors.Internal("create moodle tracking error", err)
 	}
 	// create logo tracking
-	defaultLogoUrl := fmt.Sprintf("http://%s.lms.bizflycloud.vn/pluginfile.php/1/theme_edumy/headerlogo1/1676573021/Logo mới Bizfly Cloud-01.png", moodle_.Name)
+	defaultLogoUrl := fmt.Sprintf("http://%s/pluginfile.php/1/theme_edumy/headerlogo1/1676573021/Logo mới Bizfly Cloud-01.png", moodle_.WebSiteName)
 	err = s.mongoRepository.CreateLogoTracking(moodle_, defaultLogoUrl)
 	if err != nil {
 		return moodle, apperrors.Internal("create logo tracking error", err)
 	}
 	// create favicon tracking
-	defaultFaviconUrl := fmt.Sprintf("http://%s.lms.bizflycloud.vn/pluginfile.php/1/theme_edumy/favicon/1676573021/z3665638475480_d6dab64f97b26f1c73cd539411ae9990.jpg", moodle_.Name)
+	defaultFaviconUrl := fmt.Sprintf("http://%s.lms.bizflycloud.vn/pluginfile.php/1/theme_edumy/favicon/1676573021/z3665638475480_d6dab64f97b26f1c73cd539411ae9990.jpg", moodle_.WebSiteName)
 	err = s.mongoRepository.CreateFaviconTracking(moodle_, defaultFaviconUrl)
 	if err != nil {
 		return moodle, apperrors.Internal("create favicon tracking error", err)
@@ -266,7 +266,6 @@ func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multi
 	if err != nil {
 		return nil, apperrors.Internal("get moodle error", err)
 	}
-	sitename := moodle.Name
 	err = SaveFiles("/tmp/moodle/"+moodleID+"/logo/"+header.Filename, file)
 	if err != nil {
 		return nil, apperrors.Internal("save file error", err)
@@ -276,7 +275,7 @@ func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multi
 	logotracking.MoodleId = moodleID
 	logotracking.FilePath = "/tmp/moodle/" + moodleID + "/logo/" + header.Filename
 	logotracking.Status = "Pending"
-	logotracking.URL = fmt.Sprintf("http://%s.lms.bizflycloud.vn/pluginfile.php/1/theme_edumy/headerlogo1/1676573021/Logo mới Bizfly Cloud-01.png", sitename)
+	logotracking.URL = fmt.Sprintf("http://%s/pluginfile.php/1/theme_edumy/headerlogo1/1676573021/Logo mới Bizfly Cloud-01.png", moodle.WebSiteName)
 	logotracking.UpdatedAt = time.Now()
 	logotracking.CreatedAt = time.Now()
 	err = s.mongoRepository.UpdateLogo(logotracking)
@@ -301,7 +300,6 @@ func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *mu
 	if err != nil {
 		return nil, apperrors.Internal("get moodle error", err)
 	}
-	sitename := moodle.Name
 	if err != nil {
 		return nil, apperrors.Internal("save file error", err)
 	}
@@ -315,7 +313,7 @@ func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *mu
 		return nil, apperrors.Internal("resize favicon error", err)
 	}
 	favicontracking.Status = "Pending"
-	favicontracking.URL = fmt.Sprintf("http://%s.lms.bizflycloud.vn/pluginfile.php/1/theme_edumy/favicon/1676573021/z3665638475480_d6dab64f97b26f1c73cd539411ae9990.jpg", sitename)
+	favicontracking.URL = fmt.Sprintf("http://%s/pluginfile.php/1/theme_edumy/favicon/1676573021/z3665638475480_d6dab64f97b26f1c73cd539411ae9990.jpg", moodle.WebSiteName)
 	favicontracking.CreatedAt = time.Now()
 	favicontracking.UpdatedAt = time.Now()
 	err = s.mongoRepository.UpdateFavicon(favicontracking)
