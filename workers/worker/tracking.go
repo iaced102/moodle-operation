@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"log"
 	repo "moodle/internal/repository/moodle"
 	mongo "moodle/pkg/mongodbiface"
 	"net/http"
@@ -35,7 +34,7 @@ func (w * TrackingWorker) checkMoodleStatus(moodleid, url string) error {
 	if err != nil {
 		return err
 	}
-	log.Println("health: ", url, " status code: ", resp.StatusCode)
+	// log.Println("health: ", url, " status code: ", resp.StatusCode)
 	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
 		// update status to Online and isupdate to true

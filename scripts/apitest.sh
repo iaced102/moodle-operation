@@ -126,7 +126,7 @@ function package-list() {
 
 # upload logo
 function upload-logo() {
-	curl -F "file=@/home/duy/Pictures/duydeptrai.jpg" "http://localhost:5000/api/v1/logo?moodle_id=dd29fb26-65e4-4bc9-80df-6d204a5f4007" \
+	curl -F "file=@/home/duy/Pictures/duydeptrai.png" "http://localhost:5000/api/v1/logo?moodle_id=512d571b-0680-41b9-bd50-6744a1dd82a0" \
 		 -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" 
 }
