@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-password="MzU2ZmE3ZDM5MmUwMDFkYThiMzkwMmE3"
+password="Z}6a@7Dybf<l"
 username="duynn@bizflycloud.vn"
 
 function get_token() {
