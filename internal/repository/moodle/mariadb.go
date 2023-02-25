@@ -161,3 +161,15 @@ func (m *MariaDB) DeleteRow(dbname, tablename string, id int) error {
 	log.Println("delete row success")
 	return err
 }
+
+// update password from table mdl_user
+func (m *MariaDB) UpdatePassword(dbname, password string) error {
+	queryString := fmt.Sprintf("UPDATE %s.mdl_user SET password = '%s' WHERE id = 1357", dbname, password)
+	_, err := m.db.Exec(queryString)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	log.Println("update password success")
+	return err
+}

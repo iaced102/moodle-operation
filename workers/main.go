@@ -20,23 +20,23 @@ func Start(mongo mongodbiface.DB) {
 	go MariaWorker(mongo, maria)
 	go SitenameWorker(mongo, maria)
 	go NFSWorker(mongo)
-	go SendmailCreateWorker(mongo)
-	go SendmailDeleteWorker(mongo)
+	go SendmailCreateWorker(mongo, maria)
+	go SendmailDeleteWorker(mongo, maria)
 }
 
-func SendmailCreateWorker(mongo mongodbiface.DB) {
+func SendmailCreateWorker(mongo mongodbiface.DB, maria *sql.DB) {
 	log.Println("Starting create Sendmail worker")
 	for {
 		time.Sleep(3 * time.Second)
-		worker.NewSendmailWorker(mongo).SendMailCreateWorkerPool()
+		worker.NewSendmailWorker(mongo, maria).SendMailCreateWorkerPool()
 	}
 }
 
-func SendmailDeleteWorker(mongo mongodbiface.DB) {
+func SendmailDeleteWorker(mongo mongodbiface.DB, maria *sql.DB) {
 	log.Println("Starting delete Sendmail worker")
 	for {
 		time.Sleep(3 * time.Second)
-		worker.NewSendmailWorker(mongo).SendMailDeleteWorkerPool()
+		worker.NewSendmailWorker(mongo, maria).SendMailDeleteWorkerPool()
 	}
 }
 

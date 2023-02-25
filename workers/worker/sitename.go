@@ -54,16 +54,19 @@ func (w *SitenameWorker) Update(dbname, sitename string) error {
 		log.Println(err)
 		return err
 	}
-	if mariaTracking.DbStatus != "Created" {
-		log.Printf("database %s is not created yet", dbname)
-		return nil
-	}
 	if mariaTracking.DbStatus == "Restoring" {
 		log.Printf("database %s is restoring", dbname)
 		return nil
 	}
 	if mariaTracking.DbStatus == "Restore Failed" {
 		log.Printf("database %s is Restore Failed", dbname)
+		return nil
+	}
+	if mariaTracking.DbStatus == "Deleting" {
+		return nil
+	}
+	if mariaTracking.DbStatus != "Created" {
+		log.Printf("database %s is not created yet", dbname)
 		return nil
 	}
 	if mariaTracking.DbStatus == "Created" {
