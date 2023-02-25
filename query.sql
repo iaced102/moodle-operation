@@ -56,9 +56,18 @@ delete from mdl_course_categories where id=38;
 delete from mdl_course_categories where id=39;
 
 # clone table
-create table ed9a2f82_bda1_485d_b792_41229439d597.mdl_course_deleted as select * from ed9a2f82_bda1_485d_b792_41229439d597.mdl_course;
+create table 8cb46d10_574b_4165_be54_2e9205a75b2e.mdl_course_backup as select * from 8cb46d10_574b_4165_be54_2e9205a75b2e.mdl_course;
+create table 8cb46d10_574b_4165_be54_2e9205a75b2e.mdl_course_categories_backup as select * from 8cb46d10_574b_4165_be54_2e9205a75b2e.mdl_course_categories;
 create table mdl_course as select * from mdl_course_deleted;
 create table mdl_course_categories as select * from mdl_course_categories_deleted;
 
 drop table mdl_course;
 drop table mdl_course_categories;
+
+
+-- update visible field in mdl_course_categories where id=29;
+UPDATE mdl_course_categories SET visible = 0 WHERE id = 29;
+
+-- check last 5 minutes online users
+SELECT * FROM mdl_user WHERE lastaccess > UNIX_TIMESTAMP() - 300;
+
