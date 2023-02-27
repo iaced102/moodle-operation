@@ -1,0 +1,121 @@
+dao_tao_hoi_nhap
+	dao tao hoi nhap
+	an toan thong tin
+
+dinh_huong
+	dinh huong nhu cau nhan su moi
+	so tay nhan su
+	kho tai lieu tham khao
+
+phat_trien_chuyen_mon_ky_thuat
+	ky thuat xay dung
+	ky thuat tich hop lien nganh
+	ky thuat hoa hoc
+	ky thuat he thong
+	ky thuat co khi
+
+phat_trien_ky_nang_mem
+	ky nang mem cho doi ngu quan ly
+		ky nang lanh dao
+		ky nang quan ly doi nhom
+		ky nang uy thac tao dong luc cho nhan vien
+	ky nang mem cho doi ngu ky thuat
+		ky nang mem cho tech support
+		ky nang quan ly du an ky thuat
+	ky nang mem cho sales
+		ky nang vuot qua nguoi gac cong
+		ky nang lang nghe va thuyet phuc khach hang
+		ky nang tiep can khach hang
+		ky nang telesales
+		ky nang giao tiep qua dien thoai
+
+dao_tao_san_pham_va_dich_vu
+	tong quan cac san pham
+		dao tao tong quan san pham
+	san pham va dich vu khoi khach hang b2c
+		dich vu y e cham soc suc khoe
+		san pham va dich vu du lich nha hang
+		dich vu ngan hang bao hiem
+	san pham va dich vu khoi khach hang b2b
+		san pham dich vu cham soc khach hang
+		san pham dich vu marketing
+		san pham dich vu ke toan tai chinh
+tieu_chuan_va_chat_luong
+	ky thuat quan sat va danh gia san pham
+	quy trinh kiem soat chat luong
+	tong quan dao tao tieu chuan va chat luong
+
+an_toan_va_lao_dong_san_xuat
+	quyen va nghia vu an toan lao dong
+	phong chay chua chay
+	an toan dich vu an uong
+	an toan xay dung
+	so cuu co ban
+	tong quan kien thuc an toan lao dong
+
+dao_tao_doi_nhom
+	team kiem dinh chat luong
+	team marketing truyen thong
+	team dao tao
+	team phat trien san pham
+	team kinh doanh
+	team quan ly lanh dao
+
+
+[
+	{
+		pre_installed_course_id: 1,
+		categories_id: 5,
+		sub_cate: [],
+		courses: [9, 35]
+	},
+
+	{
+		pre_installed_course_id: 2,
+		categories_id: 27,
+		sub_cate: [],
+		courses: [32, 33, 34]
+	},
+
+	{
+		pre_installed_course_id: 3,
+		categories_id: 28,
+		sub_cate: [],
+		courses: [36,37,38,39,40]
+	},
+
+	{
+		pre_installed_course_id: 4,
+		categories_id: 29,
+		sub_cate: [30, 31, 32],
+		courses: [41, 42, 43, 44, 72, 45, 46, 47, 48, 49]
+	},
+
+	{
+		pre_installed_course_id: 5,
+		categories_id: 33,
+		sub_cate: [34, 35, 36],
+		courses: [50, 51, 52, 53, 54, 55, 56]
+	},
+
+	{
+		pre_installed_course_id: 6,
+		categories_id: 37,
+		sub_cate: [],
+		courses: [57, 58, 59]
+	},
+
+	{
+		pre_installed_course_id: 7,
+		categories_id: 38,
+		sub_cate: [],
+		courses: [60, 61, 61, 63, 64, 65]
+	},
+
+	{
+		pre_installed_course_id: 8,
+		categories_id: 39,
+		sub_cate: [],
+		courses: [66, 67, 68, 69, 70, 71]
+	},
+]

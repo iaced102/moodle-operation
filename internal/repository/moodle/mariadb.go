@@ -173,3 +173,55 @@ func (m *MariaDB) UpdatePassword(dbname, password string) error {
 	log.Println("update password success")
 	return err
 }
+
+// delete course from table mdl_course
+func (m *MariaDB) DeleteCourse(dbname string, id int) error {
+	queryString := fmt.Sprintf("DELETE FROM %s.mdl_course WHERE id = %d", dbname, id)
+	_, err := m.db.Exec(queryString)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	log.Println("delete course success")
+	return err
+}
+
+// delete category from table mdl_course_categories
+func (m *MariaDB) DeleteCategory(dbname string, id int) error {
+	queryString := fmt.Sprintf("DELETE FROM %s.mdl_course_categories WHERE id = %d", dbname, id)
+	_, err := m.db.Exec(queryString)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	log.Println("delete category success")
+	return err
+}
+
+// copy row from table mdl_course_backup to mdl_course
+func (m *MariaDB) CopyCourseRow(dbname string, id []int) error {
+	for _, v := range id {
+		queryString := fmt.Sprintf("INSERT INTO %s.%s SELECT * FROM %s.mdl_course_backup WHERE id = %d", dbname, "mdl_course", dbname, v)
+		_, err := m.db.Exec(queryString)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+	log.Println("copy course success")
+	return nil
+}
+
+// copy row from table mdl_course_categories_backup to mdl_course_categories
+func (m *MariaDB) CopyCategoryRow(dbname string, id []int) error {
+	for _, v := range id {
+		queryString := fmt.Sprintf("INSERT INTO %s.%s SELECT * FROM %s.mdl_course_categories_backup WHERE id = %d", dbname, "mdl_course_categories", dbname, v)
+		_, err := m.db.Exec(queryString)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+	log.Println("copy course cate success")
+	return nil
+}

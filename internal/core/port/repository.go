@@ -18,7 +18,9 @@ type MongoRepository interface {
 	CreateMoodleConfig(moodleconfig domain.Moodle) error
 	UpdateLogo(logotracking domain.LogoTracking) error
 	UpdateFavicon(favicontracking domain.FaviconTracking) error
+	CreatePreInstalledCourseTracking(moodle domain.Moodle) error
 	UpdatePreInstalledCourse(moodle domain.Moodle) error
+	UpdatePreInstalledCourseTracking(moodle domain.PreInstalledCourseTracking) error
 	UpdateMariaTracking(mariaTracking domain.MariaTracking) error
 	GetMariaTracking(moodleid string) (domain.MariaTracking, error)
 	CreateMoodleTracking(moodleTracking domain.Moodle) error

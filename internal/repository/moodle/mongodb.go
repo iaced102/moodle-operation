@@ -457,6 +457,40 @@ func (m *MongoDB) UpdatePreInstalledCourse(moodle domain.Moodle) error {
 	return nil
 }
 
+// list pre_installed_course_tracking by status Pending
+func (m *MongoDB) ListPreInstalledCourseTracking() (*mongo.Cursor, error) {
+	cursor, err := m.db.Collection("pre_installed_course_tracking").Find(context.Background(), bson.M{"status": "Pending"})
+	if err != nil {
+		return nil, err
+	}
+	return cursor, nil
+}
+
+// create pre_installed_course_tracking
+func (m *MongoDB) CreatePreInstalledCourseTracking(moodle domain.Moodle) error {
+	var preInstalledCourseTracking domain.PreInstalledCourseTracking
+	preInstalledCourseTracking.MoodleId = moodle.Id
+	preInstalledCourseTracking.CourseId = moodle.PreInstalledCourse
+	preInstalledCourseTracking.Status = "updated"
+	preInstalledCourseTracking.CreatedAt = time.Now()
+	preInstalledCourseTracking.UpdatedAt = time.Now()
+	_, err := m.db.Collection("pre_installed_course_tracking").InsertOne(context.Background(), preInstalledCourseTracking)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// update pre_installed_course tracking
+func (m *MongoDB) UpdatePreInstalledCourseTracking(course domain.PreInstalledCourseTracking) error {
+	// update pre_installed_course tracking
+	_, err := m.db.Collection("pre_installed_course_tracking").UpdateOne(context.Background(), bson.M{"moodleid": course.MoodleId}, bson.M{"$set": course})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // get maria_tracking
 func (m *MongoDB) GetMariaTracking(moodleid string) (domain.MariaTracking, error) {
 	var mariatracking domain.MariaTracking
