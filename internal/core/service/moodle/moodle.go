@@ -312,10 +312,13 @@ func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *mu
 	var favicontracking domain.FaviconTracking
 	favicontracking.MoodleId = moodleID
 	favicontracking.FilePath = "/tmp/moodle/" + moodleID + "/favicon/" + header.Filename
+	// check if file is ico do not resize
 	// resize favicon
-	_, err = helpers.ResizeImage(favicontracking.FilePath, 72, 72)
-	if err != nil {
-		return nil, apperrors.Internal("resize favicon error", err)
+	if header.Filename[len(header.Filename)-3:] != "ico" {
+		_, err = helpers.ResizeImage(favicontracking.FilePath, 72, 72)
+		if err != nil {
+			return nil, apperrors.Internal("resize favicon error", err)
+		}
 	}
 	favicontracking.Status = "Pending"
 	favicontracking.URL = fmt.Sprintf("http://%s/pluginfile.php/1/theme_edumy/favicon/1676573021/z3665638475480_d6dab64f97b26f1c73cd539411ae9990.jpg", moodle.WebSiteName)
