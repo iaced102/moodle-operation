@@ -315,9 +315,16 @@ func (s *Service) UpdateFavicon(moodleID string, file multipart.File, header *mu
 	// check if file is ico do not resize
 	// resize favicon
 	if header.Filename[len(header.Filename)-3:] != "ico" {
-		_, err = helpers.ResizeImage(favicontracking.FilePath, 72, 72)
-		if err != nil {
-			return nil, apperrors.Internal("resize favicon error", err)
+			_, err = helpers.ResizeImage(favicontracking.FilePath, 16, 16)
+			if err != nil {
+				return nil, apperrors.Internal("resize favicon error", err)
+		}
+	}
+
+	if header.Filename[len(header.Filename)-3:] == "ico" {
+			_, err = helpers.ResizePng(favicontracking.FilePath, 16, 16)
+			if err != nil {
+				return nil, apperrors.Internal("resize ico favicon error", err)
 		}
 	}
 	favicontracking.Status = "Pending"
