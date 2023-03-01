@@ -62,4 +62,3 @@ func ResizePng(imagePath string, width int, height int) (string, error) {
 
 	return imagePath, nil
 }
-

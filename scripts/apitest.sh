@@ -131,7 +131,7 @@ function upload-logo() {
 		 -H "X-Auth-Token: $token" 
 }
 function upload-favicon() {
-	curl -F "file=@/home/duy/Pictures/duydeptrai.jpg" -i "http://lms-service:5000/api/v1/favicon?moodle_id=512d571b-0680-41b9-bd50-6744a1dd82a0" \
+	curl -F "file=@/home/duy/chou.ico" -i "http://lms-service:5000/api/v1/favicon?moodle_id=75701133-d219-41db-ad4e-1c73137befca" \
 		 -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" 
 }
