@@ -5,6 +5,8 @@ import (
 	"image/jpeg"
 	"image/png"
 	"os"
+	"os/exec"
+	"strconv"
 
 	"github.com/nfnt/resize"
 )
@@ -62,3 +64,17 @@ func ResizePng(imagePath string, width int, height int) (string, error) {
 
 	return imagePath, nil
 }
+
+
+// resize ico
+func ResizeIco(imagePath string, width int, height int) (string, error) {
+	command := exec.Command("convert", imagePath, "-scale", strconv.Itoa(width)+"x"+strconv.Itoa(height), imagePath)
+	err := command.Run()
+	if err != nil {
+		return "", err
+	}
+
+	return imagePath, nil
+}
+	
+
