@@ -457,9 +457,19 @@ func (m *MongoDB) UpdatePreInstalledCourse(moodle domain.Moodle) error {
 	return nil
 }
 
+// get cate_course
+func (m *MongoDB) GetCateCourse() (domain.CateCourses, error) {
+	var cateCourse domain.CateCourses
+	err := m.db.Collection("cate_courses").FindOne(context.Background(), bson.M{}).Decode(&cateCourse)
+	if err != nil {
+		return cateCourse, err
+	}
+	return cateCourse, nil
+}
+
 // list pre_installed_course_tracking by status Pending
 func (m *MongoDB) ListPreInstalledCourseTracking() (*mongo.Cursor, error) {
-	cursor, err := m.db.Collection("pre_installed_course_tracking").Find(context.Background(), bson.M{"status": "Pending"})
+	cursor, err := m.db.Collection("pre_installed_course_tracking").Find(context.Background(), bson.M{"status": "Creating"})
 	if err != nil {
 		return nil, err
 	}
@@ -471,7 +481,7 @@ func (m *MongoDB) CreatePreInstalledCourseTracking(moodle domain.Moodle) error {
 	var preInstalledCourseTracking domain.PreInstalledCourseTracking
 	preInstalledCourseTracking.MoodleId = moodle.Id
 	preInstalledCourseTracking.CourseId = moodle.PreInstalledCourse
-	preInstalledCourseTracking.Status = "updated"
+	preInstalledCourseTracking.Status = "Creating"
 	preInstalledCourseTracking.CreatedAt = time.Now()
 	preInstalledCourseTracking.UpdatedAt = time.Now()
 	_, err := m.db.Collection("pre_installed_course_tracking").InsertOne(context.Background(), preInstalledCourseTracking)

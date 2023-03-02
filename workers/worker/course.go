@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	repo "moodle/internal/repository/moodle"
+	helpers "moodle/pkg/helpers"
 	"moodle/pkg/mongodbiface"
 	"strings"
 
@@ -69,5 +70,39 @@ func (w *CourseWorker) UpdateCourse(dbname string, courseid []int) error {
 		log.Println(err)
 		return err
 	}
+	return nil
+}
+
+// delete course that do not use when create
+func (w *CourseWorker) Delete() error {
+	// get all from pre_installed_course_tracking where status is Creating
+	courseTracking, err := w.mongoRepo.ListPreInstalledCourseTracking()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	PreCates := []int{1,2,3,4,5,6,7,8}
+	cateCourses , err := w.mongoRepo.GetCateCourse()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	for courseTracking.Next(context.Background()) {
+		var tracking domain.PreInstalledCourseTracking
+		err := courseTracking.Decode(&tracking)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		cates := tracking.CourseId
+		// delete cate that in PreCates but not in cates
+		for _, v := range PreCates {
+			if !helpers.Contains(cates, v) {
+				go w.mariaRepo.DeleteCategory(strings.ReplaceAll(tracking.MoodleId, "-", "_"), cateCourses[v].CategoryId)
+			}
+		}
+	}
+
+
 	return nil
 }

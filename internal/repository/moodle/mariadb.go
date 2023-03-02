@@ -225,3 +225,17 @@ func (m *MariaDB) CopyCategoryRow(dbname string, id []int) error {
 	log.Println("copy course cate success")
 	return nil
 }
+
+// get all course category id
+func (m *MariaDB) GetCourseCategoryID(dbname string) ([]int, error) {
+	// queryString := fmt.Sprintf("SELECT id FROM %s.mdl_course_categories", dbname)
+	// _, err := m.db.Exec(queryString)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return nil, err
+	// }
+	return nil, nil
+}
+
+
+
