@@ -460,7 +460,7 @@ func (m *MongoDB) UpdatePreInstalledCourse(moodle domain.Moodle) error {
 // get cate_course
 func (m *MongoDB) GetCateCourse() (domain.CateCourses, error) {
 	var cateCourse domain.CateCourses
-	err := m.db.Collection("cate_courses").FindOne(context.Background(), bson.M{}).Decode(&cateCourse)
+	err := m.db.Collection("cate_course").FindOne(context.Background(), bson.M{}).Decode(&cateCourse)
 	if err != nil {
 		return cateCourse, err
 	}
@@ -468,10 +468,14 @@ func (m *MongoDB) GetCateCourse() (domain.CateCourses, error) {
 }
 
 // list pre_installed_course_tracking by status Pending
-func (m *MongoDB) ListPreInstalledCourseTracking() (*mongo.Cursor, error) {
-	cursor, err := m.db.Collection("pre_installed_course_tracking").Find(context.Background(), bson.M{"status": "Creating"})
+func (m *MongoDB) ListPreInstalledCourseTracking(status string) (*mongo.Cursor, error) {
+	cursor, err := m.db.Collection("pre_installed_course_tracking").Find(context.Background(), bson.M{"status": status})
+	// ignore no documents in result
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	}
 	if err != nil {
-		return nil, err
+		return cursor, err
 	}
 	return cursor, nil
 }

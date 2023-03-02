@@ -28,55 +28,16 @@ func NewCourseWorker(mongo mongodbiface.DB, maria *sql.DB) *CourseWorker {
 	}
 }
 
-// delete course
-func (w *CourseWorker) Update() error {
-	// get all from pre_installed_course_tracking where status is Pending
-	courseTracking, err := w.mongoRepo.ListPreInstalledCourseTracking()
-	if err != nil {
-		log.Println(err)
-		return err
-	}
 
-	for courseTracking.Next(context.Background()) {
-		var tracking domain.PreInstalledCourseTracking
-		err := courseTracking.Decode(&tracking)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		go w.UpdateCate(strings.ReplaceAll(tracking.MoodleId, "-", "_"), tracking.CourseId)
-		go w.UpdateCourse(strings.ReplaceAll(tracking.MoodleId, "-", "_"), tracking.CourseId)
-	}
-
-	return nil
-}
-
-// update category
-func (w *CourseWorker) UpdateCate(dbname string, courseid []int) error {
-	// cope from mdl_course_categories_backup to mdl_course_categories
-	err := w.mariaRepo.CopyCategoryRow(dbname, courseid)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	return nil
-}
-
-// update course
-func (w *CourseWorker) UpdateCourse(dbname string, courseid []int) error {
-	// cope from mdl_course_backup to mdl_course
-	err := w.mariaRepo.CopyCourseRow(dbname, courseid)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	return nil
+func (w *CourseWorker) Update(){
+	go w.Delete()
+	go w.Add()
 }
 
 // delete course that do not use when create
 func (w *CourseWorker) Delete() error {
 	// get all from pre_installed_course_tracking where status is Creating
-	courseTracking, err := w.mongoRepo.ListPreInstalledCourseTracking()
+	courseTracking, err := w.mongoRepo.ListPreInstalledCourseTracking("Creating")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -95,14 +56,67 @@ func (w *CourseWorker) Delete() error {
 			return err
 		}
 		cates := tracking.CourseId
-		// delete cate that in PreCates but not in cates
-		for _, v := range PreCates {
-			if !helpers.Contains(cates, v) {
-				go w.mariaRepo.DeleteCategory(strings.ReplaceAll(tracking.MoodleId, "-", "_"), cateCourses[v].CategoryId)
+		// check if dbstatus is Created  from maria_tracking
+		mariaTracking, err := w.mongoRepo.GetMariaTracking(tracking.MoodleId)
+		if mariaTracking.DbStatus == "Created" {
+			// delete cate that in PreCates but not in cates
+			for _, v := range PreCates {
+				if !helpers.Contains(cates, v) {
+					err = w.mariaRepo.DeleteCategory(strings.ReplaceAll(tracking.MoodleId, "-", "_"), cateCourses.CateCourse[v-1])
+					if err != nil {
+						log.Println(err)
+						return err
+					}
+				}
+			// update status to updated
+			tracking.Status = "Updated"
+			err = w.mongoRepo.UpdatePreInstalledCourseTracking(tracking)
 			}
 		}
 	}
+	return nil
+}
 
 
+// update course if that was added
+func (w *CourseWorker) Add() error {
+	// get all from pre_installed_course_tracking where status is Creating
+	courseTracking, err := w.mongoRepo.ListPreInstalledCourseTracking("Pending")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	PreCates := []int{1,2,3,4,5,6,7,8}
+	cateCourses , err := w.mongoRepo.GetCateCourse()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	for courseTracking.Next(context.Background()) {
+		var tracking domain.PreInstalledCourseTracking
+		err := courseTracking.Decode(&tracking)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		cates := tracking.CourseId
+		// check if dbstatus is Created  from maria_tracking
+		mariaTracking, err := w.mongoRepo.GetMariaTracking(tracking.MoodleId)
+		if mariaTracking.DbStatus == "Created" {
+			// delete cate that in PreCates but not in cates
+			for _, v := range PreCates {
+				if helpers.Contains(cates, v) {
+					err = w.mariaRepo.CopyCategoryRow(strings.ReplaceAll(tracking.MoodleId, "-", "_"), cateCourses.CateCourse[v-1])
+					if err != nil {
+						log.Println(err)
+						return err
+					}
+				}
+			// update status to updated
+			tracking.Status = "Updated"
+			err = w.mongoRepo.UpdatePreInstalledCourseTracking(tracking)
+			}
+		}
+	}
 	return nil
 }

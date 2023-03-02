@@ -62,60 +62,60 @@ dao_tao_doi_nhom
 	team quan ly lanh dao
 
 
-db.cate_course.insertOne({"cate_course" :[
+db.cate_course.insertOne({"catecourse" :[
 	{
 		pre_installed_course_id: 1,
-		categories_id: 5,
-		sub_cate: [],
+		categoryid: 5,
+		subcate: [],
 		courses: [9, 35]
 	},
 
 	{
 		pre_installed_course_id: 2,
-		categories_id: 27,
-		sub_cate: [],
+		categoryid: 27,
+		subcate: [],
 		courses: [32, 33, 34]
 	},
 
 	{
 		pre_installed_course_id: 3,
-		categories_id: 28,
-		sub_cate: [],
+		categoryid: 28,
+		subcate: [],
 		courses: [36,37,38,39,40]
 	},
 
 	{
 		pre_installed_course_id: 4,
-		categories_id: 29,
-		sub_cate: [30, 31, 32],
+		categoryid: 29,
+		subcate: [30, 31, 32],
 		courses: [41, 42, 43, 44, 72, 45, 46, 47, 48, 49]
 	},
 
 	{
 		pre_installed_course_id: 5,
-		categories_id: 33,
-		sub_cate: [34, 35, 36],
+		categoryid: 33,
+		subcate: [34, 35, 36],
 		courses: [50, 51, 52, 53, 54, 55, 56]
 	},
 
 	{
 		pre_installed_course_id: 6,
-		categories_id: 37,
-		sub_cate: [],
+		categoryid: 37,
+		subcate: [],
 		courses: [57, 58, 59]
 	},
 
 	{
 		pre_installed_course_id: 7,
-		categories_id: 38,
-		sub_cate: [],
-		courses: [60, 61, 61, 63, 64, 65]
+		categoryid: 38,
+		subcate: [],
+		courses: [60, 61, 62, 63, 64, 65]
 	},
 
 	{
 		pre_installed_course_id: 8,
-		categories_id: 39,
-		sub_cate: [],
+		categoryid: 39,
+		subcate: [],
 		courses: [66, 67, 68, 69, 70, 71]
 	},
 ]})

@@ -22,6 +22,7 @@ func Start(mongo mongodbiface.DB) {
 	go NFSWorker(mongo)
 	go SendmailCreateWorker(mongo, maria)
 	go SendmailDeleteWorker(mongo, maria)
+	go CourseWorker(mongo, maria)
 }
 
 func SendmailCreateWorker(mongo mongodbiface.DB, maria *sql.DB) {
@@ -69,6 +70,14 @@ func NFSWorker(mongo mongodbiface.DB) {
 	for {
 		time.Sleep(3 * time.Second)
 		worker.NewNFSWorker(mongo).Update()
+	}
+}
+
+func CourseWorker(mongo mongodbiface.DB, maria *sql.DB) {
+	log.Println("Starting Course worker")
+	for {
+		time.Sleep(3 * time.Second)
+		worker.NewCourseWorker(mongo, maria).Update()
 	}
 }
 
