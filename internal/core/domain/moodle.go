@@ -72,6 +72,18 @@ type PreInstalledCourseTracking struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type CateCourse struct {
+	PreInstalledCourseId int `json:"pre_installed_course_id"`
+	CategoryId int `json:"category_id"`
+	SubCate []int `json:"sub_cate"`
+	Courses []int `json:"courses"`
+}
+
+type CateCourses struct {
+	CateCourse []CateCourse `json:"cate_course"`
+}
+
 func NewMoodleID() string {
 	return uuid.New().String()
 }
+

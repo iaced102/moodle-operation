@@ -164,6 +164,11 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 	if err != nil {
 		return moodle, apperrors.Internal("create favicon tracking error", err)
 	}
+	// preinstalled course tracking
+	err = s.mongoRepository.CreatePreInstalledCourseTracking(moodle_)
+	if err != nil {
+		return moodle, apperrors.Internal("create preinstalled course tracking error", err)
+	}
 	// moodle config
 	err = s.mongoRepository.CreateMoodleConfig(moodle_)
 	if err != nil {
@@ -384,6 +389,17 @@ func (s *Service) UpdatePreInstalledCourse(moodle domain.Moodle) (map[string]str
 		return nil, apperrors.Internal("update pre_installed_course error", err)
 	}
 	// TODO update course to mariadb
+	// preInstalledCourse tracking
+	var preInstalledCourseTracking domain.PreInstalledCourseTracking
+	preInstalledCourseTracking.MoodleId = moodle.Id
+	preInstalledCourseTracking.CourseId = moodle.PreInstalledCourse
+	preInstalledCourseTracking.Status = "Pending"
+	preInstalledCourseTracking.UpdatedAt = time.Now()
+	preInstalledCourseTracking.CreatedAt = time.Now()
+	err = s.mongoRepository.UpdatePreInstalledCourseTracking(preInstalledCourseTracking)
+	if err != nil {
+		return nil, apperrors.Internal("update pre_installed_course tracking error", err)
+	}
 	return map[string]string{"message": "success"}, nil
 }
 
