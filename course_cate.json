@@ -62,7 +62,7 @@ dao_tao_doi_nhom
 	team quan ly lanh dao
 
 
-[
+db.cate_course.insertOne({"cate_course" :[
 	{
 		pre_installed_course_id: 1,
 		categories_id: 5,
@@ -118,4 +118,4 @@ dao_tao_doi_nhom
 		sub_cate: [],
 		courses: [66, 67, 68, 69, 70, 71]
 	},
-]
+]})
