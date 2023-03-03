@@ -70,31 +70,39 @@ func (w *SitenameWorker) Update(dbname, sitename string) error {
 		return nil
 	}
 	if mariaTracking.DbStatus == "Created" {
-		log.Println("updating shortname, fullname to mdl_course for " + sitename)
-		err = w.mariaRepo.UpdateDB(dbname, sitename, sitename)
+		// get pre_installed_course_tracking
+		preInstalledCourseTracking, err := w.mongoRepo.GetPreInstalledCourseTracking(strings.ReplaceAll(dbname, "_", "-"))
 		if err != nil {
 			log.Println(err)
 			return err
 		}
-		err := w.mongoRepo.UpdateSitenameTracking(domain.SitenameTracking{ 
-			MoodleId: strings.ReplaceAll(dbname, "_", "-"),
-			DbName: dbname,
-			SiteName: sitename,
-			IsUpdate: true,
-		})
-		if err != nil {
-			log.Println(err)
-			return err
+		if preInstalledCourseTracking.Status == "Updated" {
+			log.Println("updating shortname, fullname to mdl_course for " + sitename)
+			err = w.mariaRepo.UpdateDB(dbname, sitename, sitename)
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+			err := w.mongoRepo.UpdateSitenameTracking(domain.SitenameTracking{ 
+				MoodleId: strings.ReplaceAll(dbname, "_", "-"),
+				DbName: dbname,
+				SiteName: sitename,
+				IsUpdate: true,
+			})
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+		// update sitename
+			err = w.mongoRepo.UpdateSitename(domain.SitenameTracking{
+				MoodleId: strings.ReplaceAll(dbname, "_", "-"),
+				SiteName: sitename,
+			})
+			if err != nil {
+				return err
+			}
+			log.Println("updated shortname, fullname to mdl_course for " + sitename)
 		}
-	// update sitename
-		err = w.mongoRepo.UpdateSitename(domain.SitenameTracking{
-			MoodleId: strings.ReplaceAll(dbname, "_", "-"),
-			SiteName: sitename,
-		})
-		if err != nil {
-			return err
-		}
-		log.Println("updated shortname, fullname to mdl_course for " + sitename)
 	}
 	return nil
 }

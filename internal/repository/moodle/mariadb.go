@@ -196,31 +196,8 @@ func (m *MariaDB) DeleteCourse(dbname string, id int) error {
 
 // delete category from table mdl_course_categories
 func (m *MariaDB) DeleteCategory(dbname string, cateCourse domain.CateCourse) error {
-	// delete all from table mdl_course_categories
-	// queryString := fmt.Sprintf("DELETE FROM %s.mdl_course_categories", dbname)
-	// _, err := m.db.Exec(queryString)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return err
-	// }
-	// log.Println("delete all from table mdl_course_categories success")
-	// // delete all row from table mdl_course except row id = 1
-	// queryString = fmt.Sprintf("DELETE FROM %s.mdl_course WHERE id != 1", dbname)
-	// _, err = m.db.Exec(queryString)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return err
-	// }
-	// log.Println("delte all from table mdl_course success")
-	// // copy table mdl_course_categories_backup to mdl_course_categories
-	// err = m.CopyCategoryRow(dbname, cateCourse)
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return err
-	// }
-	// log.Println("copy category row success")
 
-
+	// delete categories
 	queryString := fmt.Sprintf("DELETE FROM %s.mdl_course_categories WHERE id = %d", dbname, cateCourse.CategoryId)
 	_, err := m.db.Exec(queryString)
 	if err != nil {
@@ -228,7 +205,7 @@ func (m *MariaDB) DeleteCategory(dbname string, cateCourse domain.CateCourse) er
 		return err
 	}
 	log.Println("delete category: ", cateCourse.CategoryId,  "success")
-	// delete all sub category in category
+	// delete all sub category 
 	for _, v := range cateCourse.SubCate{
 		queryString := fmt.Sprintf("DELETE FROM %s.mdl_course_categories WHERE id = %d", dbname, v)
 		_, err := m.db.Exec(queryString)
@@ -237,13 +214,62 @@ func (m *MariaDB) DeleteCategory(dbname string, cateCourse domain.CateCourse) er
 			return err
 		}
 		log.Println("delete sub category: ", v, "success")
-		// time.Sleep(1/2 * time.Second)
 	}
+
 	// delete all course in category
 	for _, v := range cateCourse.Courses {
 		m.DeleteCourse(dbname, v)
-		// time.Sleep(1/2 * time.Second)
 	}
+	// // delete from mdl_course_sections
+	// for _, v := range cateCourse.Courses {
+	// 	queryString := fmt.Sprintf("DELETE FROM %s.mdl_course_sections WHERE course = %d", dbname, v)
+	// 	_, err := m.db.Exec(queryString)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		return err
+	// 	}
+	// 	log.Println("delete course section: ", v, "success")
+	// }
+	// // delete from mdl_course_modules
+	// for _, v := range cateCourse.Courses {
+	// 	queryString := fmt.Sprintf("DELETE FROM %s.mdl_course_modules WHERE course = %d", dbname, v)
+	// 	_, err := m.db.Exec(queryString)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		return err
+	// 	}
+	// 	log.Println("delete course module: ", v, "success")
+	// }
+	// // delete from mdl_course_modules_completion
+	// for _, v := range cateCourse.Courses {
+	// 	queryString := fmt.Sprintf("DELETE FROM %s.mdl_course_modules_completion WHERE coursemoduleid IN (SELECT id FROM %s.mdl_course_modules WHERE course = %d)", dbname, dbname, v)
+	// 	_, err := m.db.Exec(queryString)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		return err
+	// 	}
+	// 	log.Println("delete course module completion: ", v, "success")
+	// }
+	// // delete from mdl_resource
+	// for _, v := range cateCourse.Courses {
+	// 	queryString := fmt.Sprintf("DELETE FROM %s.mdl_resource WHERE course = %d", dbname, v)
+	// 	_, err := m.db.Exec(queryString)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		return err
+	// 	}
+	// 	log.Println("delete resource: ", v, "success")
+	// }
+	// // delete from mdl_assign
+	// for _, v := range cateCourse.Courses {
+	// 	queryString := fmt.Sprintf("DELETE FROM %s.mdl_assign WHERE course = %d", dbname, v)
+	// 	_, err := m.db.Exec(queryString)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		return err
+	// 	}
+	// 	log.Println("delete assign: ", v, "success")
+	// }
 	return err
 }
 

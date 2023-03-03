@@ -8,7 +8,6 @@ import (
 	helpers "moodle/pkg/helpers"
 	"moodle/pkg/mongodbiface"
 	"strings"
-	"time"
 
 	"moodle/internal/core/domain"
 )
@@ -60,11 +59,11 @@ func (w *CourseWorker) Delete() error {
 		// check if dbstatus is Created  from maria_tracking
 		mariaTracking, err := w.mongoRepo.GetMariaTracking(tracking.MoodleId)
 		if mariaTracking.DbStatus == "Created" {
-			// update status to updated
-			tracking.Status = "Updated"
+			// update status to updating
+			tracking.Status = "Updating"
 			err = w.mongoRepo.UpdatePreInstalledCourseTracking(tracking)
 			// delete cate that in PreCates but not in cates
-			time.Sleep(5 * time.Second)
+			// time.Sleep(5 * time.Second)
 			for _, v := range PreCates {
 				if !helpers.Contains(cates, v) {
 					err = w.mariaRepo.DeleteCategory(strings.ReplaceAll(tracking.MoodleId, "-", "_"), cateCourses.CateCourse[v-1])
@@ -73,6 +72,9 @@ func (w *CourseWorker) Delete() error {
 						return err
 					}
 				}
+			// update status to updated
+			tracking.Status = "Updated"
+			err = w.mongoRepo.UpdatePreInstalledCourseTracking(tracking)
 			}
 		}
 	}
@@ -106,11 +108,8 @@ func (w *CourseWorker) Add() error {
 		mariaTracking, err := w.mongoRepo.GetMariaTracking(tracking.MoodleId)
 		if mariaTracking.DbStatus == "Created" {
 			// update status to updated
-			tracking.Status = "Updated"
+			tracking.Status = "Updating"
 			err = w.mongoRepo.UpdatePreInstalledCourseTracking(tracking)
-			// delete cate that in PreCates but not in cates
-			time.Sleep(5 * time.Second)
-			// delete cate that in PreCates but not in cates
 			for _, v := range PreCates {
 				if helpers.Contains(cates, v) {
 					err = w.mariaRepo.CopyCategoryRow(strings.ReplaceAll(tracking.MoodleId, "-", "_"), cateCourses.CateCourse[v-1])

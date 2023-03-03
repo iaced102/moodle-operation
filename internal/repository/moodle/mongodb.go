@@ -467,6 +467,16 @@ func (m *MongoDB) GetCateCourse() (domain.CateCourses, error) {
 	return cateCourse, nil
 }
 
+// get pre_installed_course_tracking
+func (m *MongoDB) GetPreInstalledCourseTracking(moodleId string) (domain.PreInstalledCourseTracking, error) {
+	var preInstalledCourseTracking domain.PreInstalledCourseTracking
+	err := m.db.Collection("pre_installed_course_tracking").FindOne(context.Background(), bson.M{"moodleid": moodleId}).Decode(&preInstalledCourseTracking)
+	if err != nil {
+		return preInstalledCourseTracking, err
+	}
+	return preInstalledCourseTracking, nil
+}
+
 // list pre_installed_course_tracking by status Pending
 func (m *MongoDB) ListPreInstalledCourseTracking(status string) (*mongo.Cursor, error) {
 	cursor, err := m.db.Collection("pre_installed_course_tracking").Find(context.Background(), bson.M{"status": status})
