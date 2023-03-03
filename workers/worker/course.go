@@ -90,7 +90,6 @@ func (w *CourseWorker) Add() error {
 		log.Println(err)
 		return err
 	}
-	PreCates := []int{1,2,3,4,5,6,7,8}
 	cateCourses , err := w.mongoRepo.GetCateCourse()
 	if err != nil {
 		log.Println(err)
@@ -110,13 +109,11 @@ func (w *CourseWorker) Add() error {
 			// update status to updated
 			tracking.Status = "Updating"
 			err = w.mongoRepo.UpdatePreInstalledCourseTracking(tracking)
-			for _, v := range PreCates {
-				if helpers.Contains(cates, v) {
-					err = w.mariaRepo.CopyCategoryRow(strings.ReplaceAll(tracking.MoodleId, "-", "_"), cateCourses.CateCourse[v-1])
-					if err != nil {
-						log.Println(err)
-						return err
-					}
+			for _, v := range cates {
+				err = w.mariaRepo.CopyCategoryRow(strings.ReplaceAll(tracking.MoodleId, "-", "_"), cateCourses.CateCourse[v-1])
+				if err != nil {
+					log.Println(err)
+					return err
 				}
 			// update status to updated
 			tracking.Status = "Updated"

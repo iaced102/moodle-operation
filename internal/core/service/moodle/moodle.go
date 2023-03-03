@@ -370,6 +370,7 @@ func (s *Service) UpdateSiteName(sitenametracking domain.SitenameTracking) (map[
 // update pre_installed_course
 // track pre_installed_course into mongodb
 func (s *Service) UpdatePreInstalledCourse(moodle domain.Moodle) (map[string]string, *apperrors.AppError) {
+	preInstalledCourseAdd  := moodle.PreInstalledCourse
 	// get current moodle
 	moodle_, err := s.mongoRepository.Get(moodle.Id)
 	if err != nil {
@@ -392,7 +393,7 @@ func (s *Service) UpdatePreInstalledCourse(moodle domain.Moodle) (map[string]str
 	// preInstalledCourse tracking
 	var preInstalledCourseTracking domain.PreInstalledCourseTracking
 	preInstalledCourseTracking.MoodleId = moodle.Id
-	preInstalledCourseTracking.CourseId = moodle.PreInstalledCourse
+	preInstalledCourseTracking.CourseId = preInstalledCourseAdd
 	preInstalledCourseTracking.Status = "Pending"
 	preInstalledCourseTracking.UpdatedAt = time.Now()
 	preInstalledCourseTracking.CreatedAt = time.Now()

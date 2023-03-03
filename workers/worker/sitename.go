@@ -7,6 +7,7 @@ import (
 	repo "moodle/internal/repository/moodle"
 	"moodle/pkg/mongodbiface"
 	"strings"
+	"time"
 
 	"moodle/internal/core/domain"
 )
@@ -77,6 +78,7 @@ func (w *SitenameWorker) Update(dbname, sitename string) error {
 			return err
 		}
 		if preInstalledCourseTracking.Status == "Updated" {
+			time.Sleep(5 * time.Second)
 			log.Println("updating shortname, fullname to mdl_course for " + sitename)
 			err = w.mariaRepo.UpdateDB(dbname, sitename, sitename)
 			if err != nil {

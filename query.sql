@@ -131,5 +131,5 @@ INSERT INTO c0278b53_aacc_480f_a31f_d4943d639c4a.mdl_course_categories SELECT * 
 create table mdl_course as select * from mdl_course_backup;
 create table mdl_course_categories as select * from mdl_course_categories_backup;
 
-INSERT INTO mdl_course SELECT * FROM mdl_course_backup WHERE id = > 1;
-INSERT INTO mdl_course_categories SELECT * FROM mdl_course_categories_backup WHERE id = 39;
+INSERT INTO mdl_course SELECT * FROM mdl_course_backup WHERE id = > 35;
+INSERT INTO mdl_course_categories SELECT * FROM mdl_course_categories_backup WHERE id > 27;

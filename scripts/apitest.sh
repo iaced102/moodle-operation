@@ -181,12 +181,12 @@ function upload-slogan() {
 }
 
 function upload-course() {
-	curl -X POST "http://lms-service:5000/api/v1/pre-installed-course" \
+	curl -X POST "http://localhost:5000/api/v1/pre-installed-course" \
 		 -H "X-Tenant-Name: admin" \
 		 -H "X-Auth-Token: $token" \
 		 -d '{
-		 	"id": "ffd90bce-5d60-4130-8c4b-b20b584cf2c1",
-			"pre_installed_course": [1,2,3,4,5,6,7,8]
+		 	"id": "209d0ecc-44d1-43fa-abe4-7d777039aa3a",
+			"pre_installed_course": [6,7,8]
 		 }'
 }
 

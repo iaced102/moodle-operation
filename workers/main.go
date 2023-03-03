@@ -60,7 +60,7 @@ func MariaWorker(mongo mongodbiface.DB, maria *sql.DB) {
 func SitenameWorker(mongo mongodbiface.DB, maria *sql.DB) {
 	log.Println("Starting Sitename worker")
 	for {
-		time.Sleep(30 * time.Second)
+		time.Sleep( 5 * time.Second)
 		worker.NewSitenameWorker(mongo, maria).UpdateSitename()
 	}
 }

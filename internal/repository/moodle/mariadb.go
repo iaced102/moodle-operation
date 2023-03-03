@@ -295,7 +295,7 @@ func (m *MariaDB) CopyCategoryRow(dbname string, cateCourse domain.CateCourse) e
 		log.Println(err)
 		return err
 	}
-	log.Println("copy course cate success")
+	log.Println("copy cate success")
 	// copy sub category
 	for _, v := range cateCourse.SubCate {
 		queryString := fmt.Sprintf("INSERT INTO %s.%s SELECT * FROM %s.mdl_course_categories_backup WHERE id = %d", dbname, "mdl_course_categories", dbname, v)
