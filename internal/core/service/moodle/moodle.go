@@ -280,9 +280,9 @@ func (s *Service) UpdateLogo(moodleID string, file multipart.File, header *multi
 	logotracking.MoodleId = moodleID
 	logotracking.FilePath = "/tmp/moodle/" + moodleID + "/logo/" + header.Filename
 	// resize logo
-	_, err = helpers.ResizePng(logotracking.FilePath, 200, 200)
+	_, err = helpers.ResizePng(logotracking.FilePath, 50, 56)
 	if err != nil {
-		return nil, apperrors.Internal("resize favicon error", err)
+		return nil, apperrors.Internal("resize logo error", err)
 	}
 	logotracking.Status = "Pending"
 	logotracking.URL = fmt.Sprintf("http://%s/pluginfile.php/1/theme_edumy/headerlogo1/1676573021/Logo mới Bizfly Cloud-01.png", moodle.WebSiteName)
