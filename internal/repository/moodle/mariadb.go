@@ -197,14 +197,17 @@ func (m *MariaDB) DeleteCourse(dbname string, id int) error {
 // delete category from table mdl_course_categories
 func (m *MariaDB) DeleteCategory(dbname string, cateCourse domain.CateCourse) error {
 
-	// delete categories
-	queryString := fmt.Sprintf("DELETE FROM %s.mdl_course_categories WHERE id = %d", dbname, cateCourse.CategoryId)
-	_, err := m.db.Exec(queryString)
-	if err != nil {
-		log.Println(err)
-		return err
+	// delete all course in category
+	for _, v := range cateCourse.Courses {
+		queryString := fmt.Sprintf("DELETE FROM %s.mdl_course WHERE id = %d", dbname, v)
+		_, err := m.db.Exec(queryString)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		log.Println("delete course: ", v, "success")
 	}
-	log.Println("delete category: ", cateCourse.CategoryId,  "success")
+
 	// delete all sub category 
 	for _, v := range cateCourse.SubCate{
 		queryString := fmt.Sprintf("DELETE FROM %s.mdl_course_categories WHERE id = %d", dbname, v)
@@ -215,11 +218,52 @@ func (m *MariaDB) DeleteCategory(dbname string, cateCourse domain.CateCourse) er
 		}
 		log.Println("delete sub category: ", v, "success")
 	}
+	
+	// delete all course enroll in sub category
+	for _, v := range cateCourse.SubCate{
+		queryString := fmt.Sprintf("DELETE FROM %s.mdl_enrol WHERE courseid = %d", dbname, v)
+		_, err := m.db.Exec(queryString)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		log.Println("delete course enroll in sub category: ", v, "success")
+	}
+
+	// delete grade book
+	for _, v := range cateCourse.SubCate{
+		queryString := fmt.Sprintf("DELETE FROM %s.mdl_grade_items WHERE courseid = %d", dbname, v)
+		_, err := m.db.Exec(queryString)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		log.Println("delete grade book in sub category: ", v, "success")
+	}
+
+	// delete categories
+	queryString := fmt.Sprintf("DELETE FROM %s.mdl_course_categories WHERE id = %d", dbname, cateCourse.CategoryId)
+	_, err := m.db.Exec(queryString)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	log.Println("delete category: ", cateCourse.CategoryId,  "success")
+	// // chage all course in category to uncategorized
+	// for _, v := range cateCourse.Courses {
+	// 	queryString := fmt.Sprintf("UPDATE %s.mdl_course SET category = 0 WHERE id = %d", dbname, v)
+	// 	_, err := m.db.Exec(queryString)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		return err
+	// 	}
+	// 	log.Println("change course: ", v, "to uncategorized success")
+	// }
 
 	// delete all course in category
-	for _, v := range cateCourse.Courses {
-		m.DeleteCourse(dbname, v)
-	}
+	// for _, v := range cateCourse.Courses {
+	// 	m.DeleteCourse(dbname, v)
+	// }
 	// // delete from mdl_course_sections
 	// for _, v := range cateCourse.Courses {
 	// 	queryString := fmt.Sprintf("DELETE FROM %s.mdl_course_sections WHERE course = %d", dbname, v)
@@ -306,15 +350,27 @@ func (m *MariaDB) CopyCategoryRow(dbname string, cateCourse domain.CateCourse) e
 		}
 		log.Println("copy sub course cate success")
 	}
-	// copy course
+
+	// update category for mdl_course
 	for _, v := range cateCourse.Courses {
-		queryString := fmt.Sprintf("INSERT INTO %s.%s SELECT * FROM %s.mdl_course_backup WHERE id = %d", dbname, "mdl_course", dbname, v)
+		queryString := fmt.Sprintf("UPDATE %s.mdl_course SET category = %d WHERE id = %d", dbname, cateCourse.CategoryId, v)
 		_, err := m.db.Exec(queryString)
 		if err != nil {
 			log.Println(err)
 			return err
 		}
-		log.Println("copy course success")
+		log.Println("update course category success")
 	}
+
+	// // copy course
+	// for _, v := range cateCourse.Courses {
+	// 	queryString := fmt.Sprintf("INSERT INTO %s.%s SELECT * FROM %s.mdl_course_backup WHERE id = %d", dbname, "mdl_course", dbname, v)
+	// 	_, err := m.db.Exec(queryString)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		return err
+	// 	}
+	// 	log.Println("copy course success")
+	// }
 	return nil
 }
