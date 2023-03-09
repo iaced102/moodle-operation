@@ -72,7 +72,7 @@ drop table mdl_course_categories;
 UPDATE mdl_course_categories SET visible = 0 WHERE id = 29;
 
 -- check last 5 minutes online users
-SELECT * FROM mdl_user WHERE lastaccess > UNIX_TIMESTAMP() - 300;
+SELECT count(*) FROM mdl_user WHERE lastaccess > UNIX_TIMESTAMP() - 5;
 
 -- copy row
 INSERT INTO c0278b53_aacc_480f_a31f_d4943d639c4a.mdl_course SELECT * FROM c0278b53_aacc_480f_a31f_d4943d639c4a.mdl_course_backup WHERE id = 9;

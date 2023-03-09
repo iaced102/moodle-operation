@@ -17,3 +17,12 @@ func StringToInt(s string) (int, error) {
 func IntToString(i int) string {
 	return strconv.Itoa(i)
 }
+
+func ToInt(s string) int {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return 0
+	}
+	return i
+}
+

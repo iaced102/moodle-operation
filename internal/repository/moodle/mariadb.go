@@ -374,3 +374,30 @@ func (m *MariaDB) CopyCategoryRow(dbname string, cateCourse domain.CateCourse) e
 	// }
 	return nil
 }
+
+// get data from mdl_user table
+func (m *MariaDB) CountUserOnline(dbname string) (map[string]string, error) {
+	return m.Select(dbname, "SELECT count(*) FROM mdl_user WHERE lastaccess > UNIX_TIMESTAMP() - 3000"), nil
+}
+
+// get all database name except system database end return list of database name
+func (m *MariaDB) GetDBName() ([]string, error) {
+	var result []string
+	queryString := "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys')"
+	rows, err := m.db.Query(queryString)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var dbname string
+		err := rows.Scan(&dbname)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		result = append(result, dbname)
+	}
+	return result, nil
+}

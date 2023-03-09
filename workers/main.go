@@ -16,13 +16,14 @@ import (
 
 func Start(mongo mongodbiface.DB) {
 	maria := NewMariaDB()
-	go MariaWorker(mongo, maria)
-	// go CourseWorker(mongo, maria)
-	go SitenameWorker(mongo, maria)
-	go NFSWorker(mongo)
-	go SendmailCreateWorker(mongo, maria)
-	go SendmailDeleteWorker(mongo, maria)
-	go TrackingWorker(mongo)
+	// go MariaWorker(mongo, maria)
+	// // go CourseWorker(mongo, maria)
+	// go SitenameWorker(mongo, maria)
+	// go NFSWorker(mongo)
+	// go SendmailCreateWorker(mongo, maria)
+	// go SendmailDeleteWorker(mongo, maria)
+	// go TrackingWorker(mongo)
+	go MonitorWorker(maria)
 }
 
 func SendmailCreateWorker(mongo mongodbiface.DB, maria *sql.DB) {
@@ -80,6 +81,16 @@ func CourseWorker(mongo mongodbiface.DB, maria *sql.DB) {
 		worker.NewCourseWorker(mongo, maria).Update()
 	}
 }
+
+func MonitorWorker(maria *sql.DB) {
+	log.Println("Starting monitor worker")
+	for {
+		time.Sleep(5 * time.Second)
+		worker.NewMonitorWorker(maria).GetUser()
+	}
+}
+
+
 
 func NewMongoDB() *mongo.Database {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
