@@ -7,7 +7,6 @@ import (
 	repo "moodle/internal/repository/moodle"
 	"moodle/pkg/mongodbiface"
 	"strings"
-	"time"
 
 	"moodle/internal/core/domain"
 )
@@ -72,20 +71,20 @@ func (w *SitenameWorker) Update(dbname, sitename string) error {
 	}
 	if mariaTracking.DbStatus == "Created" {
 		// get pre_installed_course_tracking
-		preInstalledCourseTracking, err := w.mongoRepo.GetPreInstalledCourseTracking(strings.ReplaceAll(dbname, "_", "-"))
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		if preInstalledCourseTracking.Status == "Updated" {
-			time.Sleep(5 * time.Second)
+		// preInstalledCourseTracking, err := w.mongoRepo.GetPreInstalledCourseTracking(strings.ReplaceAll(dbname, "_", "-"))
+		// if err != nil {
+		// 	log.Println(err)
+		// 	return err
+		// }
+		// if preInstalledCourseTracking.Status == "Updated" {
+			// time.Sleep(5 * time.Second)
 			log.Println("updating shortname, fullname to mdl_course for " + sitename)
 			err = w.mariaRepo.UpdateDB(dbname, sitename, sitename)
 			if err != nil {
 				log.Println(err)
 				return err
 			}
-			err := w.mongoRepo.UpdateSitenameTracking(domain.SitenameTracking{ 
+			err = w.mongoRepo.UpdateSitenameTracking(domain.SitenameTracking{ 
 				MoodleId: strings.ReplaceAll(dbname, "_", "-"),
 				DbName: dbname,
 				SiteName: sitename,
@@ -104,7 +103,7 @@ func (w *SitenameWorker) Update(dbname, sitename string) error {
 				return err
 			}
 			log.Println("updated shortname, fullname to mdl_course for " + sitename)
-		}
+		// }
 	}
 	return nil
 }

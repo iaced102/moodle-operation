@@ -17,7 +17,7 @@ import (
 func Start(mongo mongodbiface.DB) {
 	maria := NewMariaDB()
 	go MariaWorker(mongo, maria)
-	go CourseWorker(mongo, maria)
+	// go CourseWorker(mongo, maria)
 	go SitenameWorker(mongo, maria)
 	go NFSWorker(mongo)
 	go SendmailCreateWorker(mongo, maria)
@@ -60,7 +60,7 @@ func MariaWorker(mongo mongodbiface.DB, maria *sql.DB) {
 func SitenameWorker(mongo mongodbiface.DB, maria *sql.DB) {
 	log.Println("Starting Sitename worker")
 	for {
-		time.Sleep( 5 * time.Second)
+		time.Sleep( 3 * time.Second)
 		worker.NewSitenameWorker(mongo, maria).UpdateSitename()
 	}
 }
@@ -76,7 +76,7 @@ func NFSWorker(mongo mongodbiface.DB) {
 func CourseWorker(mongo mongodbiface.DB, maria *sql.DB) {
 	log.Println("Starting Course worker")
 	for {
-		time.Sleep(5 * time.Second)
+		time.Sleep(3 * time.Second)
 		worker.NewCourseWorker(mongo, maria).Update()
 	}
 }
