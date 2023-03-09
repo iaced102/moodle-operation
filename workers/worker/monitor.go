@@ -2,6 +2,7 @@ package worker
 
 import (
 	"database/sql"
+	"fmt"
 	repo "moodle/internal/repository/moodle"
 	helpers "moodle/pkg/helpers"
 	"time"
@@ -50,7 +51,8 @@ func (w *MonitorWorker) WriteUser(dbname string) error {
 }
 
 
-func Write(dbname string, data map[string]string) error {
+func Write(dbname string, data []string) error {
+	fmt.Println(data)
     // Create a client to connect to InfluxDB
     client := influxdb2.NewClientWithOptions("http://123.30.234.141:8086", "lmspoller:lmspoller", influxdb2.DefaultOptions().SetBatchSize(100))
 
@@ -59,7 +61,7 @@ func Write(dbname string, data map[string]string) error {
 
     // Define a data point to write
     p := influxdb2.NewPointWithMeasurement("lmsuser").
-		AddField("online_user",helpers.ToInt(data["count(*)"])).
+		AddField("online_user",helpers.ToInt(data[0])).
 		AddTag("dbname", dbname).
         SetTime(time.Now())
 

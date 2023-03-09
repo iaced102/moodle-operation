@@ -376,8 +376,25 @@ func (m *MariaDB) CopyCategoryRow(dbname string, cateCourse domain.CateCourse) e
 }
 
 // get data from mdl_user table
-func (m *MariaDB) CountUserOnline(dbname string) (map[string]string, error) {
-	return m.Select(dbname, "SELECT count(*) FROM mdl_user WHERE lastaccess > UNIX_TIMESTAMP() - 3000"), nil
+func (m *MariaDB) CountUserOnline(dbname string) ([]string, error) {
+	var result []string
+	queryString := fmt.Sprintf("SELECT count(*) FROM %s.mdl_user WHERE lastaccess > UNIX_TIMESTAMP() - 3000", dbname)
+	rows, err := m.db.Query(queryString)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var count string
+		err := rows.Scan(&dbname)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		result = append(result, count)
+	}
+	return result, nil
 }
 
 // get all database name except system database end return list of database name
