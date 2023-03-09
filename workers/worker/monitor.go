@@ -2,9 +2,7 @@ package worker
 
 import (
 	"database/sql"
-	"fmt"
 	repo "moodle/internal/repository/moodle"
-	helpers "moodle/pkg/helpers"
 	"time"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
@@ -41,7 +39,6 @@ func (w *MonitorWorker) GetUser() error {
 func (w *MonitorWorker) WriteUser(dbname string) error {
 	// get user
 	data , err := w.mariaRepo.CountUserOnline(dbname)
-	// fmt.Println(data)
 	if err != nil {
 		return err
 	}
@@ -51,8 +48,7 @@ func (w *MonitorWorker) WriteUser(dbname string) error {
 }
 
 
-func Write(dbname string, data []string) error {
-	fmt.Println(data)
+func Write(dbname string, data []int) error {
     // Create a client to connect to InfluxDB
     client := influxdb2.NewClientWithOptions("http://123.30.234.141:8086", "lmspoller:lmspoller", influxdb2.DefaultOptions().SetBatchSize(100))
 
@@ -61,8 +57,9 @@ func Write(dbname string, data []string) error {
 
     // Define a data point to write
     p := influxdb2.NewPointWithMeasurement("lmsuser").
-		AddField("online_user",helpers.ToInt(data[0])).
-		AddTag("dbname", dbname).
+		AddField("online_user",(data[0])).
+		AddField("dbname", dbname).
+		AddTag("dbname_tag", dbname).
         SetTime(time.Now())
 
     // Write the data point to InfluxDB

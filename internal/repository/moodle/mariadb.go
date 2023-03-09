@@ -376,9 +376,9 @@ func (m *MariaDB) CopyCategoryRow(dbname string, cateCourse domain.CateCourse) e
 }
 
 // get data from mdl_user table
-func (m *MariaDB) CountUserOnline(dbname string) ([]string, error) {
-	var result []string
-	queryString := fmt.Sprintf("SELECT count(*) FROM %s.mdl_user WHERE lastaccess > UNIX_TIMESTAMP() - 3000", dbname)
+func (m *MariaDB) CountUserOnline(dbname string) ([]int, error) {
+	var result []int
+	queryString := fmt.Sprintf("SELECT count(*) FROM %s.mdl_user WHERE lastaccess > UNIX_TIMESTAMP() - 30", dbname)
 	rows, err := m.db.Query(queryString)
 	if err != nil {
 		log.Println(err)
@@ -386,8 +386,8 @@ func (m *MariaDB) CountUserOnline(dbname string) ([]string, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var count string
-		err := rows.Scan(&dbname)
+		var count int
+		err := rows.Scan(&count)
 		if err != nil {
 			log.Println(err)
 			return nil, err
