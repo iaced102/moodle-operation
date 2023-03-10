@@ -23,7 +23,7 @@ func Start(mongo mongodbiface.DB) {
 	// go SendmailCreateWorker(mongo, maria)
 	// go SendmailDeleteWorker(mongo, maria)
 	// go TrackingWorker(mongo)
-	go MonitorWorker(maria)
+	go MonitorWorker(mongo, maria)
 }
 
 func SendmailCreateWorker(mongo mongodbiface.DB, maria *sql.DB) {
@@ -82,11 +82,11 @@ func CourseWorker(mongo mongodbiface.DB, maria *sql.DB) {
 	}
 }
 
-func MonitorWorker(maria *sql.DB) {
+func MonitorWorker(mongo mongodbiface.DB, maria *sql.DB) {
 	log.Println("Starting monitor worker")
 	for {
 		time.Sleep(5 * time.Second)
-		worker.NewMonitorWorker(maria).GetUser()
+		worker.NewMonitorWorker(mongo, maria).GetUser()
 	}
 }
 

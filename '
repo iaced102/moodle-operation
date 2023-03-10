@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	repo "moodle/internal/repository/moodle"
 	"moodle/pkg/mongodbiface"
-	"strings"
 	"time"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
@@ -48,22 +47,13 @@ func (w *MonitorWorker) WriteUser(dbname string) error {
 		return err
 	}
 	// write to influxdb
-	w.Write(dbname, data)
+	Write(dbname, data)
 	return nil
 }
 
 
 func (w *MonitorWorker) Write(dbname string, data []int) error {
-	moodle, err := w.mongoRepo.Get(strings.ReplaceAll(dbname, "_", "-"))
-	// check if error is no documents in result then ignore
-	if err != nil {
-		moodle.Packages.Ccu = 0
-		moodle.Packages.CcuExtraMax = 0
-		return nil
-	}
-	ccu := moodle.Packages.Ccu
-	ccumax := moodle.Packages.CcuExtraMax
-
+	moodle, err := w.mongoRepo.Get(strings.Replace(dbname, "_", "-")
     // Create a client to connect to InfluxDB
     client := influxdb2.NewClientWithOptions("http://123.30.234.141:8086", "lmspoller:lmspoller", influxdb2.DefaultOptions().SetBatchSize(100))
 
@@ -74,8 +64,6 @@ func (w *MonitorWorker) Write(dbname string, data []int) error {
     p := influxdb2.NewPointWithMeasurement("lmsuser").
 		AddField("online_user",(data[0])).
 		AddField("dbname", dbname).
-		AddField("ccu", ccu).
-		AddField("ccumax", ccumax).
 		AddTag("dbname_tag", dbname).
         SetTime(time.Now())
 
