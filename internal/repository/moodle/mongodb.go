@@ -590,3 +590,13 @@ func (m *MongoDB) GetFaviconTracking(moodleid string) (domain.FaviconTracking, e
 	}
 	return faviconTracking, nil
 }
+
+// get all nfs_tracking
+func (m *MongoDB) GetNFSTracking() (domain.NFSTrackings, error) {
+	var nfsTracking domain.NFSTrackings
+	err := m.db.Collection("nfs_tracking").FindOne(context.Background(), bson.M{"id":1}).Decode(&nfsTracking)
+	if err != nil {
+		return nfsTracking, err
+	}
+	return nfsTracking, nil
+}

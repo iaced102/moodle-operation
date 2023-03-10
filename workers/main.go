@@ -16,14 +16,23 @@ import (
 
 func Start(mongo mongodbiface.DB) {
 	maria := NewMariaDB()
-	// go MariaWorker(mongo, maria)
-	// // go CourseWorker(mongo, maria)
-	// go SitenameWorker(mongo, maria)
-	// go NFSWorker(mongo)
-	// go SendmailCreateWorker(mongo, maria)
-	// go SendmailDeleteWorker(mongo, maria)
-	// go TrackingWorker(mongo)
+	go MariaWorker(mongo, maria)
+	// go CourseWorker(mongo, maria)
+	go SitenameWorker(mongo, maria)
+	go NFSWorker(mongo)
+	go SendmailCreateWorker(mongo, maria)
+	go SendmailDeleteWorker(mongo, maria)
+	go TrackingWorker(mongo)
 	go MonitorWorker(mongo, maria)
+	go MonitorNFSWorker(mongo)
+}
+
+func MonitorNFSWorker(mongo mongodbiface.DB) {
+	log.Println("Starting monitor NFS worker")
+	for {
+		time.Sleep(5 * time.Second)
+		worker.NewMonitorNFSWorker(mongo).Run()
+	}
 }
 
 func SendmailCreateWorker(mongo mongodbiface.DB, maria *sql.DB) {

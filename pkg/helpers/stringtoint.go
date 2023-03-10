@@ -26,3 +26,8 @@ func ToInt(s string) int {
 	return i
 }
 
+
+// uint to int
+func UintToInt(u uint64) int {
+	return int(u)
+}

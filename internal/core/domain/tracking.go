@@ -53,3 +53,13 @@ type MoodleTracking struct {
 	IsUpdate bool `json:"is_update"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type NFSTracking struct {
+	Path string `json:"path"`
+	Size int `json:"size"`
+}
+
+type NFSTrackings struct {
+	Id int `json:"id"`
+	Data []NFSTracking `json:"data"`
+}
