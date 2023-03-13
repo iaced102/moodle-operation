@@ -22,6 +22,7 @@ RUN chown -R www-data:www-data /var/www/moodle
 
 # Expose apache.
 EXPOSE 80
+EXPOSE 443
 
 # cron
 RUN crontab -l | { cat; echo "* * * * *  /usr/bin/scheduler.sh"; } | crontab -

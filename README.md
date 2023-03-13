@@ -28,3 +28,31 @@ sed -i 's/utf8mb4/utf8/g' moodle.sql
 sed -i 's/utf8_unicode_520_ci/utf8_unicode_ci/g' moodle.sql
 ```
 
+
+
+# install certmanger to use let's encrypt
+## install
+```
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
+```
+## verify
+```
+kubectl get pods --namespace cert-manager
+```
+## Create a ClusterIssuer resource to configure cert-manager with your Let's Encrypt account credentials.
+```clusterissuer.yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    email: your-email-address
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+```
