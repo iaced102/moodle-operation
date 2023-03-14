@@ -79,7 +79,7 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 	moodle_.Name = moodle.WebSiteName
 	moodle_.LbName = "kube_service" + "_" + config.CLUSTERID + "_" + moodle_.Id + "_moodle-service"
 	moodle_.Ip = "14.225.36.146"
-	moodle_.WebSiteName = moodle.WebSiteName + ".lms.bizflycloud.vn"
+	moodle_.WebSiteName = moodle.WebSiteName + "." + config.LMSDOMAIN
 	// check if websitename is exist then return error
 	if !s.ValidateSitename(moodle_.WebSiteName) {
 		return moodle, apperrors.Conflict("websitename is already exist", errors.New("websitename is already exist"))
@@ -360,7 +360,7 @@ func (s *Service) UpdateSiteName(sitenametracking domain.SitenameTracking) (map[
 		return nil, apperrors.Internal("update sitename tracking error", err)
 	}
 	// update ingress
-	// err = s.k8sRepository.UpdateIngress(sitenametracking.MoodleId, sitenametracking.SiteName+".lms.bizflycloud.vn")
+	// err = s.k8sRepository.UpdateIngress(sitenametracking.MoodleId, sitenametracking.SiteName+"."+config.LMSDOMAIN)
 	// if err != nil {
 	// 	return nil, apperrors.Internal("update ingress error", err)
 	// }

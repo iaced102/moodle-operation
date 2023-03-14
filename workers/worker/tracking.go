@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"moodle/config"
 	repo "moodle/internal/repository/moodle"
 	mongo "moodle/pkg/mongodbiface"
 	"net/http"
@@ -23,7 +24,7 @@ func (w *TrackingWorker) UpdateMoodleStatus() error {
 		return err
 	}
 	for _, moodle := range moodles {
-		go w.checkMoodleStatus(moodle.MoodleId, "http://" + moodle.SiteName+".lms.bizflycloud.vn/login/index.php")
+		go w.checkMoodleStatus(moodle.MoodleId, "http://" + moodle.SiteName+"." + config.LMSDOMAIN + "/login/index.php")
 	}
 	return nil
 }
