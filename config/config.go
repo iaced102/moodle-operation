@@ -25,5 +25,5 @@ var (
 	KUBECONFIG = "moodle-cluster.kubeconfig"
 	CLUSTERID = "6o0cn9lv42livqek"
 	SENDMAILDOMAIN = "https://sendmail.bizflycloud.vn"
-	LMSDOMAIN = "lms.bizflycloud.vn"
+	LMSDOMAIN = "lms.bfcplatform.vn"
 )

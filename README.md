@@ -1,3 +1,9 @@
+export PVC_FILEPATH=$HOME/gits/moodle-operator/deploy/moodle-default/pvc.yaml
+export SERVICE_FILEPATH=$HOME/gits/moodle-operator/deploy/moodle-default/service.yaml
+export STATEFULSET_FILEPATH=$HOME/gits/moodle-operator/deploy/moodle
+export DEPLOYMENT_FILEPATH=$HOME/gits/moodle-operator/deploy/moodle
+export KUBECONFIG=$HOME/moodle-cluster.kubeconfig
+
 # API
 ```
 go run main.go
