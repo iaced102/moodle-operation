@@ -1,8 +1,8 @@
 #!/bin/bash
 
 
-password="Z}6a@7Dybf<l"
-username="duynn@bizflycloud.vn"
+password="ck)/i10RU%M8"
+username="bizflycloud@vccloud.vn"
 
 function get_token() {
     curl -s --request POST 'https://manage.bizflycloud.vn/api/token' \
@@ -17,10 +17,10 @@ function get_token() {
 
 function get_kubeconfig() {
 	token=$(get_token)
-	curl -s 'https://manage.bizflycloud.vn/api/kubernetes-engine/_/6o0cn9lv42livqek/kubeconfig' \
+	curl -s 'https://manage.bizflycloud.vn/api/kubernetes-engine/_/hnheekfmpirevw4y/kubeconfig' \
 	  -H 'authority: manage.bizflycloud.vn' \
 	  -H 'accept: application/json, text/plain, */*' \
-	  -H "X-Tenant-Name: duynn@bizflycloud.vn" \
+	  -H "X-Tenant-Name: bizflycloud@vccloud.vn" \
 	  -H "X-Auth-Token: $token" 
 }
 
