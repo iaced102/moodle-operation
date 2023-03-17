@@ -54,7 +54,7 @@ spec:
             #   requests:
             #     cpu: 1
             #     memory: "2900Mi"
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
               protocol: TCP

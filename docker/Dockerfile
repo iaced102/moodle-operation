@@ -18,9 +18,11 @@ ADD ./moodle /var/www/moodle
 ADD ./moodledata /var/www/moodledata_src
 ADD ./run.sh /usr/bin/run.sh
 ADD ./scheduler.sh /usr/bin/scheduler.sh
-# ADD ./tls.crt /etc/ssl/certs/tls.crt
-# ADD ./tls.key /etc/ssl/private/tls.key
+ADD ./tls.crt /etc/ssl/certs/tls.crt
+ADD ./tls.key /etc/ssl/private/tls.key
 RUN chown -R www-data:www-data /var/www/moodle
+RUN a2enmod rewrite
+RUN a2enmod ssl
 
 # Expose apache.
 EXPOSE 80
