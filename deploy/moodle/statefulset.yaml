@@ -29,7 +29,7 @@ spec:
           - name: DB_USER
             value: root
           - name: DB_READ_USER
-            value: readuser
+            value: root
           - name: DB_PASS
             value: wLzTiBkkhCsenUXHpCYLqQ5pNvuLGTuMUTsi
           - name: THEME
@@ -48,7 +48,7 @@ spec:
             value: '5'
           - name: SERVER_NAME
             value: 'localhost'
-          image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:latest
+          image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:test
           name: moodle
             # resources:
             #   requests:
@@ -65,7 +65,7 @@ spec:
               name: moodle-pvc
       initContainers:
         - name: moodle-hack
-          image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:latest
+          image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:test
           command: ["/bin/sh", "-c"]
           args: ["rm -rf /var/www/moodledata/* && cp -rf  /var/www/moodledata_src/* /var/www/moodledata &&  chown -R 33:33 /var/www/moodledata"]
           volumeMounts:
