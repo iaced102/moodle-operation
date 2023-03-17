@@ -18,6 +18,7 @@ var (
 	MARIAPORT = 3306
 	NFSSEVER = "103.148.57.178:2049"
 	PVC_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/pvc.yaml"
+	SECRET_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/secret.yaml"
 	SERVICE_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/service.yaml"
 	STATEFULSET_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/statefulset.yaml"
 	INGRESS_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/ingress.yaml"

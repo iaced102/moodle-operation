@@ -50,6 +50,7 @@ type K8sRepository interface {
 	ApplyService(namespace string) error
 	ApplyPVC(namespace string) error
 	ApplyIngress(namespace, sitename string) error
+	ApplySecret(namespace string) error
 	DeleteNamespace(namespace string) error
 	UpdateIngress(namespace, sitename string) error
 }

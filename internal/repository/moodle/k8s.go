@@ -413,3 +413,27 @@ func (client *K8sClient) PatchStatefulet(namespace string, patch string) error {
 	}
 	return err
 }
+
+// apply secret
+func (client *K8sClient) ApplySecret(namespace string) error {
+	filepath := config.SECRET_FILEPATH
+	fmt.Printf("Applying secret %q in namespace %q:\n", filepath, namespace)
+	// read file
+	file, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		panic(err.Error())
+	}
+	// unmarshal file
+	var secret corev1.SecretApplyConfiguration
+	err = yaml.Unmarshal(file, &secret)
+	if err != nil {
+		panic(err.Error())
+	}
+	// apply secret
+	_, err = client.clientset.CoreV1().Secrets(namespace).Apply(context.Background(), &secret, metav1.ApplyOptions{FieldManager: "kubectl-client-side-apply"})
+	if err != nil {
+		panic(err.Error())
+	}
+	return err
+
+}

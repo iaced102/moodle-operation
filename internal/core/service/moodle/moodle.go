@@ -127,6 +127,11 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 	if err != nil {
 		return moodle, apperrors.Internal("apply ingress error", err)
 	}
+	// apply secret
+	err = s.k8sRepository.ApplySecret(moodle_.Id)
+	if err != nil {
+		return moodle, apperrors.Internal("apply secret error", err)
+	}
 	// Insert moodle to mongodb
 	err = s.mongoRepository.Create(moodle_)
 	if err != nil {
