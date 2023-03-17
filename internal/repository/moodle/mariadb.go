@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"moodle/config"
 	"moodle/internal/core/domain"
 	"os/exec"
 	"time"
@@ -101,7 +102,7 @@ func (m *MariaDB) DropDB(dbname string) error {
 
 // restore database from sql filepath
 func (m *MariaDB) RestoreDB(dbname, filepath string) error {
-	comand :=  "mysql -u root -h 45.124.94.112 -p0YU8381WUlk1u9ysVbF4Qb5FigNW8z8uCvPI " + dbname + " < " + filepath
+	comand :=  "mysql -u root -h " + config.MARIAHOSTW  + " -p" + config.MARIAPASSWORD + " " + dbname + " < " + filepath
 	// print current time
 	log.Println("restoring databse", dbname, "at:", time.Now())
 	output, err := exec.Command("bash", "-c", comand).Output()

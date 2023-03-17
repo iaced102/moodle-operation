@@ -19,9 +19,9 @@ spec:
       containers:
         - env:
           - name: DB_HOST_READ
-            value: 45.124.94.39
+            value: 45.124.94.92
           - name: DB_HOST_WRITE
-            value: 45.124.94.112
+            value: 45.124.94.92
           - name: DB_NAME
             valueFrom:
               fieldRef:
@@ -31,7 +31,7 @@ spec:
           - name: DB_READ_USER
             value: readuser
           - name: DB_PASS
-            value: 0YU8381WUlk1u9ysVbF4Qb5FigNW8z8uCvPI
+            value: wLzTiBkkhCsenUXHpCYLqQ5pNvuLGTuMUTsi
           - name: THEME
             value: edumy
           - name: REDIS_HOST
@@ -57,6 +57,8 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
+              protocol: TCP
+            - containerPort: 443
               protocol: TCP
           volumeMounts:
             - mountPath: /var/www/moodledata
