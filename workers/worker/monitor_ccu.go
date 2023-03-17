@@ -33,8 +33,16 @@ func (w *MonitorWorker) GetUser() error {
 	if err != nil {
 		return err
 	}
+	// if len(dbnames) == 0  then return nil
+	if len(dbnames) == 0 {
+		return nil
+	}
 	// for  database in dbnames get userdata
 	for _, dbname := range dbnames {
+		// ignore if dbname is moodle
+		if dbname == "moodle" {
+			continue
+		}
 		go w.WriteUser(dbname)
 	}
 	return nil

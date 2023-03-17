@@ -78,7 +78,7 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 	moodle_.Email = moodle.Email
 	moodle_.Name = moodle.WebSiteName
 	moodle_.LbName = "kube_service" + "_" + config.CLUSTERID + "_" + moodle_.Id + "_moodle-service"
-	moodle_.Ip = "14.225.36.146"
+	moodle_.Ip = "14.225.36.247"
 	moodle_.WebSiteName = moodle.WebSiteName + "." + config.LMSDOMAIN
 	// check if websitename is exist then return error
 	if !s.ValidateSitename(moodle_.WebSiteName) {

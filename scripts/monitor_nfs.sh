@@ -1,5 +1,5 @@
 #!/bin/bash
-a=$(ssh root@123.30.234.224 "du -s /srv/nfs4/moodle/*")
+a=$(ssh root@103.148.57.178 "du -s /srv/nfs4/moodle/*")
 
 
 # map a to dict

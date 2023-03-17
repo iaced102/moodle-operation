@@ -11,11 +11,11 @@ spec:
         - name: nfs-client-provisioner
           env:
             - name: NFS_SERVER
-              value: 14.225.36.247
+              value: 103.148.57.178
             - name: NFS_PATH
               value: /moodle
       volumes:
         - name: nfs-client-root
           nfs:
-            server: 14.225.36.247
+            server: 103.148.57.178
             path: /moodle
