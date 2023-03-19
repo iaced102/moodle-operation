@@ -26,4 +26,5 @@ var (
 	CLUSTERID = "6o0cn9lv42livqek"
 	SENDMAILDOMAIN = "https://sendmail.bizflycloud.vn"
 	LMSDOMAIN = "lms.bfcplatform.vn"
+	LBIP = "14.225.36.247"
 )
