@@ -2,12 +2,13 @@ package worker
 
 import (
 	"database/sql"
+	"fmt"
+	"moodle/config"
 	repo "moodle/internal/repository/moodle"
 	"moodle/pkg/mongodbiface"
+	"net/http"
 	"strings"
 	"time"
-
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )
 
 type MonitorWorker struct {
@@ -71,25 +72,24 @@ func (w *MonitorWorker) Write(dbname string, data []int) error {
 	ccu := moodle.Packages.Ccu
 	ccumax := moodle.Packages.CcuExtraMax
 
-    // Create a client to connect to InfluxDB
-    client := influxdb2.NewClientWithOptions("http://123.30.234.141:8086", "lmspoller:lmspoller", influxdb2.DefaultOptions().SetBatchSize(100))
+	url := config.VICTORIAMETRIC
+	measurementName := "lmsccu"
+	tagKey := "dbname"
+	tagValue := dbname
+	fieldKey := "online_user"
+	fieldValue := data[0]
+	fieldKey2 := "ccu"
+	fieldValue2 := ccu
+	fieldKey3 := "ccumax"
+	fieldValue3 := ccumax
+	timestamp := time.Now().Unix()
 
-    // Create a write API for the "mydb" database
-    writeAPI := client.WriteAPI("lms", "lms")
+	metrics := fmt.Sprintf("%s,%s=%s %s=%d,%s=%d,%s=%d %d", measurementName, tagKey, tagValue, fieldKey, fieldValue, fieldKey2, fieldValue2, fieldKey3, fieldValue3, timestamp)
+	resp, err := http.Post(url, "application/octet-stream", strings.NewReader(metrics))
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
 
-    // Define a data point to write
-    p := influxdb2.NewPointWithMeasurement("lmsuser").
-		AddField("online_user",(data[0])).
-		AddField("dbname", dbname).
-		AddField("ccu", ccu).
-		AddField("ccumax", ccumax).
-		AddTag("dbname_tag", dbname).
-        SetTime(time.Now())
-
-    // Write the data point to InfluxDB
-    writeAPI.WritePoint(p)
-
-    // Close the client when you're done
-    client.Close()
 	return nil
 }

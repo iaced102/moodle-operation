@@ -1,14 +1,16 @@
 package worker
 
 import (
+	"fmt"
+	"moodle/config"
 	"moodle/internal/core/domain"
 	repo "moodle/internal/repository/moodle"
 	nfs "moodle/pkg/client"
 	nfs4 "moodle/pkg/client/nfs4"
 	"moodle/pkg/mongodbiface"
+	"net/http"
+	"strings"
 	"time"
-
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 )
 
 type MonitorNFS struct {
@@ -76,27 +78,24 @@ func (n *MonitorNFS) Write(dirinfo domain.NFSTracking) error {
 		moodle.Packages.DocumentStorage = 0
 		moodle.Packages.DocumentStorageExtraMax = 0
 	}
+	url := config.VICTORIAMETRIC
+	measurementName := "lmsnfs_storage"
+	tagKey := "moodleid"
+	tagValue := moodleid
+	fieldKey := "current_storage"
+	fieldValue := dirinfo.Size
+	fieldKey2 := "current_default"
+	fieldValue2 := moodle.Packages.DocumentStorage * 1000000
+	fieldKey3 := "max_storage"
+	fieldValue3 := moodle.Packages.DocumentStorageExtraMax * 1000000
+	timestamp := time.Now().Unix()
 
-    // Create a client to connect to InfluxDB
-    client := influxdb2.NewClientWithOptions("http://123.30.234.141:8086", "lmspoller:lmspoller", influxdb2.DefaultOptions().SetBatchSize(100))
-
-    // Create a write API for the "mydb" database
-    writeAPI := client.WriteAPI("lms", "lms")
-
-    // Define a data point to write
-    p := influxdb2.NewPointWithMeasurement("lmsnfs").
-		AddField("moodleid", moodleid).
-		AddField("current_storage", dirinfo.Size).
-		AddField("current_default", moodle.Packages.DocumentStorage * 1000000).
-		AddField("max_storage", moodle.Packages.DocumentStorageExtraMax * 1000000).
-		AddTag("moodleid_tag", moodleid).
-        SetTime(time.Now())
-
-    // Write the data point to InfluxDB
-    writeAPI.WritePoint(p)
-
-    // Close the client when you're done
-    client.Close()
+	metrics := fmt.Sprintf("%s,%s=%s %s=%d,%s=%d,%s=%d %d", measurementName, tagKey, tagValue, fieldKey, fieldValue, fieldKey2, fieldValue2, fieldKey3, fieldValue3, timestamp)
+	resp, err := http.Post(url, "application/octet-stream", strings.NewReader(metrics))
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
 	return nil
 }
 

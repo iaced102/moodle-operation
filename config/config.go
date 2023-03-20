@@ -27,4 +27,5 @@ var (
 	SENDMAILDOMAIN = "https://sendmail.bizflycloud.vn"
 	LMSDOMAIN = "lms.bfcplatform.vn"
 	LBIP = "14.225.36.247"
+	VICTORIAMETRIC = "http://localhost:8428/write"
 )
