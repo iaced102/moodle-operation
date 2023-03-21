@@ -92,7 +92,8 @@ func (n *MonitorNFS) Write(dirinfo domain.NFSTracking) error {
 	metrics := fmt.Sprintf("%s,%s=%s %s=%d,%s=%d,%s=%d", measurementName, tagKey, tagValue, fieldKey, fieldValue, fieldKey2, fieldValue2, fieldKey3, fieldValue3)
 	resp, err := http.Post(url, "application/octet-stream", strings.NewReader(metrics))
 	if err != nil {
-		panic(err)
+		return nil
+		// panic(err)
 	}
 	defer resp.Body.Close()
 	return nil
