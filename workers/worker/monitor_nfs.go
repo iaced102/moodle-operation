@@ -10,7 +10,6 @@ import (
 	"moodle/pkg/mongodbiface"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type MonitorNFS struct {
@@ -88,9 +87,9 @@ func (n *MonitorNFS) Write(dirinfo domain.NFSTracking) error {
 	fieldValue2 := moodle.Packages.DocumentStorage * 1000000
 	fieldKey3 := "max_storage"
 	fieldValue3 := moodle.Packages.DocumentStorageExtraMax * 1000000
-	timestamp := time.Now().Unix()
+	// timestamp := time.Now().Unix()
 
-	metrics := fmt.Sprintf("%s,%s=%s %s=%d,%s=%d,%s=%d %d", measurementName, tagKey, tagValue, fieldKey, fieldValue, fieldKey2, fieldValue2, fieldKey3, fieldValue3, timestamp)
+	metrics := fmt.Sprintf("%s,%s=%s %s=%d,%s=%d,%s=%d", measurementName, tagKey, tagValue, fieldKey, fieldValue, fieldKey2, fieldValue2, fieldKey3, fieldValue3)
 	resp, err := http.Post(url, "application/octet-stream", strings.NewReader(metrics))
 	if err != nil {
 		panic(err)

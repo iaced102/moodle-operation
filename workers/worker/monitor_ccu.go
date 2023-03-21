@@ -8,7 +8,6 @@ import (
 	"moodle/pkg/mongodbiface"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type MonitorWorker struct {
@@ -82,9 +81,9 @@ func (w *MonitorWorker) Write(dbname string, data []int) error {
 	fieldValue2 := ccu
 	fieldKey3 := "ccumax"
 	fieldValue3 := ccumax
-	timestamp := time.Now().Unix()
+	// timestamp := time.Now().Unix()
 
-	metrics := fmt.Sprintf("%s,%s=%s %s=%d,%s=%d,%s=%d %d", measurementName, tagKey, tagValue, fieldKey, fieldValue, fieldKey2, fieldValue2, fieldKey3, fieldValue3, timestamp)
+	metrics := fmt.Sprintf("%s,%s=%s %s=%d,%s=%d,%s=%d", measurementName, tagKey, tagValue, fieldKey, fieldValue, fieldKey2, fieldValue2, fieldKey3, fieldValue3)
 	resp, err := http.Post(url, "application/octet-stream", strings.NewReader(metrics))
 	if err != nil {
 		panic(err)
