@@ -23,7 +23,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 5,
-  "iteration": 1679408608963,
+  "iteration": 1679456679123,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -126,6 +126,96 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "CCU hiện tại"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Số CCU tối đa"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Số CCU của gói đã mua"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "current_ccu"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max_ccu"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "default_ccu"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
           }
         ]
       },
@@ -151,27 +241,27 @@
           "exemplar": true,
           "expr": "lmsccu_online_user{dbname=\"$dbname\"}",
           "interval": "",
-          "legendFormat": "online_user",
+          "legendFormat": "current_ccu",
           "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "lmsccu_ccumax{dbname=\"$dbname\"}",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "ccumax",
-          "refId": "B"
         },
         {
           "exemplar": true,
           "expr": "lmsccu_ccu{dbname=\"$dbname\"}",
           "hide": false,
           "interval": "",
-          "legendFormat": "ccu",
+          "legendFormat": "default_ccu",
           "refId": "C"
+        },
+        {
+          "exemplar": true,
+          "expr": "lmsccu_ccumax{dbname=\"$dbname\"}",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "max_ccu",
+          "refId": "B"
         }
       ],
-      "title": "ccu",
+      "title": "Thống kê CCU",
       "transparent": true,
       "type": "timeseries"
     },
@@ -223,9 +313,150 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "deckbytes"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "current_storage"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 30
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "current_default"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max_storage"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Dung lượng hiện tại"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Dung lượng của gói đã mua"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Dung lượng tối đa"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "used_space"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_space"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max_capacity"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -249,7 +480,7 @@
           "exemplar": true,
           "expr": "lmsnfs_storage_current_storage{moodleid=\"$moodleid\"}",
           "interval": "",
-          "legendFormat": "current_storage",
+          "legendFormat": "used_space",
           "refId": "A"
         },
         {
@@ -257,7 +488,7 @@
           "expr": "lmsnfs_storage_current_default{moodleid=\"$moodleid\"}",
           "hide": false,
           "interval": "",
-          "legendFormat": "current_default",
+          "legendFormat": "total_space",
           "refId": "B"
         },
         {
@@ -265,11 +496,11 @@
           "expr": "lmsnfs_storage_max_storage{moodleid=\"$moodleid\"}",
           "hide": false,
           "interval": "",
-          "legendFormat": "max_storage",
+          "legendFormat": "max_capacity",
           "refId": "C"
         }
       ],
-      "title": "nfs_storage",
+      "title": "Thống kê dung lượng",
       "transparent": true,
       "type": "timeseries"
     }
@@ -283,8 +514,8 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "d4af8d00_0c86_4667_a2d8_84c87f6e3423",
-          "value": "d4af8d00_0c86_4667_a2d8_84c87f6e3423"
+          "text": "0279a469_57fb_4617_9c63_a6e182a25211",
+          "value": "0279a469_57fb_4617_9c63_a6e182a25211"
         },
         "datasource": "Influxdb 2022 No Auth",
         "definition": "label_values(dbname)",
@@ -309,10 +540,9 @@
       {
         "allValue": null,
         "current": {
-          "isNone": true,
           "selected": false,
-          "text": "None",
-          "value": ""
+          "text": "0d48d1af-52cd-4a1a-a645-b6b0d9408040",
+          "value": "0d48d1af-52cd-4a1a-a645-b6b0d9408040"
         },
         "datasource": "Influxdb 2022 No Auth",
         "definition": "label_values(moodleid)",
@@ -344,5 +574,5 @@
   "timezone": "",
   "title": "lms-staging",
   "uid": "xsIb9GBVz",
-  "version": 7
+  "version": 17
 }
