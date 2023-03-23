@@ -31,7 +31,7 @@ func (w *MonitorWorker) GetUser() error {
 	// get all dbname
 	dbnames, err := w.mariaRepo.GetDBName()
 	if err != nil {
-		return err
+		return nil
 	}
 	// if len(dbnames) == 0  then return nil
 	if len(dbnames) == 0 {
@@ -53,7 +53,11 @@ func (w *MonitorWorker) WriteUser(dbname string) error {
 	// get user
 	data , err := w.mariaRepo.CountUserOnline(dbname)
 	if err != nil {
-		return err
+		return nil
+	}
+	// if len(data) == 0 then return nil
+	if len(data) == 0 {
+		return nil
 	}
 	// write to influxdb
 	w.Write(dbname, data)

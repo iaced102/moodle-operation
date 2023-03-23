@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"moodle/config"
 	"moodle/internal/core/domain"
 	"os/exec"
 	"time"
@@ -102,7 +101,7 @@ func (m *MariaDB) DropDB(dbname string) error {
 
 // restore database from sql filepath
 func (m *MariaDB) RestoreDB(dbname, filepath string) error {
-	comand :=  "mysql -u root -h " + config.MARIAHOSTW  + " -p" + config.MARIAPASSWORD + " " + dbname + " < " + filepath
+	comand :=  "mysql -u root -h 45.124.94.112 -p0YU8381WUlk1u9ysVbF4Qb5FigNW8z8uCvPI " + dbname + " < " + filepath
 	// print current time
 	log.Println("restoring databse", dbname, "at:", time.Now())
 	output, err := exec.Command("bash", "-c", comand).Output()
@@ -221,26 +220,26 @@ func (m *MariaDB) DeleteCategory(dbname string, cateCourse domain.CateCourse) er
 	}
 	
 	// delete all course enroll in sub category
-	for _, v := range cateCourse.SubCate{
-		queryString := fmt.Sprintf("DELETE FROM %s.mdl_enrol WHERE courseid = %d", dbname, v)
-		_, err := m.db.Exec(queryString)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		log.Println("delete course enroll in sub category: ", v, "success")
-	}
+	// for _, v := range cateCourse.SubCate{
+	// 	queryString := fmt.Sprintf("DELETE FROM %s.mdl_enrol WHERE courseid = %d", dbname, v)
+	// 	_, err := m.db.Exec(queryString)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		return err
+	// 	}
+	// 	log.Println("delete course enroll in sub category: ", v, "success")
+	// }
 
-	// delete grade book
-	for _, v := range cateCourse.SubCate{
-		queryString := fmt.Sprintf("DELETE FROM %s.mdl_grade_items WHERE courseid = %d", dbname, v)
-		_, err := m.db.Exec(queryString)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		log.Println("delete grade book in sub category: ", v, "success")
-	}
+	// // delete grade book
+	// for _, v := range cateCourse.SubCate{
+	// 	queryString := fmt.Sprintf("DELETE FROM %s.mdl_grade_items WHERE courseid = %d", dbname, v)
+	// 	_, err := m.db.Exec(queryString)
+	// 	if err != nil {
+	// 		log.Println(err)
+	// 		return err
+	// 	}
+	// 	log.Println("delete grade book in sub category: ", v, "success")
+	// }
 
 	// delete categories
 	queryString := fmt.Sprintf("DELETE FROM %s.mdl_course_categories WHERE id = %d", dbname, cateCourse.CategoryId)
@@ -338,7 +337,7 @@ func (m *MariaDB) CopyCategoryRow(dbname string, cateCourse domain.CateCourse) e
 	_, err := m.db.Exec(queryString)
 	if err != nil {
 		log.Println(err)
-		return err
+		return nil
 	}
 	log.Println("copy cate success")
 	// copy sub category
@@ -347,32 +346,32 @@ func (m *MariaDB) CopyCategoryRow(dbname string, cateCourse domain.CateCourse) e
 		_, err := m.db.Exec(queryString)
 		if err != nil {
 			log.Println(err)
-			return err
+			return nil
 		}
 		log.Println("copy sub course cate success")
 	}
 
 	// update category for mdl_course
-	for _, v := range cateCourse.Courses {
-		queryString := fmt.Sprintf("UPDATE %s.mdl_course SET category = %d WHERE id = %d", dbname, cateCourse.CategoryId, v)
-		_, err := m.db.Exec(queryString)
-		if err != nil {
-			log.Println(err)
-			return err
-		}
-		log.Println("update course category success")
-	}
-
-	// // copy course
 	// for _, v := range cateCourse.Courses {
-	// 	queryString := fmt.Sprintf("INSERT INTO %s.%s SELECT * FROM %s.mdl_course_backup WHERE id = %d", dbname, "mdl_course", dbname, v)
+	// 	queryString := fmt.Sprintf("UPDATE %s.mdl_course SET category = %d WHERE id = %d", dbname, cateCourse.CategoryId, v)
 	// 	_, err := m.db.Exec(queryString)
 	// 	if err != nil {
 	// 		log.Println(err)
-	// 		return err
+	// 		return nil
 	// 	}
-	// 	log.Println("copy course success")
+	// 	log.Println("update course category success")
 	// }
+
+	// copy course
+	for _, v := range cateCourse.Courses {
+		queryString := fmt.Sprintf("INSERT INTO %s.%s SELECT * FROM %s.mdl_course_backup WHERE id = %d", dbname, "mdl_course", dbname, v)
+		_, err := m.db.Exec(queryString)
+		if err != nil {
+			log.Println(err)
+			return nil
+		}
+		log.Println("copy course success")
+	}
 	return nil
 }
 
@@ -383,15 +382,19 @@ func (m *MariaDB) CountUserOnline(dbname string) ([]int, error) {
 	rows, err := m.db.Query(queryString)
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return nil, nil
 	}
 	defer rows.Close()
+	// if len(rows) == 0 return nil
+	if !rows.Next() {
+		return nil, nil
+	}
 	for rows.Next() {
 		var count int
 		err := rows.Scan(&count)
 		if err != nil {
 			log.Println(err)
-			return nil, err
+			return nil, nil
 		}
 		result = append(result, count)
 	}
@@ -405,17 +408,33 @@ func (m *MariaDB) GetDBName() ([]string, error) {
 	rows, err := m.db.Query(queryString)
 	if err != nil {
 		log.Println(err)
-		return nil, err
+		return nil, nil
 	}
 	defer rows.Close()
+	// check if len(rows) == 0 return nil
+	if !rows.Next() {
+		return nil, nil
+	}
 	for rows.Next() {
 		var dbname string
 		err := rows.Scan(&dbname)
 		if err != nil {
 			log.Println(err)
-			return nil, err
+			return nil, nil
 		}
 		result = append(result, dbname)
 	}
 	return result, nil
+}
+
+// update mdl_block_instances set configdata='<chuỗi base64 đã encode>' where id=11;
+func (m *MariaDB) UpdateBlockInstance(dbname string, configdata string) error {
+	queryString := fmt.Sprintf("UPDATE %s.mdl_block_instances SET configdata = '%s' WHERE id = 11", dbname, configdata)
+	_, err := m.db.Exec(queryString)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	log.Println("update block instance success")
+	return nil
 }
