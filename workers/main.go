@@ -17,7 +17,7 @@ import (
 func Start(mongo mongodbiface.DB) {
 	maria := NewMariaDB()
 	go MariaWorker(mongo, maria)
-	go CourseWorker(mongo, maria)
+	// go CourseWorker(mongo, maria)
 	go SitenameWorker(mongo, maria)
 	go NFSWorker(mongo)
 	go SendmailCreateWorker(mongo, maria)
