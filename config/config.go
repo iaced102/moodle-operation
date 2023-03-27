@@ -28,5 +28,5 @@ var (
 	LMSDOMAIN = "lms.bfcplatform.vn"
 	LBIP = "14.225.36.247"
 	// VICTORIAMETRIC = "http://localhost:8428/write"
-	VICTORIAMETRIC = "http://lms:bG1nLXByb2R1Y3QK@45.124.93.254:10030/write?db=lms"
+	VICTORIAMETRIC = "http://lms:bG1nLXByb2R1Y3QK@103.69.194.95:10031/write?db=lms"
 )
