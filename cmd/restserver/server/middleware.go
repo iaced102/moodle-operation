@@ -3,6 +3,7 @@ package server
 import (
 	"moodle/config"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,8 +21,8 @@ func Auth(tenantName, token string) bool {
 
 func MoodleMiddleware() gin.HandlerFunc {
 	return gin.HandlerFunc(func(c *gin.Context) {
-		// ignore for health
-		if c.Request.URL.Path == "/health" {
+		// ignore for health and /api/v1/swagger/*any
+		if c.Request.URL.Path == "/health" || strings.HasPrefix(c.Request.URL.Path, "/api/v1/swagger") {
 			c.Next()
 			return
 		}

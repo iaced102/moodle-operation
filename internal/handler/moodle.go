@@ -74,7 +74,16 @@ func (h *MoodleHandler) ListCourses(request *gin.Context) {
 	request.JSON(http.StatusOK, pagination)
 }
 
- // list packages
+// @Summary list packages
+// @Description list packages
+// @Tags Packages
+// @Accept  json
+// @Produce  json
+// @Param page query string false "page"
+// @Param limit query string false "limit"
+// @Success 200 {object} helpers.Pagination
+// @Failure 500 {object} helpers.Error
+// @Router /api/v1/packages [get]
 func (h *MoodleHandler) ListPackages(request *gin.Context) {
 	packages, err := h.MoodleService.ListPackages()
 	if err != nil {
