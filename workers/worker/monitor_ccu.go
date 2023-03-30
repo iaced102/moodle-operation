@@ -57,7 +57,7 @@ func (w *MonitorWorker) WriteUser(dbname string) error {
 	}
 	// if len(data) == 0 then return nil
 	if len(data) == 0 {
-		data = append(data, 0)
+		return nil
 	}
 	// write to influxdb
 	w.Write(dbname, data)

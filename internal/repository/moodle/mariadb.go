@@ -399,6 +399,7 @@ func (m *MariaDB) CountUserOnline(dbname string) ([]int, error) {
 		}
 		result = append(result, count)
 	}
+	log.Println(result)
 	return result, nil
 }
 
