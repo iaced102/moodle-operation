@@ -387,9 +387,9 @@ func (m *MariaDB) CountUserOnline(dbname string) ([]int, error) {
 	}
 	defer rows.Close()
 	// if len(rows) == 0 return nil
-	if !rows.Next() {
-		return []int{0}, nil
-	}
+	// if !rows.Next() {
+	// 	return []int{0}, nil
+	// }
 	for rows.Next() {
 		var count int
 		err := rows.Scan(&count)
@@ -399,7 +399,7 @@ func (m *MariaDB) CountUserOnline(dbname string) ([]int, error) {
 		}
 		result = append(result, count)
 	}
-	log.Println(result)
+	// log.Println(result)
 	return result, nil
 }
 
