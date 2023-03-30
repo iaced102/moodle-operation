@@ -379,7 +379,7 @@ func (m *MariaDB) CopyCategoryRow(dbname string, cateCourse domain.CateCourse) e
 // get data from mdl_user table
 func (m *MariaDB) CountUserOnline(dbname string) ([]int, error) {
 	var result []int
-	queryString := fmt.Sprintf("SELECT count(*) FROM %s.mdl_user WHERE lastaccess > UNIX_TIMESTAMP() - 30", dbname)
+	queryString := fmt.Sprintf("SELECT count(*) FROM %s.mdl_user WHERE lastaccess > UNIX_TIMESTAMP() - 300", dbname)
 	rows, err := m.db.Query(queryString)
 	if err != nil {
 		log.Println(err)
