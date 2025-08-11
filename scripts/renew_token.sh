@@ -17,7 +17,7 @@ function get_token() {
 
 function get_kubeconfig() {
 	token=$(get_token)
-	curl -s 'https://manage.bizflycloud.vn/api/kubernetes-engine/_/6o0cn9lv42livqek/kubeconfig' \
+	curl -s 'https://manage.bizflycloud.vn/api/kubernetes-engine/_/6o0cn9lv42livqek/kubeconfig?expire_time=525948' \
 	  -H 'authority: manage.bizflycloud.vn' \
 	  -H 'accept: application/json, text/plain, */*' \
 	  -H "X-Tenant-Name: duynn@bizflycloud.vn" \

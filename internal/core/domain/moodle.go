@@ -24,6 +24,7 @@ type Moodle struct {
 }
 
 type Package struct {
+	Type string `json:"type"`
 	Price int `json:"price"`
 	Name string `json:"name"`
 	Ccu int `json:"ccu"`

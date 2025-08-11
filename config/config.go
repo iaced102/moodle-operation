@@ -11,12 +11,12 @@ var (
 	INTERVAL = 10
 	MOODLE_TOKEN = "gAAAAABjvhxZwCj1n8fFu-nFALaMr4KKZ7G3UPI7pAETzVxGa4pYuWdUelC6DcjLSRd8rHXIWVsya4q0qijXmOiwPbJzfNOSxBthvRZmGBxfc46rHefbWpwXq-EqFAsxO5MDFPYjUsBocTwCtb6UFdP8ruEdAWxWQ9YQl2KPAuyP_bprvmZwUkI"
 	USER = "admin"
-	MARIAHOSTR = "45.124.94.92"
-	MARIAHOSTW = "45.124.94.92"
+	MARIAHOSTR = "10.26.157.147"
+	MARIAHOSTW = "10.26.157.54"
 	MARIAUSER = "root"
-	MARIAPASSWORD = "wLzTiBkkhCsenUXHpCYLqQ5pNvuLGTuMUTsi"
+	MARIAPASSWORD = "dOXMAdDBtgNE18y8yUWEzNZMxwPhpd0FTNeV"
 	MARIAPORT = 3306
-	NFSSEVER = "103.148.57.178:2049"
+	NFSSEVER = "10.26.157.230:2049"
 	PVC_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/pvc.yaml"
 	SECRET_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/secret.yaml"
 	SERVICE_FILEPATH = HOME + "/gits/moodle-operator/deploy/moodle/service.yaml"

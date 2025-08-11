@@ -63,6 +63,7 @@ func (n *NFSWorker) ValidateFilePathFavicon(moodleid string) (string, error) {
 
 // get filepath from logo_tracking collection
 func (n *NFSWorker) Update() error {
+	return nil
 	// get all logo_tracking
 	logoTrackings, err := n.mongoRepo.GetAllLogoTracking()
 	if err != nil {

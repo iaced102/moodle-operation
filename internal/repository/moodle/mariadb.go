@@ -78,7 +78,7 @@ func (m *MariaDB) Select(dbname, query string) map[string]string {
 
 // create new database from existing Database
 func (m *MariaDB) CreateDB(dbname string) error {
-	queryString := fmt.Sprintf("CREATE DATABASE %s", dbname)
+	queryString := fmt.Sprintf("CREATE DATABASE %s CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci", dbname)
 	_, err := m.db.Exec(queryString)
 	if err != nil {
 		log.Println(err)
@@ -102,7 +102,7 @@ func (m *MariaDB) DropDB(dbname string) error {
 
 // restore database from sql filepath
 func (m *MariaDB) RestoreDB(dbname, filepath string) error {
-	comand :=  "mysql -u root -h " + config.MARIAHOSTW  + " -p" + config.MARIAPASSWORD + " " + dbname + " < " + filepath 
+	comand :=  "mysql -u root -h " + config.MARIAHOSTW  + " --password=" + config.MARIAPASSWORD + " --database=" + dbname + " < " + filepath
 	// print current time
 	log.Println("restoring databse", dbname, "at:", time.Now())
 	output, err := exec.Command("bash", "-c", comand).Output()
@@ -379,7 +379,7 @@ func (m *MariaDB) CopyCategoryRow(dbname string, cateCourse domain.CateCourse) e
 // get data from mdl_user table
 func (m *MariaDB) CountUserOnline(dbname string) ([]int, error) {
 	var result []int
-	queryString := fmt.Sprintf("SELECT count(*) FROM %s.mdl_user WHERE lastaccess > UNIX_TIMESTAMP() - 300", dbname)
+	queryString := fmt.Sprintf("SELECT count(*) FROM %s.mdl_user WHERE lastaccess > UNIX_TIMESTAMP() - 900", dbname)
 	rows, err := m.db.Query(queryString)
 	if err != nil {
 		log.Println(err)

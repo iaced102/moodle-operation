@@ -1,0 +1,25 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: moodle
+  namespace: f32c4105-417d-49e7-a082-75203744946c ### thay đổi ứng với tên của namespace 
+spec:
+  scaleTargetRef:
+    kind: StatefulSet
+    name: moodle
+    apiVersion: apps/v1
+  minReplicas: 6
+  maxReplicas: 60
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 70

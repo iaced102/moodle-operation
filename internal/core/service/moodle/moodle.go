@@ -14,6 +14,9 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"bytes"
+        "encoding/json"
+        "net/http"
 )
 
 
@@ -70,7 +73,7 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 	if err != nil {
 		return moodle, apperrors.Internal("get all moodle by email error", err)
 	}
-	if len(moodles) > 0 {
+	if len(moodles) > 10 {
 		return moodle, apperrors.Conflict("your account allowed to create 1 moodle site only", errors.New("your account allowed to create 1 moodle site only"))
 	}
 	var moodle_ domain.Moodle
@@ -180,6 +183,22 @@ func (s *Service) Create(moodle domain.Moodle) (domain.Moodle, *apperrors.AppErr
 		return moodle, apperrors.Internal("create moodle config error", err)
 	}
 	// delete row from 
+
+	// Notify
+	apiUrl := "https://tlg.dev.bizflycloud.vn/bot248926246:AAETwv7hzpk8zv6j9aRHDITYcnIRUGydS80/sendMessage"
+
+	message := map[string]interface{}{
+		"chat_id": -4116328390,
+		"text":    "KH " + moodle_.Email + " khoi tao site: " + moodle_.WebSiteName,
+	}
+	jsonValue, _ := json.Marshal(message)
+	req, err := http.NewRequest("POST", apiUrl, bytes.NewBuffer(jsonValue))
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	client.Do(req)
 
 	return moodle_, nil
 }

@@ -9,6 +9,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type MongoDB struct {
@@ -32,7 +33,13 @@ func (m *MongoDB) Get(moodleID string) (domain.Moodle, error) {
 // get all moodles
 func (m *MongoDB) GetAll(email string) ([]domain.Moodle, error) {
 	var moodles []domain.Moodle
-	cursor, err := m.db.Collection("moodles").Find(context.Background(), bson.M{"email": email})
+	var filter bson.M
+	if email != "" {
+		filter = bson.M{"email": email}
+	} else {
+		filter = bson.M{}
+	}
+	cursor, err := m.db.Collection("moodles").Find(context.Background(), filter)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +103,10 @@ func (m *MongoDB) ListCourses() ([]domain.Course, error) {
 // list packages
 func (m *MongoDB) ListPackages() ([]domain.Package, error) {
 	var packages []domain.Package
-	cursor, err := m.db.Collection("packages").Find(context.Background(), bson.M{})
+	sort := bson.D{{"AccountMax", 1}}
+	findOptions := options.Find()
+	findOptions.SetSort(sort)
+	cursor, err := m.db.Collection("packages").Find(context.Background(), bson.M{}, findOptions)
 	if err != nil {
 		return nil, err
 	}

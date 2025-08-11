@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: k8s-sigs.io/nfs-subdir-external-provisioner
+  creationTimestamp: "2023-07-07T09:32:15Z"
+  finalizers:
+  - kubernetes.io/pv-protection
+  name: pvc-6b184f55-e0c4-468b-b7b8-b2ecfe2bf4d0
+  resourceVersion: "42684253"
+  uid: 98654200-d4c6-42ab-9355-5950a2d7d89d
+spec:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: 8Gi
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: moodle-pvc
+    namespace: 25809858-9e7d-451a-b08f-3e3d09795756
+    resourceVersion: "42684238"
+    uid: 6b184f55-e0c4-468b-b7b8-b2ecfe2bf4d0
+  nfs:
+    path: /moodle/25809858-9e7d-451a-b08f-3e3d09795756-moodle-pvc-pvc-6b184f55-e0c4-468b-b7b8-b2ecfe2bf4d0
+    server: 10.26.157.230
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: nfs-client
+  volumeMode: Filesystem
+status:
+  phase: Bound

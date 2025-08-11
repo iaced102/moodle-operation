@@ -5,7 +5,7 @@ metadata:
     app: moodle
   name: moodle
 spec:
-  replicas: 2
+  replicas: 1
   serviceName: moodle-service
   selector:
     matchLabels:
@@ -19,9 +19,9 @@ spec:
       containers:
         - env:
           - name: DB_HOST_READ
-            value: 45.124.94.92
+            value: 10.26.157.147
           - name: DB_HOST_WRITE
-            value: 45.124.94.92
+            value: 10.26.157.54
           - name: DB_NAME
             valueFrom:
               fieldRef:
@@ -31,7 +31,7 @@ spec:
           - name: DB_READ_USER
             value: root
           - name: DB_PASS
-            value: wLzTiBkkhCsenUXHpCYLqQ5pNvuLGTuMUTsi
+            value: dOXMAdDBtgNE18y8yUWEzNZMxwPhpd0FTNeV
           - name: THEME
             value: edumy
           - name: REDIS_HOST
@@ -48,12 +48,10 @@ spec:
             value: '5'
           - name: SERVER_NAME
             value: 'localhost'
-          image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:test
+          image: cr-hn-1.bizflycloud.vn/31ff9581861a4d0ea4df5e7dda0f665d/lms-moodle402-test:latest
+          #command: ["/bin/sh", "-c"]
+          #args: ["if ! [ -d /tmp/moodle ]; then rm -rf /tmp/moodle/* ; fi"]
           name: moodle
-            # resources:
-            #   requests:
-            #     cpu: 1
-            #     memory: "2900Mi"
           imagePullPolicy: Always
           ports:
             - containerPort: 80
@@ -61,16 +59,23 @@ spec:
             - containerPort: 443
               protocol: TCP
           volumeMounts:
-            - mountPath: /var/www/moodledata
+            - mountPath: /var/www/site
               name: moodle-pvc
+          resources:
+            limits:
+              cpu: '2'
+              memory: 2000Mi
+            requests:
+              cpu: '2'
+              memory: 2000Mi
       initContainers:
         - name: moodle-hack
-          image: cr-hn-1.bizflycloud.vn/c579f3ab86094f2c97f36b0877ead59a/moodle:test
+          image: cr-hn-1.bizflycloud.vn/31ff9581861a4d0ea4df5e7dda0f665d/lms-moodle402-test:latest
           command: ["/bin/sh", "-c"]
-          args: ["rm -rf /var/www/moodledata/* && cp -rf  /var/www/moodledata_src/* /var/www/moodledata &&  chown -R 33:33 /var/www/moodledata"]
+          args: ["if ! [ -d /var/www/site/moodledata/lang ]; then rm -rf /var/www/site/moodledata/* && rm -rf /tmp/moodle/* && rm -rf /var/www/moodledata_src/temp/ /var/www/moodledata_src/trashdir/ /var/www/moodledata_src/cache/ /var/www/moodledata_src/localcache/ && cp -rf /var/www/moodledata_src /var/www/site/moodledata && cp -rf /var/www/moodle /var/www/site/moodle && chown -R 33:33 /var/www/site; fi"]
           volumeMounts:
           - name: moodle-pvc
-            mountPath: /var/www/moodledata
+            mountPath: /var/www/site
       restartPolicy: Always
       volumes:
         - name: moodle-pvc

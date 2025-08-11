@@ -12,10 +12,18 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/go-redis/redis"
 )
 
 func Start(mongo mongodbiface.DB) {
 	maria := NewMariaDB()
+	redis := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379", // Redis server address
+		Password: "",               // Redis server password (leave empty if no password is set)
+		DB:       0,                // Redis database index
+	})
+
 	go MariaWorker(mongo, maria)
 	// go CourseWorker(mongo, maria)
 	go SitenameWorker(mongo, maria)
@@ -23,7 +31,7 @@ func Start(mongo mongodbiface.DB) {
 	go SendmailCreateWorker(mongo, maria)
 	go SendmailDeleteWorker(mongo, maria)
 	go TrackingWorker(mongo)
-	go MonitorWorker(mongo, maria)
+	go MonitorWorker(mongo, maria, redis)
 	go MonitorNFSWorker(mongo)
 }
 
@@ -91,15 +99,13 @@ func CourseWorker(mongo mongodbiface.DB, maria *sql.DB) {
 	}
 }
 
-func MonitorWorker(mongo mongodbiface.DB, maria *sql.DB) {
+func MonitorWorker(mongo mongodbiface.DB, maria *sql.DB, redis *redis.Client) {
 	log.Println("Starting monitor worker")
 	for {
 		time.Sleep(5 * time.Second)
-		worker.NewMonitorWorker(mongo, maria).GetUser()
+		worker.NewMonitorWorker(mongo, maria, redis).GetUser()
 	}
 }
-
-
 
 func NewMongoDB() *mongo.Database {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")

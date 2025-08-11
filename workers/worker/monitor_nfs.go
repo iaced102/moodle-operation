@@ -2,6 +2,7 @@ package worker
 
 import (
 	"fmt"
+	"log"
 	"moodle/config"
 	"moodle/internal/core/domain"
 	repo "moodle/internal/repository/moodle"
@@ -21,7 +22,6 @@ func NewMonitorNFSWorker(mongo mongodbiface.DB) *MonitorNFS {
 	mongoRepo := repo.NewMongoDB(mongo)
 	nfsclient := nfs.NewNFSClient()
 
-	
 	return &MonitorNFS{
 		mongoRepo: mongoRepo,
 		NFSClient: nfsclient,
@@ -43,6 +43,7 @@ func (n *MonitorNFS) Run() {
 		// log.Println(err)
 		return
 	}
+	fmt.Println(nfsTracking, nfsTracking.Data)
 	for _, data := range nfsTracking.Data {
 		go n.Write(data)
 	}
@@ -70,7 +71,11 @@ func (n *MonitorNFS) GetNFSSize() ([]DirInfo, error) {
 }
 
 func (n *MonitorNFS) Write(dirinfo domain.NFSTracking) error {
-	moodleid := dirinfo.Path[17:53]
+	if len(dirinfo.Path) < 53 {
+                log.Printf("Path too short, skipping: %s", dirinfo.Path)
+                return nil
+        }
+	moodleid := dirinfo.Path[13:49]
 	moodle, err := n.mongoRepo.Get(moodleid)
 	// check if error is no documents in result then ignore
 	if err != nil {
@@ -90,7 +95,9 @@ func (n *MonitorNFS) Write(dirinfo domain.NFSTracking) error {
 	// timestamp := time.Now().Unix()
 
 	metrics := fmt.Sprintf("%s,%s=%s %s=%d,%s=%d,%s=%d", measurementName, tagKey, tagValue, fieldKey, fieldValue, fieldKey2, fieldValue2, fieldKey3, fieldValue3)
+	log.Println(metrics)
 	resp, err := http.Post(url, "application/octet-stream", strings.NewReader(metrics))
+	fmt.Println(err)
 	if err != nil {
 		return nil
 		// panic(err)

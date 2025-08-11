@@ -5,6 +5,9 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/proxy-body-size: 600m
+    nginx.org/client-max-body-size: 600m
+    nginx.ingress.kubernetes.io/enable-cors: "true"
 spec:
   tls:
   - secretName: wildcard-cert

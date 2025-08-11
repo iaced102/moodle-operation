@@ -20,7 +20,7 @@ type SitenameWorker struct {
 func NewSitenameWorker(mongo mongodbiface.DB, maria *sql.DB) *SitenameWorker {
 	mariaRepo := repo.NewMariaDB(maria)
 	mongoRepo := repo.NewMongoDB(mongo)
-	
+
 	return &SitenameWorker{
 		mariaRepo: mariaRepo,
 		mongoRepo: mongoRepo,
