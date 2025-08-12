@@ -6,7 +6,7 @@ import (
 	"moodle/pkg/mongodbiface"
 	"strings"
 	"time"
-
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -609,4 +609,46 @@ func (m *MongoDB) GetNFSTracking() (domain.NFSTrackings, error) {
 		return nfsTracking, err
 	}
 	return nfsTracking, nil
+}
+
+
+
+
+// check if storage alarm already sent for this week
+func (m *MongoDB) CheckStorageAlarmSent(moodleId string, week, year int) (bool, error) {
+	var alarm domain.StorageAlarmTracking
+	err := m.db.Collection("storage_alarm_tracking").FindOne(context.Background(), bson.M{
+		"moodle_id": moodleId,
+		"week":      week,
+		"year":      year,
+	}).Decode(&alarm)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, nil // Chưa có alarm cho tuần này
+		}
+		return false, err
+	}
+	return true, nil // Đã có alarm cho tuần này
+}
+
+// create storage alarm tracking record
+func (m *MongoDB) CreateStorageAlarmTracking(alarm domain.StorageAlarmTracking) error {
+	_, err := m.db.Collection("storage_alarm_tracking").InsertOne(context.Background(), alarm)
+	return err
+}
+
+
+
+func (m *MongoDB) GetExtendStorage(moodleID string) (int64, error) {
+	var ext domain.ExtendStorage
+	err := m.db.Collection("extend_storage").FindOne(context.Background(), bson.M{"moodleId": moodleID}).Decode(&ext)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return 0, nil
+		}
+		return 0, err
+	}
+	var gb int64
+	_, _ = fmt.Sscanf(ext.ExtendStorage, "%d", &gb)
+	return gb, nil
 }

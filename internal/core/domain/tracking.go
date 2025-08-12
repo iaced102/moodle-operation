@@ -63,3 +63,16 @@ type NFSTrackings struct {
 	Id int `json:"id"`
 	Data []NFSTracking `json:"data"`
 }
+
+
+type StorageAlarmTracking struct {
+	MoodleId  string    `json:"moodle_id" bson:"moodle_id"`
+	Week      int       `json:"week" bson:"week"`
+	Year      int       `json:"year" bson:"year"`
+	CreatedAt time.Time `json:"created_at" bson:"created_at"`
+}
+
+type ExtendStorage struct {
+	MoodleId      string `json:"moodleId" bson:"moodleId"`
+	ExtendStorage string `json:"extend_storage" bson:"extend_storage"`
+}

@@ -33,6 +33,15 @@ func Start(mongo mongodbiface.DB) {
 	go TrackingWorker(mongo)
 	go MonitorWorker(mongo, maria, redis)
 	go MonitorNFSWorker(mongo)
+	go AlarmNFSWorker(mongo)
+}
+
+func AlarmNFSWorker(mongo mongodbiface.DB) {
+	log.Println("Starting alarm NFS worker")
+	for {
+		time.Sleep(30 * time.Second) // Chạy mỗi 30 giây để tránh spam
+		worker.NewAlarmNFSWorker(mongo).Run()
+	}
 }
 
 func MonitorNFSWorker(mongo mongodbiface.DB) {
