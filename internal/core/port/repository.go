@@ -7,6 +7,7 @@ type MongoRepository interface {
 	GetAll(email string) ([]domain.Moodle, error)
 	Get(moodleID string) (domain.Moodle, error)
 	Search(email, name string) ([]domain.Moodle, error)
+	GetAllMoodleIDs() ([]string, error)
 	ListCourses() ([]domain.Course, error)
 	ListPackages() ([]domain.Package, error)
 	Delete(moodleID string) error

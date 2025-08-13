@@ -652,3 +652,24 @@ func (m *MongoDB) GetExtendStorage(moodleID string) (int64, error) {
 	_, _ = fmt.Sscanf(ext.ExtendStorage, "%d", &gb)
 	return gb, nil
 }
+
+
+// get all moodle IDs from moodles collection
+func (m *MongoDB) GetAllMoodleIDs() ([]string, error) {
+	var moodleIDs []string
+	cursor, err := m.db.Collection("moodles").Find(context.Background(), bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+		var moodle domain.Moodle
+		err := cursor.Decode(&moodle)
+		if err != nil {
+			return nil, err
+		}
+		moodleIDs = append(moodleIDs, moodle.Id)
+	}
+	return moodleIDs, nil
+}

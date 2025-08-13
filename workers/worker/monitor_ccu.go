@@ -32,27 +32,27 @@ func NewMonitorWorker(mongo mongodbiface.DB, maria *sql.DB, redis *redis.Client)
 	}
 }
 
+
 // tracking user from mdl_user
 func (w *MonitorWorker) GetUser() error {
-	// get all dbname
-	dbnames, err := w.mariaRepo.GetDBName()
+	// get all moodle IDs from moodles collection
+	moodleIDs, err := w.mongoRepo.GetAllMoodleIDs()
 	if err != nil {
+		return err
+	}
+	// if len(moodleIDs) == 0 then return nil
+	if len(moodleIDs) == 0 {
 		return nil
 	}
-	// if len(dbnames) == 0  then return nil
-	if len(dbnames) == 0 {
-		return nil
-	}
-	// for  database in dbnames get userdata
-	for _, dbname := range dbnames {
-		// ignore if dbname is moodle
-		if dbname == "moodle" || dbname == "binlog" {
-			continue
-		}
+	// for each moodle ID, convert to dbname by replacing "-" with "_"
+	for _, moodleID := range moodleIDs {
+		dbname := strings.ReplaceAll(moodleID, "-", "_")
 		go w.WriteUser(dbname)
 	}
 	return nil
 }
+
+
 
 // getuser data then write to influxdb to monitoring
 func (w *MonitorWorker) WriteUser(dbname string) error {
