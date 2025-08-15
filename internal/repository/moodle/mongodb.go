@@ -673,3 +673,29 @@ func (m *MongoDB) GetAllMoodleIDs() ([]string, error) {
 	}
 	return moodleIDs, nil
 }
+
+
+
+// get mapping from moodles_maria_mapping by moodle_id
+func (m *MongoDB) GetMoodleMariaMappingByMoodleId(moodleID string) (domain.MoodleMariaMapping, error) {
+	var mapping domain.MoodleMariaMapping
+	err := m.db.Collection("moodles_maria_mapping").
+		FindOne(context.Background(), bson.M{"moodle_id": moodleID}).
+		Decode(&mapping)
+	if err != nil {
+		return mapping, err
+	}
+	return mapping, nil
+}
+
+// get maria_config by id
+func (m *MongoDB) GetMariaConfigById(id string) (domain.MariaConfig, error) {
+	var cfg domain.MariaConfig
+	err := m.db.Collection("maria_config").
+		FindOne(context.Background(), bson.M{"id": id}).
+		Decode(&cfg)
+	if err != nil {
+		return cfg, err
+	}
+	return cfg, nil
+}

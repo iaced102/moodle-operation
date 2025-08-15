@@ -54,14 +54,30 @@ func (w *MonitorWorker) GetUser() error {
 
 
 
-// getuser data then write to influxdb to monitoring
 func (w *MonitorWorker) WriteUser(dbname string) error {
-	// get user
-	data, err := w.mariaRepo.CountUserOnline(dbname)
-	if err != nil {
-		return nil
+	moodleID := strings.ReplaceAll(dbname, "_", "-")
+
+	var data []int
+
+	// Try mapping: moodle_id -> maria_config
+	if mapping, err := w.mongoRepo.GetMoodleMariaMappingByMoodleId(moodleID); err == nil && mapping.MariaId != "" {
+		if cfg, err := w.mongoRepo.GetMariaConfigById(mapping.MariaId); err == nil {
+			dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", cfg.DBUser, cfg.DBPass, cfg.DBHost, cfg.DBPort, dbname)
+			if db, err := sql.Open("mysql", dsn); err == nil {
+				defer db.Close()
+				tmpRepo := repo.NewMariaDB(db)
+				data, _ = tmpRepo.CountUserOnline(dbname)
+			}
+		}
 	}
-	// if len(data) == 0 then return nil
+
+	// Fallback to default Maria connection
+	if len(data) == 0 {
+		if d, err := w.mariaRepo.CountUserOnline(dbname); err == nil {
+			data = d
+		}
+	}
+
 	if len(data) == 0 {
 		return nil
 	}
