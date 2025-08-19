@@ -87,10 +87,11 @@ func (a *AlarmNFS) getExtendStorage(moodleId string) (int64, error) {
 
 func (a *AlarmNFS) sendTelegram(m domain.Moodle, currentStorage, totalLimit int64) error {
 	fmt.Println(currentStorage, totalLimit)
-	apiUrl := "https://tlg.dev.bizflycloud.vn/bot248926246:AAETwv7hzpk8zv6j9aRHDITYcnIRUGydS80/sendMessage"
+	apiUrl := "https://api.telegram.org/bot248926246:AAETwv7hzpk8zv6j9aRHDITYcnIRUGydS80/sendMessage"
 	text := fmt.Sprintf("[ALARM] KH: %s, Email: %s, Site: %s, Storage: %.2fGB/%.2fGB", m.Name, m.Email, m.WebSiteName, float64(currentStorage), float64(totalLimit))
 	message := map[string]interface{}{
-		"chat_id": -4116328390,
+		"chat_id": -1002960560112,
+		"message_thread_id": 6,
 		"text":    text,
 	}
 	jsonValue, _ := json.Marshal(message)

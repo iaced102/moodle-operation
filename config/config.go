@@ -29,4 +29,5 @@ var (
 	LBIP = "14.225.36.247"
 	// VICTORIAMETRIC = "http://localhost:8428/write"
 	VICTORIAMETRIC = "http://lms:bG1nLXByb2R1Y3QK@103.69.194.95:10031/write?db=lms"
+	DB_ENC_KEY_HEX = "237a724049d81af5fdf0ad2ccba1e75b8a025133329caf04ab91bdfbea29a0a8"
 )

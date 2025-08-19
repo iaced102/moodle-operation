@@ -699,3 +699,30 @@ func (m *MongoDB) GetMariaConfigById(id string) (domain.MariaConfig, error) {
 	}
 	return cfg, nil
 }
+
+// check if CCU alert already sent in the last hour
+func (m *MongoDB) CheckCCUAlertSent(moodleId, alertType string) (bool, error) {
+	// Check if there's an alert in the last hour
+	oneHourAgo := time.Now().Add(-1 * time.Hour)
+
+	var alert domain.CCUAlertTracking
+	err := m.db.Collection("ccu_alert_tracking").FindOne(context.Background(), bson.M{
+		"moodle_id":  moodleId,
+		"alert_type": alertType,
+		"created_at": bson.M{"$gte": oneHourAgo},
+	}).Decode(&alert)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, nil // Chưa có alert trong 1 giờ qua
+		}
+		return false, err
+	}
+	return true, nil // Đã có alert trong 1 giờ qua
+}
+
+// create CCU alert tracking record
+func (m *MongoDB) CreateCCUAlertTracking(alert domain.CCUAlertTracking) error {
+	_, err := m.db.Collection("ccu_alert_tracking").InsertOne(context.Background(), alert)
+	return err
+}

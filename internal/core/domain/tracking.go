@@ -76,3 +76,13 @@ type ExtendStorage struct {
 	MoodleId      string `json:"moodleId" bson:"moodleId"`
 	ExtendStorage string `json:"extend_storage" bson:"extend_storage"`
 }
+
+// CCUAlertTracking tracks CCU alerts to prevent spam
+type CCUAlertTracking struct {
+	MoodleId   string    `json:"moodle_id" bson:"moodle_id"`
+	AlertType  string    `json:"alert_type" bson:"alert_type"` // "warn" or "alert"
+	CurrentCCU int       `json:"current_ccu" bson:"current_ccu"`
+	DefaultCCU int       `json:"default_ccu" bson:"default_ccu"`
+	MaxCCU     int       `json:"max_ccu" bson:"max_ccu"`
+	CreatedAt  time.Time `json:"created_at" bson:"created_at"`
+}

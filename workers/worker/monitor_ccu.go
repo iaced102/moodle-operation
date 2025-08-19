@@ -13,6 +13,9 @@ import (
 	"strings"
 	"time"
 	"strconv"
+	"encoding/json"
+	"moodle/internal/core/domain"
+	"bytes"
 )
 
 type MonitorWorker struct {
@@ -168,11 +171,109 @@ func (w *MonitorWorker) Write(dbname string, data []int) error {
 
 	metrics := fmt.Sprintf("%s,%s=%s %s=%d,%s=%d,%s=%d", measurementName, tagKey, tagValue, fieldKey, fieldValue, fieldKey2, fieldValue2, fieldKey3, fieldValue3)
 	resp, err := http.Post(url, "application/octet-stream", strings.NewReader(metrics))
+
+	w.CheckCCUAndAlert(moodle, data[0])
 	if err != nil {
 		return nil
 		// panic(err)
 	}
 	defer resp.Body.Close()
 
+	return nil
+}
+
+
+
+func (w *MonitorWorker) CheckCCUAndAlert(moodle domain.Moodle, currentCCU int) error {
+	defaultCCU := moodle.Packages.Ccu
+	maxCCU := moodle.Packages.CcuExtraMax
+
+	// Check if we should send alert (only once per hour per site)
+	shouldSendAlert := false
+	alertType := ""
+
+	if currentCCU > maxCCU {
+		// ALERT: CCU > max CCU
+		shouldSendAlert = true
+		alertType = "alert"
+	} else if currentCCU > defaultCCU {
+		// WARN: CCU > default CCU
+		shouldSendAlert = true
+		alertType = "warn"
+	}
+
+	if shouldSendAlert {
+		// Check if alert was already sent in the last hour
+		alreadySent, err := w.mongoRepo.CheckCCUAlertSent(moodle.Id, alertType)
+		if err != nil {
+			log.Printf("Failed to check CCU alert status for %s: %v", moodle.Id, err)
+			return err
+		}
+
+		if !alreadySent {
+			// Send alert
+			if err := w.sendTelegram(moodle, currentCCU, defaultCCU, maxCCU, alertType); err != nil {
+				log.Printf("Failed to send CCU alert for %s: %v", moodle.Id, err)
+				return err
+			}
+
+			// Log alert to MongoDB
+			ccuAlert := domain.CCUAlertTracking{
+				MoodleId:   moodle.Id,
+				AlertType:  alertType,
+				CurrentCCU: currentCCU,
+				DefaultCCU: defaultCCU,
+				MaxCCU:     maxCCU,
+				CreatedAt:  time.Now(),
+			}
+
+			if err := w.mongoRepo.CreateCCUAlertTracking(ccuAlert); err != nil {
+				log.Printf("Failed to save CCU alert tracking for %s: %v", moodle.Id, err)
+			} else {
+				log.Printf("CCU %s sent and saved for moodle %s: current=%d, default=%d, max=%d",
+					alertType, moodle.Id, currentCCU, defaultCCU, maxCCU)
+			}
+		} else {
+			log.Printf("CCU %s already sent for moodle %s in the last hour, skipping", alertType, moodle.Id)
+		}
+	}
+
+	return nil
+}
+
+// sendTelegram sends message to Telegram using the same API as alarm_nfs.go
+func (w *MonitorWorker) sendTelegram(m domain.Moodle, currentCCU, defaultCCU, maxCCU int, alertType string) error {
+	apiUrl := "https://api.telegram.org/bot248926246:AAETwv7hzpk8zv6j9aRHDITYcnIRUGydS80/sendMessage"
+
+	var text string
+	if alertType == "alert" {
+		text = fmt.Sprintf("[CCU ALERT] KH: %s, Email: %s, Site: %s, Current CCU: %d, Default CCU: %d, Max CCU: %d",
+			m.Name, m.Email, m.WebSiteName, currentCCU, defaultCCU, maxCCU)
+	} else {
+		text = fmt.Sprintf("[CCU WARNING] KH: %s, Email: %s, Site: %s, Current CCU: %d, Default CCU: %d, Max CCU: %d",
+			m.Name, m.Email, m.WebSiteName, currentCCU, defaultCCU, maxCCU)
+	}
+
+	message := map[string]interface{}{
+		"chat_id": -1002960560112,
+		"message_thread_id": 2,
+		"text":    text,
+	}
+
+	jsonValue, _ := json.Marshal(message)
+	req, err := http.NewRequest("POST", apiUrl, bytes.NewBuffer(jsonValue))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("telegram error: %s", resp.Status)
+	}
 	return nil
 }
