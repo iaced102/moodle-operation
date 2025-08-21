@@ -1,21 +1,25 @@
 package worker
 
 import (
+	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
 	"database/sql"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	"github.com/go-redis/redis"
 	"log"
 	"math"
 	"moodle/config"
+	"moodle/internal/core/domain"
 	repo "moodle/internal/repository/moodle"
 	"moodle/pkg/mongodbiface"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
-	"encoding/json"
-	"moodle/internal/core/domain"
-	"bytes"
+
+	"github.com/go-redis/redis"
 )
 
 type MonitorWorker struct {
@@ -34,7 +38,6 @@ func NewMonitorWorker(mongo mongodbiface.DB, maria *sql.DB, redis *redis.Client)
 		redis:     redis,
 	}
 }
-
 
 // tracking user from mdl_user
 func (w *MonitorWorker) GetUser() error {
@@ -55,8 +58,6 @@ func (w *MonitorWorker) GetUser() error {
 	return nil
 }
 
-
-
 func (w *MonitorWorker) WriteUser(dbname string) error {
 	moodleID := strings.ReplaceAll(dbname, "_", "-")
 
@@ -65,7 +66,18 @@ func (w *MonitorWorker) WriteUser(dbname string) error {
 	// Try mapping: moodle_id -> maria_config
 	if mapping, err := w.mongoRepo.GetMoodleMariaMappingByMoodleId(moodleID); err == nil && mapping.MariaId != "" {
 		if cfg, err := w.mongoRepo.GetMariaConfigById(mapping.MariaId); err == nil {
-			dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", cfg.DBUser, cfg.DBPass, cfg.DBHost, cfg.DBPort, dbname)
+			// Decrypt password before connecting
+			dbPass := cfg.DBPass
+			if key, err := getSecretKeyFromConfig(); err == nil {
+				if dec, err := decryptPasswordCFB(dbPass, key); err == nil {
+					dbPass = dec
+				} else {
+					log.Printf("failed to decrypt DB password for %s: %v", moodleID, err)
+				}
+			} else {
+				log.Printf("failed to get secret key: %v", err)
+			}
+			dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", cfg.DBUser, dbPass, cfg.DBHost, cfg.DBPort, dbname)
 			if db, err := sql.Open("mysql", dsn); err == nil {
 				defer db.Close()
 				tmpRepo := repo.NewMariaDB(db)
@@ -182,8 +194,6 @@ func (w *MonitorWorker) Write(dbname string, data []int) error {
 	return nil
 }
 
-
-
 func (w *MonitorWorker) CheckCCUAndAlert(moodle domain.Moodle, currentCCU int) error {
 	defaultCCU := moodle.Packages.Ccu
 	maxCCU := moodle.Packages.CcuExtraMax
@@ -255,9 +265,9 @@ func (w *MonitorWorker) sendTelegram(m domain.Moodle, currentCCU, defaultCCU, ma
 	}
 
 	message := map[string]interface{}{
-		"chat_id": -1002960560112,
+		"chat_id":           -1002960560112,
 		"message_thread_id": 2,
-		"text":    text,
+		"text":              text,
 	}
 
 	jsonValue, _ := json.Marshal(message)
@@ -276,4 +286,34 @@ func (w *MonitorWorker) sendTelegram(m domain.Moodle, currentCCU, defaultCCU, ma
 		return fmt.Errorf("telegram error: %s", resp.Status)
 	}
 	return nil
+}
+
+func getSecretKeyFromConfig() ([]byte, error) {
+	keyBytes, err := hex.DecodeString(config.DB_ENC_KEY_HEX)
+	if err != nil {
+		return nil, err
+	}
+	if len(keyBytes) != 32 {
+		return nil, fmt.Errorf("SecretKey must be 32 bytes (got %d)", len(keyBytes))
+	}
+	return keyBytes, nil
+}
+
+func decryptPasswordCFB(encryptedHex string, key []byte) (string, error) {
+	ciphertext, err := hex.DecodeString(encryptedHex)
+	if err != nil {
+		return "", err
+	}
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+	if len(ciphertext) < aes.BlockSize {
+		return "", fmt.Errorf("ciphertext too short")
+	}
+	iv := ciphertext[:aes.BlockSize]
+	ciphertext = ciphertext[aes.BlockSize:]
+	stream := cipher.NewCFBDecrypter(block, iv)
+	stream.XORKeyStream(ciphertext, ciphertext)
+	return string(ciphertext), nil
 }
