@@ -34,7 +34,18 @@ func Start(mongo mongodbiface.DB) {
 	go MonitorWorker(mongo, maria, redis)
 	go MonitorNFSWorker(mongo)
 	go AlarmNFSWorker(mongo)
+	go MonitorHTTPWorker(mongo)
 }
+
+
+func MonitorHTTPWorker(mongo mongodbiface.DB) {
+	log.Println("Starting HTTP monitor worker")
+	for {
+		time.Sleep(30 * time.Second)
+		worker.NewMonitorHTTPWorker(mongo).Run()
+	}
+}
+
 
 func AlarmNFSWorker(mongo mongodbiface.DB) {
 	log.Println("Starting alarm NFS worker")
