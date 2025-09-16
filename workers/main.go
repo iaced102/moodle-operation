@@ -35,6 +35,19 @@ func Start(mongo mongodbiface.DB) {
 	go MonitorNFSWorker(mongo)
 	go AlarmNFSWorker(mongo)
 	go MonitorHTTPWorker(mongo)
+	go MonthlyCCUReportWorker(mongo)
+}
+
+
+
+
+func MonthlyCCUReportWorker(mongo mongodbiface.DB) {
+	log.Println("Starting Monthly CCU report worker")
+	for {
+		// time.Sleep(24 * time.Hour)
+		worker.NewMonthlyCCUReportWorker(mongo).Run()
+		time.Sleep(24 * time.Hour)
+	}
 }
 
 

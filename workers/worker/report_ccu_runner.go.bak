@@ -1,0 +1,31 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"moodle/config"
+	"moodle/workers/worker"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+)
+
+func newMongoForReport() *mongo.Database {
+	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	client, err := mongo.Connect(context.Background(), clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := client.Ping(context.Background(), nil); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Connected to MongoDB!")
+	return client.Database(config.DBNAME)
+}
+
+func main() {
+	mongoDB := newMongoForReport()
+	w := worker.NewMonthlyCCUReportWorker(mongoDB)
+	w.Run()
+}
